@@ -42,3 +42,6 @@ yarn-error.*
 
 # Supabase CLI local state
 supabase/.temp/
+
+# local working notes
+MAP_LOADING_NOTES.md

@@ -36,7 +36,7 @@ Chat and Updates need a Supabase project: see `PILOT_SETUP.md`.
 * `src/positioning/`: GPS→map fit and accuracy gate for the sensor experiment.
 * `ROUTE_REVIEW.md`, `reference/proposals/`: route and ramp proposals to confirm at school.
 * `2026-10-21_campus-floor{1,2,3}.svg`: traced campus levels (uncertain items marked).
-* `2026-10-04_floor2-labeled.svg`: Building 1 Floor 2 export.
+* `2026-10-04_floor2-labeled.svg`: archived Building 1 Floor 2 export (no longer imported).
 * `reference/overlays/`: traces over the PDF, and the campus composite.
 * `tools/campus-trace/`: scripts that generate the campus SVGs.
 * `CAMPUS_MAP.md`, `POSITIONING_EXPERIMENT.md`: map sources/uncertainty and the sensor plan.

@@ -221,6 +221,10 @@ export default function NavigationScreen({ review = false, live = null, liveTest
   const container = useRef<ComponentRef<typeof View>>(null);
   const controls = useRef<MapControls | null>(null);
   const [floorId, setFloorId] = useState<FloorId>(DEFAULT_FLOOR);
+  // While a tapped floor is being drawn, the picker already shows it and the
+  // map keeps the previous floor under a cover.
+  const [loadingFloor, setLoadingFloor] = useState<FloorId | null>(null);
+  const floorFrame = useRef<number | null>(null);
   const [destination, setDestination] = useState<Place | null>(null);
   const [start, setStart] = useState<TripStart | null>(null);
   const [mode, setMode] = useState<Mode>('browse');
@@ -246,11 +250,25 @@ export default function NavigationScreen({ review = false, live = null, liveTest
     const timer = setTimeout(() => setNotice(null), 2600);
     return () => clearTimeout(timer);
   }, [notice]);
+  useEffect(() => () => {
+    if (floorFrame.current !== null) cancelAnimationFrame(floorFrame.current);
+  }, []);
+  // Search results and start choices apply a floor at once and drop any picker
+  // switch that is still waiting for its frame.
+  const showFloor = (id: FloorId) => {
+    if (floorFrame.current !== null) cancelAnimationFrame(floorFrame.current);
+    floorFrame.current = null;
+    setLoadingFloor(null);
+    setFloorId(id);
+  };
   // Follow the route onto the floor of each step.
   const goToStep = (index: number) => {
     const next = trip?.status === 'available' ? trip.steps[index] : undefined;
     if (!next) return;
     setStepIndex(index);
+    // This can run while rendering (live guidance), so it must not touch the
+    // pending-switch ref; a cover from a picker tap is simply dropped.
+    setLoadingFloor(null);
     setFloorId(FLOOR_OF[next.level]);
   };
 
@@ -285,9 +303,24 @@ export default function NavigationScreen({ review = false, live = null, liveTest
       : 'No accurate live location yet, so steps won’t move on their own.', tone: 'warn', fix: true };
 
   const clearTrip = () => { setDestination(null); setStart(null); setMode('browse'); setStepIndex(0); };
+  // A picker tap changes the floor number at once and shows a loading cover
+  // while the new floor draws.
   const changeFloor = (id: FloorId) => {
-    setFloorId(id);
     if (mode === 'browse' && destination && destination.floorId !== id) setDestination(null);
+    // A second tap replaces the switch that has not swapped the map yet.
+    if (floorFrame.current !== null) cancelAnimationFrame(floorFrame.current);
+    floorFrame.current = null;
+    if (id === floorId) { setLoadingFloor(null); return; }
+    // Acknowledge the tap at once: the picker shows the new number and the map
+    // is covered. Swap the map on the next frame, then uncover it once drawn.
+    setLoadingFloor(id);
+    floorFrame.current = requestAnimationFrame(() => {
+      setFloorId(id);
+      floorFrame.current = requestAnimationFrame(() => {
+        floorFrame.current = null;
+        setLoadingFloor((current) => (current === id ? null : current));
+      });
+    });
   };
   const closeSearch = () => {
     Keyboard.dismiss();
@@ -297,20 +330,20 @@ export default function NavigationScreen({ review = false, live = null, liveTest
   };
   const applyStart = (next: TripStart) => {
     setStart(next);
-    setFloorId('floor-1');
+    showFloor('floor-1');
     setMode('plan');
   };
   const chooseStartOnMap = () => {
     Keyboard.dismiss();
     setSearching(false);
     setQuery('');
-    setFloorId('floor-1');
+    showFloor('floor-1');
     setMode('tap');
   };
   const beginLiveTap = (purpose: TapPurpose) => {
     Keyboard.dismiss();
     setSearching(false);
-    setFloorId('floor-1');
+    showFloor('floor-1');
     setLiveTap(purpose);
   };
   const onMapTap = (point: { x: number; y: number }) => {
@@ -337,7 +370,7 @@ export default function NavigationScreen({ review = false, live = null, liveTest
       else setNotice('Pick an open area or tap the map to set your start.');
       return;
     }
-    setFloorId(place.floorId);
+    showFloor(place.floorId);
     setDestination(place);
     setStart(null);
     setMode('browse');
@@ -359,6 +392,7 @@ export default function NavigationScreen({ review = false, live = null, liveTest
   return (
     <View style={styles.screen} ref={container}>
       <InteractiveMap floor={FLOORS[floorId]} view={CAMPUS} controlsRef={controls}
+        loading={loadingFloor ? `Loading ${FLOORS[loadingFloor].label}…` : null}
         selected={pinned?.floorId === floorId ? { ...pinned.anchor, labelHalfHeight: pinned.labelHalfHeight } : null}
         focus={step ? step.at : mode === 'plan' ? routeCentre : null}
         onMapTap={mode === 'tap' || liveTap ? onMapTap : undefined}
@@ -373,7 +407,7 @@ export default function NavigationScreen({ review = false, live = null, liveTest
           showNetwork={review && mode === 'browse'} walkable={WALKABLE} />} />
 
       <View style={styles.topBar} pointerEvents="box-none">
-        <FloorPicker floorId={floorId} onChange={changeFloor} />
+        <FloorPicker floorId={loadingFloor ?? floorId} onChange={changeFloor} />
         <View style={styles.chipSlot} pointerEvents="box-none">
           {live && (() => {
             const chip = liveChip(live, liveRadius);

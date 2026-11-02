@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react';
 
-import floor2Map from '../../2026-10-04_floor2-labeled.svg';
 import campusFloor1Source from '../../2026-10-21_campus-floor1.svg';
 import campusFloor2Source from '../../2026-10-21_campus-floor2.svg';
 import campusFloor3Source from '../../2026-10-21_campus-floor3.svg';
@@ -10,8 +9,6 @@ import { createLevelGeometry } from './FloorPlanMap';
 import type { FloorPlanData, StairSymbol } from './floorPlanTypes';
 import type { GeometryProps } from './InteractiveMap';
 import type { LabelSpec } from './labelPlan';
-import Floor2Layers from './LabeledMap';
-import { placeAnnotations, placeWalls, type MapPlacement } from './placement';
 
 export type FloorId = 'floor-1' | 'floor-2' | 'floor-3';
 
@@ -58,23 +55,8 @@ export const CAMPUS = {
   initial: { x: 471, y: 148, zoom: 3.3 },
 };
 
-// Building 1 Floor 2 export (201 × 258 units) placed over Building 1. Fitted
-// from label positions on the 12xx plan, then the 12xx plan's estimated
-// placement over the ground plan. See CAMPUS_MAP.md for its uncertainty.
-export const B1_FLOOR2_PLACEMENT: MapPlacement = { scale: 0.81439, x: 406.387, y: -5.887 };
-
-const floor2Building1 = placeAnnotations(floor2Map.annotations, B1_FLOOR2_PLACEMENT, {
-  idPrefix: 'f2-b1-',
-  building: '1',
-  title: (a) => (/^\d+$/.test(a.id) ? `Room ${a.id}` : a.id),
-}).map((a) => {
-  // The export draws labels as glyph outlines; the app shows them as text.
-  const name = a.id.replace(/^f2-b1-/, '');
-  const lines = name.includes(' ') && name !== 'STEAM Lab' ? [name.slice(0, name.indexOf(' ')), name.slice(name.indexOf(' ') + 1)] : [name];
-  const w = a.bounds.maxX - a.bounds.minX;
-  const h = a.bounds.maxY - a.bounds.minY;
-  return { ...a, text: name, lines, rotate: a.kind === 'room' && h > w * 1.3 ? -90 : 0 };
-});
+// Building 1 Floor 2 geometry is traced in the campus Floor 2 SVG from
+// 2026-10-04_floor-2.svg; the labeled export remains archived.
 
 function titleOf(a: MapAnnotation) {
   if (a.title) return a.title;
@@ -133,14 +115,8 @@ const GHOST = ground.layers.footprint;
 
 export const FLOORS: Record<FloorId, Floor> = {
   'floor-1': makeFloor('floor-1', '1', createLevelGeometry({ plan: ground }), ground.annotations, ground.walls, ground.stairs),
-  'floor-2': makeFloor('floor-2', '2',
-    createLevelGeometry({
-      plan: upper2,
-      ghost: GHOST,
-      children: ({ detail }) => <Floor2Layers placement={B1_FLOOR2_PLACEMENT} detail={detail} />,
-    }),
-    [...upper2.annotations, ...floor2Building1],
-    [...upper2.walls, ...placeWalls(floor2Map.walls, B1_FLOOR2_PLACEMENT)], upper2.stairs),
+  'floor-2': makeFloor('floor-2', '2', createLevelGeometry({ plan: upper2, ghost: GHOST }),
+    upper2.annotations, upper2.walls, upper2.stairs),
   'floor-3': makeFloor('floor-3', '3', createLevelGeometry({ plan: upper3, ghost: GHOST }),
     upper3.annotations, upper3.walls, upper3.stairs),
 };

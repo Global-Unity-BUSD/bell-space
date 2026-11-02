@@ -20,7 +20,7 @@ it lives here, in the SVG `data-note` attributes and in `TODO.md`.
 | App floor | Contents | Source drawing | File |
 | --- | --- | --- | --- |
 | Floor 1 | Buildings 3 (left), 2 (middle), 1 (right), parking, tennis courts, ramp | The long ground-level drawing at the bottom of the PDF | `2026-10-21_campus-floor1.svg` |
-| Floor 2 | Building 1 (12xx) | Upper-right drawing | `2026-10-04_floor2-labeled.svg`, placed in code |
+| Floor 2 | Building 1 (12xx) | Upper-right drawing | `2026-10-21_campus-floor2.svg` |
 | Floor 2 | Building 2 (22xx) | Upper-middle drawing | `2026-10-21_campus-floor2.svg` |
 | Floor 2 | Building 3 (3-2xx) | Upper-left drawing | `2026-10-21_campus-floor2.svg` |
 | Floor 3 | Building 1 (13xx) | Drawing left of the 12xx plan | `2026-10-21_campus-floor3.svg` |
@@ -49,8 +49,13 @@ page. Each one is placed over its building with a uniform scale + offset.
 | --- | --- | --- | --- |
 | Building 2 Floor 2 (22xx) | scale 1.0, offset (−23, +1049) page px | Auditorium walls align with the ground auditorium; plan width matches Building 2 | ~2–3 m. The two "2215" labels need checking |
 | Building 3 Floor 2 (3-2xx) | scale 1.0, offset (+2, +628) | East wall and north wall matched to the locker row | West extent (it reaches over the ramp area) and vertical position uncertain. The elevator symbol sits ~8 units west of the ground ELEV |
-| Building 1 Floor 2 (12xx export) | campus = 0.81439 × svg + (406.387, −5.887) | Fitted to label positions on the 12xx plan (≤7 px residual), then scale 1.44: Library semicircle ↔ ground semicircle; SW corner ↔ room 1138; the 1213 east wall lands on the 1155 east wall | The 1213–1218 row lands ~2.7 units south of 1155–1162. The STEAM Lab overlaps the parking lot's east edge |
+| Building 1 Floor 2 (12xx) | campus = 0.81439 × (design + (7.5, 9.5)) + (406.387, −5.887) | Traced from `2026-10-04_floor-2.svg`; that clean plan is the labeled export without its room glyphs, shifted by (−7.5, −9.5) | The 1213–1218 row lands ~2.7 units south of 1155–1162. The STEAM Lab overlaps the parking lot's east edge |
 | Building 1 Floor 3 (13xx) | STEAM Lab outline → 12xx plan (scale 0.99), then as above | Identical north-wing outline | Same as 12xx, plus the 13xx/12xx STEAM Lab match |
+
+Building 1 Floor 2 is generated into the traced SVG from the clean line plan.
+`2026-10-04_floor2-labeled.svg` (the earlier runtime overlay) is archived: it is
+no longer imported by the app, and its room label positions were converted into
+the generator's `U12_ROOMS` table.
 
 ## What each floor contains
 
@@ -83,8 +88,9 @@ Not traced anywhere:
   Parking arrow);
 * the numbered callout boxes (3, 8, 10, 3).
 
-Upper-floor interior dividers are drawn as each room's rectangle, not as
-individual traced partitions.
+Building 1 Floor 2 keeps the individual wall lines of its clean source plan.
+The other upper floors draw each room's rectangle, not individual traced
+partitions.
 
 ## Features needing annotated placement (not drawn)
 
@@ -167,17 +173,17 @@ These items are shown lighter and in italics, and are left out of search.
 ## Route-network candidates
 
 Each SVG's `route-candidates` group lists the stairs, elevators, entrances,
-exit pictograms and the ramp that can be seen in the PDF. All are
+exit pictograms and the ramp that can be seen in its source drawing. All are
 `uncertain`:
 
 | Floor | Candidates |
 | --- | --- |
 | Floor 1 | 15 stairs, 3 elevators, 1 entrance ("Entrance from Quad"), 3 exits, 1 ramp |
-| Floor 2 | 5 stairs, 1 elevator |
+| Floor 2 | 11 stairs (six from the 12xx plan), 1 elevator |
 | Floor 3 | 4 stairs |
 
-The Building 1 Floor 2 export's stairs are not yet extracted. These are a
-survey checklist, not a route network. See `src/navigation/` and `TODO.md`.
+These are a survey checklist, not a route network. See `src/navigation/` and
+`TODO.md`.
 
 ## Regenerating the traces
 

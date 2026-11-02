@@ -50,6 +50,7 @@ function segments(d) {
       case 'H': line(number(), y); break;
       case 'V': line(x, number()); break;
       case 'Q': i += 2; x = number(); y = number(); break;
+      case 'C': i += 4; x = number(); y = number(); break;
       case 'A': i += 5; x = number(); y = number(); break;
       case 'Z': line(startX, startY); command = undefined; break;
       default: throw new Error(`Unsupported floor plan path command: ${command}`);

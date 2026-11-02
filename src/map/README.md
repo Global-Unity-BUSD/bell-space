@@ -3,8 +3,8 @@
 `floors.tsx` registers three levels in one campus frame (`CAMPUS`: 580 × 210
 units, zoom 1–24, opening on Building 1 at 3.1×). Each level has a geometry
 component, label specs (text labels plus stair markers) and searchable places.
-Floor 2 combines the traced 22xx/3-2xx plans with the Building 1 export, which
-is placed by `B1_FLOOR2_PLACEMENT`.
+Floor 2 has all three buildings traced in the campus SVG, including Building 1
+(12xx) from `2026-10-04_floor-2.svg`; the earlier labeled export is archived.
 
 Rendering (`InteractiveMap.tsx`):
 * **Geometry** is an SVG drawn for the *settled* camera, 40% larger than the
@@ -27,10 +27,15 @@ remain. The campus SVGs are read by `prepareFloorPlanSvg.cjs`. Layers:
 `uncertain-symbols` and `stairs` (one path per stair symbol), plus `labels` and
 `route-candidates`. See `CAMPUS_MAP.md` for sources.
 
-# Floor 2 labeled sample map
+# Archived: Floor 2 labeled sample map
 
-The only map input is `2026-10-04_floor2-labeled.svg`. Metro's small transformer
-extracts its existing paths at bundle time; there are no generated map files,
+This pipeline is no longer used by the app. It is kept as a reference for the
+Building 1 Floor 2 export (`2026-10-04_floor2-labeled.svg`), whose room labels
+were converted into the traced SVG's `U12_ROOMS` table. Nothing below is loaded
+at runtime.
+
+The former map input was `2026-10-04_floor2-labeled.svg`. Metro's small transformer
+extracted its existing paths at bundle time; there are no generated map files,
 network asset fetches, per-frame XML parsing, or alternate zoom-level maps.
 
 ## Export-specific geometry
@@ -145,9 +150,10 @@ dependencies: pan/rotation update the annotation parent only; zoom projects labe
 positions without rerunning layouts. These checks do not measure native drawing
 cost, animation timing, or FPS.
 
-Physical performance profiling is still required. Record model/OS, app revision,
-build mode and display refresh rate. Compare identical 10-second pan,
-pinch/twist/translation and LOD-crossing sequences before/after the change in
-development and optimized/release builds, capturing UI/JS frame times and dropped
-frames. Start on the affected Android phone, then check iOS. The reported stutter
-has not been verified as resolved, and no native bottleneck has been confirmed.
+Physical performance profiling was requested while the Floor 2 export overlay
+was still mounted. The 2026-11-01 build removed that mount (the floor switch no
+longer draws the export's 377 filled subpaths); the Android stutter was
+reported gone after that change. Further profiling is optional. Record
+model/OS, app revision, build mode and display refresh rate, and compare
+identical 10-second pan, pinch/twist/translation and LOD-crossing sequences in
+development and optimized/release builds.

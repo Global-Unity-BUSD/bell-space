@@ -122,15 +122,27 @@ lunch-shelter, routes).
 * Lunch Shelter: confirm its open sides (south and west assumed; north?).
 * `ROUTE_REVIEW.md`: barriers in the open space, room entrances, stairs.
 
-## Android Performance (open, follows the iPhone version)
+## Android Performance (stutter resolved, 2026-11-01)
 
 Diagnose and fix persistent Android map slowdown and unexpected white shapes
-over floor lines. The user reports that panning, pinch zoom, rotation, and detail
-changes still slow down in Expo Go after the rotation/performance work.
+over floor lines. The reported stutter followed switching to Floor 2, which
+mounted the Building 1 labeled export. The 2026-11-01 build traces that floor
+into `2026-10-21_campus-floor2.svg` and removes the overlay; the user reports
+the stutter is gone.
 
-**Read [MAP_RENDERING_ISSUE.md](./MAP_RENDERING_ISSUE.md) first** for the detailed
-reproduction, layer-isolation, device-profiling, and verification plan. The cause
-is unconfirmed; the issue remains open despite passing automated checks.
+**Read [MAP_RENDERING_ISSUE.md](./MAP_RENDERING_ISSUE.md)** for the detailed
+investigation plan. The white shapes were never reproduced and remain
+unconfirmed; profiling is optional unless a new slowdown appears.
+
+### Fixed — Floor 2 Export Overlay (2026-11-01)
+
+* Building 1 Floor 2 is now traced into `2026-10-21_campus-floor2.svg` from
+  `2026-10-04_floor-2.svg`, so floor switching no longer mounts
+  `2026-10-04_floor2-labeled.svg` and its 377 filled subpaths. The export is
+  archived, not deleted.
+* Verified: `node --test tests/map.test.cjs` (40 tests), `npx expo lint`,
+  `npx tsc --noEmit`. The user reports the Android stutter is gone; this is
+  device feedback, not a measured frame-time capture.
 
 ### Open Issue — Persistent Slowdown and White Artifacts
 

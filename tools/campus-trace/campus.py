@@ -2,7 +2,7 @@
 # All source coordinates are pixels of the 6000 px render of BHSCampusMap.pdf,
 # straightened by 1.005 deg about the page centre ("page px").
 # Campus units = (ground page px - (120, 1900)) / 10.
-import sys, os, json
+import sys, os, json, re
 out_dir, overlay_dir = sys.argv[1], sys.argv[2]
 here = os.path.dirname(os.path.abspath(__file__))
 B1 = {}
@@ -14,14 +14,21 @@ def campus(p):
 def fmt(v): return '%g' % v
 
 class Drawing:
-    """A source drawing: crop offset (crop -> page) and placement (page -> ground page)."""
-    def __init__(self, key, offset, place, scale, note):
+    """A source drawing: crop offset (crop -> page) and placement (page -> ground page).
+
+    With to_campus, the placement maps the drawing's own coordinates straight to
+    campus units (used for a source SVG that is already in export coordinates).
+    """
+    def __init__(self, key, offset, place, scale, note, to_campus=False):
         self.key, self.offset, self.place_fn, self.scale, self.note = key, offset, place, scale, note
+        self.to_campus = to_campus
     def page(self, p): return (p[0] + self.offset[0], p[1] + self.offset[1])
     def ground(self, p): return self.place_fn(self.page(p))
     def map(self, p, space):
+        if self.to_campus: return self.place_fn(p)
         return campus(self.ground(p)) if space == 'campus' else self.page(p)
     def unit(self, space):  # campus units per crop px, or 1 for page space
+        if self.to_campus: return self.scale
         return self.scale / 10 if space == 'campus' else 1
 
 def sim(scale, src, dst):
@@ -33,6 +40,51 @@ IDENT = lambda p: p
 U12_TO_GROUND = sim(1.44, (5760, 1510), (5654, 3300))
 # Building 1 Floor 3 (13xx) inset -> 12xx inset by the STEAM Lab outline, then as above.
 U13_TO_U12 = sim(0.99, (3962, 562), (5076, 551))
+# Building 1 Floor 2: the clean single-line plan 2026-10-04_floor-2.svg is the
+# same drawing as the labeled export minus (7.5, 9.5), so it uses the export's
+# already-documented placement over the ground plan (see CAMPUS_MAP.md).
+U12_EXPORT = sim(0.81439, (0, 0), (406.387, -5.887))
+U12D_TO_CAMPUS = lambda p: U12_EXPORT((p[0] + 7.5, p[1] + 9.5))
+
+# The clean plan is one absolute M/L/H/V/C/Z path. Rewrite it into campus units
+# as one path: the C curves are the library's semicircular bump, kept as curves.
+U12D_SVG = os.path.join(here, '..', '..', '2026-10-04_floor-2.svg')
+def design_path(fn):
+    xml = open(U12D_SVG).read()
+    d = re.search(r'<path\b[^>]*\bd="([^"]+)"', xml).group(1)
+    tokens = re.findall(r'[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?', d)
+    out, i, cmd = [], 0, None
+    x = y = 0.0
+    start = (0.0, 0.0)
+    def num():
+        nonlocal i
+        i += 1
+        return float(tokens[i - 1])
+    def pt(p):
+        q = fn(p)
+        return f'{fmt(q[0])} {fmt(q[1])}'
+    while i < len(tokens):
+        if re.fullmatch(r'[A-Za-z]', tokens[i]):
+            cmd = tokens[i]; i += 1
+            if cmd == 'Z':
+                out.append('Z'); x, y = start; cmd = None
+            elif cmd == 'M':
+                x = num(); y = num(); start = (x, y); out.append('M' + pt((x, y)))
+            continue
+        if cmd in ('M', 'L'):
+            x = num(); y = num(); out.append('L' + pt((x, y))); cmd = 'L'
+        elif cmd == 'H':
+            x = num(); out.append('L' + pt((x, y)))
+        elif cmd == 'V':
+            y = num(); out.append('L' + pt((x, y)))
+        elif cmd == 'C':
+            c1 = (num(), num()); c2 = (num(), num()); end = (num(), num())
+            out.append('C' + pt(c1) + ' ' + pt(c2) + ' ' + pt(end)); x, y = end
+        else:
+            raise SystemExit('Unsupported design path command: %s' % cmd)
+    return ' '.join(out)
+
+U12D_WALLS = design_path(U12D_TO_CAMPUS)
 DRAWINGS = {
     'b2': Drawing('b2', (2400, 2800), IDENT, 1, 'Ground plan, Building 2'),
     'b3': Drawing('b3', (0, 0), IDENT, 1, 'Ground plan, Building 3 (coordinates already page px)'),
@@ -43,6 +95,8 @@ DRAWINGS = {
                   'Building 3 Floor 2 (3-2xx): scale 1; east wall and north wall matched; west extent and vertical position uncertain'),
     'u13': Drawing('u13', (3700, 520), lambda p: U12_TO_GROUND(U13_TO_U12(p)), 1.44 * 0.99,
                    'Building 1 Floor 3 (13xx): via STEAM Lab outline onto the 12xx inset, then the 12xx placement'),
+    'u12d': Drawing('u12d', (0, 0), U12D_TO_CAMPUS, 0.81439,
+                    'Building 1 Floor 2 (12xx), traced from 2026-10-04_floor-2.svg', to_campus=True),
 }
 
 def path(d, pts, space, close=False):
@@ -370,6 +424,52 @@ U12_STAIRS = [('stair', (745, 245, 795, 320), 'Hatched stair in the Small Quad')
               ('stair', (925, 878, 1000, 935), 'Hatched stair north of the Teacher Workroom'),
               ('stair', (505, 1122, 600, 1160), 'Hatched stair north of 1203'),
               ('stair', (820, 195, 870, 215), 'PDF label STR beside the STEAM Lab')]
+# Room boxes, label anchors, rotations and line breaks in the clean plan's
+# coordinates (its walls are the source-wall cells shifted back by 7.5, 9.5).
+U12_ROOMS = [
+    ('1242', '1242', 'room', 'documented', (127.6, 17.1, 145.6, 29.1), (136.47, 24.39), 0, 1, None, ''),
+    ('1241', '1241', 'room', 'documented', (126.1, 29.1, 143.1, 42.1), (133.84, 36.39), 0, 1, None, ''),
+    ('1240', '1240', 'room', 'documented', (126.1, 42.1, 143.1, 54.1), (134.57, 48.42), 0, 1, None, ''),
+    ('1239', '1239', 'room', 'documented', (126.1, 54.1, 143.1, 66.35), (134.58, 61.42), 0, 1, None, ''),
+    ('1238', '1238', 'room', 'documented', (126.1, 66.35, 143.1, 78.6), (134.57, 72.42), 0, 1, None, ''),
+    ('1237', '1237', 'room', 'documented', (126.1, 78.6, 143.1, 90.6), (134.45, 85.42), 0, 1, None, ''),
+    ('1245', '1245', 'room', 'documented', (69.1, 30.1, 81.6, 41.85), (75.5, 36.42), 0, 1, None, ''),
+    ('1246', '1246', 'room', 'documented', (69.1, 41.85, 81.6, 53.6), (75.55, 48.42), 0, 1, None, ''),
+    ('1247', '1247', 'room', 'documented', (69.1, 53.6, 81.6, 65.1), (75.41, 60.39), 0, 1, None, ''),
+    ('1248', '1248', 'room', 'documented', (69.1, 65.1, 81.6, 76.1), (75.54, 70.42), 0, 1, None, ''),
+    ('1223', '1223', 'room', 'documented', (13.1, 98.6, 26.1, 135.6), (20.94, 116.2), -90, 1, None, ''),
+    ('1225', '1225', 'room', 'documented', (33.1, 93.6, 43.1, 135.6), (38.47, 103.79), -90, 1, None, ''),
+    ('1227', '1227', 'room', 'documented', (43.1, 93.6, 65.1, 135.6), (54.35, 102.39), -90, 1, None, ''),
+    ('1229', '1229', 'room', 'documented', (65.1, 82.1, 78.1, 135.6), (71.45, 95.72), -90, 1, None, ''),
+    ('1230', '1230', 'room', 'documented', (78.1, 82.1, 98.85, 103.1), (90.6, 93.42), 0, 1, None, ''),
+    ('1231', '1231', 'room', 'documented', (98.85, 82.1, 119.6, 103.1), (109.9, 93.42), 0, 1, None, ''),
+    ('1219', '1219', 'room', 'documented', (53.6, 93.6, 65.1, 135.6), (59.49, 124.16), -90, 1, None, ''),
+    ('1218', '1218', 'room', 'documented', (65.1, 82.1, 119.6, 135.6), (71.45, 122.16), 0, 1, None, ''),
+    ('1236', '1236', 'room', 'documented', (78.1, 103.1, 116.6, 114.1), (88.58, 110.42), 0, 1, None, ''),
+    ('1217', '1217', 'room', 'documented', (65.1, 114.1, 119.6, 135.6), (90.93, 126.39), 0, 1, None, ''),
+    ('1216', '1216', 'room', 'documented', (65.1, 114.1, 119.6, 135.6), (109.07, 124.42), 0, 1, None, ''),
+    ('1234', '1234', 'room', 'documented', (135.6, 90.6, 153.6, 102.6), (143.66, 97.42), 0, 1, None, ''),
+    ('1233', '1233', 'room', 'documented', (133.1, 102.6, 153.6, 114.1), (142.6, 108.42), 0, 1, None, ''),
+    ('1215', '1215', 'room', 'documented', (126.1, 114.1, 137.1, 135.6), (131.44, 126.2), -90, 1, None, ''),
+    ('1214', '1214', 'room', 'documented', (137.1, 114.1, 147.6, 135.6), (142.58, 126.15), -90, 1, None, ''),
+    ('1213', '1213', 'room', 'documented', (147.6, 114.1, 166.1, 135.6), (157.09, 125.42), 0, 1, None, ''),
+    ('1202', '1202', 'room', 'documented', (43.1, 203.23, 56.6, 224.1), (50.92, 214.23), -90, 1, None, ''),
+    ('1203', '1203', 'room', 'documented', (56.6, 203.23, 70.6, 224.1), (63.92, 214.13), -90, 1, None, ''),
+    ('1204', '1204', 'room', 'documented', (70.6, 203.23, 85.1, 224.1), (77.62, 214.42), -90, 1, None, ''),
+    ('1205', '1205', 'room', 'documented', (85.1, 197.1, 98.1, 224.1), (91.5, 214.42), -90, 1, None, ''),
+    ('1206', '1206', 'room', 'documented', (98.1, 197.1, 112.1, 224.1), (105.55, 214.42), -90, 1, None, ''),
+    ('1207', '1207', 'room', 'documented', (112.1, 197.1, 139.6, 224.1), (119.35, 214.42), 0, 1, None, ''),
+    ('1208', '1208', 'room', 'documented', (112.1, 197.1, 139.6, 224.1), (133.54, 214.42), 0, 1, None, ''),
+    ('1209', '1209', 'room', 'documented', (139.6, 211.1, 158.1, 224.1), (149.55, 218.42), 0, 1, None, ''),
+    ('1210', '1210', 'room', 'documented', (145.1, 195.1, 158.1, 211.1), (152.08, 203.42), 0, 1, None, ''),
+    ('1211', '1211', 'room', 'documented', (145.1, 179.1, 158.1, 195.1), (151.38, 186.39), 0, 1, None, ''),
+    ('STEAM Lab', 'STEAM Lab', 'area', 'documented', (52.6, 0.1, 113.6, 30.1), (83.5, 15.7), 0, 1,
+     'STEAM Lab', ''),
+    ('Small Quad', 'Small Quad', 'area', 'documented', (86.6, 47.1, 120.6, 76.1), (104.7, 58.42), 0, 2,
+     'Small Quad', 'Open courtyard'),
+    ('Teacher Workroom', 'Teacher Workroom', 'area', 'documented', (125.6, 159.6, 150.6, 179.1), (139.15, 167.67), 0, 2,
+     'Teacher Workroom', ''),
+]
 DRAWINGS['b1'] = B1_DRAW
 
 # ---------------------------------------------------------------- emit
@@ -467,11 +567,14 @@ def level_svg(level, space='campus'):
         layers['site'] += [('Parking lot edge', path(d, s, space)) for s in SITE['site']]
         add_rooms(d, SITE_ROOMS, '', 'g-site-')
     if level == 2:
+        # Building 1 Floor 2, traced from its clean single-line plan.
+        layers['walls'].append(('Building 1 Floor 2, traced from 2026-10-04_floor-2.svg', U12D_WALLS))
+        add_symbols(DRAWINGS['u12'], U12_STAIRS, '1')
+        add_rooms(DRAWINGS['u12d'], U12_ROOMS, '1', 'f2-b1-')
         d = DRAWINGS['u2']
         layers['footprint'].append(('Building 2 Floor 2', path(d, U2['outline'], space, True)))
         layers['walls'].append(('Building 2 Floor 2', path(d, U2['outline'], space, True)))
         layers['dividers'] += [('Building 2 Floor 2', path(d, w, space)) for w in U2['dividers']]
-        add_symbols(DRAWINGS['u12'], U12_STAIRS, '1')
         add_symbols(d, U2['symbols'], '2'); add_rooms(d, U2_ROOMS, '2', 'f2-b2-')
         d = DRAWINGS['u3']
         layers['footprint'].append(('Building 3 Floor 2', path(d, U3['outline'], space, True)))
@@ -511,8 +614,8 @@ STYLE = {
 }
 HEADER = {
     1: 'Floor 1 (ground level): Buildings 1, 2 and 3 with site features, traced from the ground-level drawing.',
-    2: 'Floor 2: Building 2 (22xx) and Building 3 (3-2xx) upper floors placed over their buildings. '
-       'Building 1 Floor 2 comes from 2026-10-04_floor2-labeled.svg and is placed in code (see src/map/campus.ts).',
+    2: 'Floor 2: Building 1 (12xx), Building 2 (22xx) and Building 3 (3-2xx) upper floors. '
+       'Building 1 comes from the clean plan 2026-10-04_floor-2.svg; the other two from the PDF.',
     3: 'Floor 3: Building 1 (13xx) placed over Building 1.',
 }
 for level in (1, 2, 3):

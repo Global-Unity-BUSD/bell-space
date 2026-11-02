@@ -12,7 +12,7 @@ const { LAYOUT_MIN_ZOOM, nextDetailLevel } = require('../src/map/detailPolicy.ts
 const { boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normalizeAngle, rotatedSize, touchFrame,
   MIN_ZOOM, MAX_ZOOM } = require('../src/map/mapMath.ts');
 
-const { prepareFloorPlanSvg } = require('../src/map/prepareFloorPlanSvg.cjs');
+const { prepareFloorPlanSvg, segments } = require('../src/map/prepareFloorPlanSvg.cjs');
 
 const source = readFileSync(resolve(__dirname, '../2026-10-04_floor2-labeled.svg'), 'utf8');
 const map = prepareLabeledSvg(source);
@@ -67,6 +67,14 @@ test('room anchors match the actual labeled SVG glyph centers, not the old range
     const room = label.roomBounds;
     assert.ok(x > room.minX && x < room.maxX && y > room.minY && y < room.maxY, id);
   }
+});
+
+test('floor plan wall segments follow lines, curves and closing edges', () => {
+  assert.deepEqual(segments('M0 0H10V10C10 20 0 20 0 10Z'), [
+    { x1: 0, y1: 0, x2: 10, y2: 0 },
+    { x1: 10, y1: 0, x2: 10, y2: 10 },
+    { x1: 0, y1: 0, x2: 0, y2: 10 },
+  ]);
 });
 
 test('detail stays discrete within levels and hysteresis prevents threshold flicker', () => {
@@ -508,6 +516,9 @@ test('campus levels share one frame and keep documented and uncertain items apar
       assert.ok(['stair', 'elevator', 'entrance', 'exit', 'ramp'].includes(c.type));
     }
   });
+  // Floor 2 includes the traced Building 1 (12xx) plan, curves included.
+  assert.ok(campus[1].walls.length > 300, 'Floor 2 traces Building 1 Floor 2');
+  assert.match(campus[1].layers.walls, /C/, 'the library bump stays a curve');
   const ground = campus[0];
   for (const id of ['g-b1-cafeteria', 'g-b1-quad', 'g-b1-library', 'g-b1-admin-offices', 'g-b1-room-1155',
     'g-b2-auditorium', 'g-b2-stage', 'g-b2-room-2107', 'g-b2-room-2101', 'g-b3-gym-3-101', 'g-b3-pool',
@@ -533,12 +544,15 @@ test('rooms are associated with the correct building and level', () => {
   assert.ok(rooms(ground, '1').filter((t) => /^\d{4}$/.test(t)).every((t) => t.startsWith('11')));
   assert.ok(rooms(ground, '2').filter((t) => /^\d{4}/.test(t)).every((t) => t.startsWith('21')));
   assert.ok(rooms(ground, '3').filter((t) => /^3-\d/.test(t)).every((t) => /^3-(1|313)/.test(t)));
-  // Floor 2: 22xx in Building 2 and 3-2xx in Building 3. Building 1's 12xx
-  // rooms come only from the Floor 2 export, never from a ground or Floor 3 plan.
+  // Floor 2: 12xx in Building 1, 22xx in Building 2 and 3-2xx in Building 3.
+  // Building 1's 12xx rooms are traced from 2026-10-04_floor-2.svg.
+  assert.ok(rooms(upper2, '1').filter((t) => /^\d{4}$/.test(t)).every((t) => t.startsWith('12')));
+  assert.equal(rooms(upper2, '1').length, 36);
   assert.ok(rooms(upper2, '2').every((t) => t.startsWith('22')));
   assert.ok(rooms(upper2, '3').filter((t) => /^3-\d/.test(t)).every((t) => t.startsWith('3-2')));
   assert.ok(rooms(upper3, '1').filter((t) => /^\d{4}$/.test(t)).every((t) => t.startsWith('13')));
-  for (const plan of campus) assert.ok(!plan.annotations.some((a) => /^12\d\d$/.test(a.text ?? '')), 'no 12xx in traced plans');
+  assert.ok(!upper3.annotations.some((a) => /^12\d\d$/.test(a.text ?? '')), 'no 12xx on Floor 3');
+  // The archived labeled export still describes the 12xx plan only.
   assert.ok(map.annotations.filter((a) => a.kind === 'room').every((a) => a.id.startsWith('12')));
   // Auditorium and drama spaces belong to Building 2; the 22xx plan shows the
   // auditorium's upper level, the ground plan shows Drama and Choir.
@@ -564,11 +578,12 @@ test('upper floors are placed over their buildings in the campus frame', () => {
     }
   }
   const b1 = footprintBox(ground, '1');
-  const placed = placeAnnotations(map.annotations, B1_FLOOR2, { idPrefix: 'f2-b1-', building: '1', title: (a) => a.id });
-  for (const a of placed) assert.ok(inside(a.anchor, b1, 90), `Floor 2 ${a.id} sits over Building 1`);
+  const b1Labels = campus[1].annotations.filter((l) => l.building === '1' && l.kind !== 'building');
+  assert.equal(b1Labels.length, 39);
+  for (const a of b1Labels) assert.ok(inside(a.anchor, b1, 90), `Floor 2 ${a.id} sits over Building 1`);
   // Rooms 1202–1208 sit over the 1138–1144 row; 1213 sits over the 1155 end.
-  near(placed.find((a) => a.id === 'f2-b1-1202').anchor.y, byId(ground, 'g-b1-room-1139').anchor.y, '', 3);
-  assert.ok(Math.abs(placed.find((a) => a.id === 'f2-b1-1213').anchor.x - byId(ground, 'g-b1-room-1155').anchor.x) < 8);
+  near(b1Labels.find((a) => a.id === 'f2-b1-1202').anchor.y, byId(ground, 'g-b1-room-1139').anchor.y, '', 3);
+  assert.ok(Math.abs(b1Labels.find((a) => a.id === 'f2-b1-1213').anchor.x - byId(ground, 'g-b1-room-1155').anchor.x) < 8);
   for (const a of campus[2].annotations.filter((l) => l.kind === 'room')) {
     assert.ok(inside(a.anchor, { minX: 400, maxX: 580, minY: 0, maxY: 120 }, 0), `Floor 3 ${a.id} sits over Building 1's north wing`);
   }

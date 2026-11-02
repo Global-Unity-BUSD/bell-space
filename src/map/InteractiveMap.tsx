@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useState, type ComponentType,
   type ReactNode, type RefObject } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { G } from 'react-native-svg';
 import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
@@ -65,6 +65,8 @@ type MapProps = {
   // Live position estimate (map units) with its uncertainty radius.
   live?: { x: number; y: number; radius: number; quality: 'precise' | 'approximate' | 'unknown' } | null;
   controlsRef?: RefObject<MapControls | null>;
+  // Cover text shown over the map while a floor loads, e.g. "Loading Floor 2…".
+  loading?: string | null;
 };
 type CameraState = { zoom: number; x: number; y: number };
 
@@ -314,6 +316,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
 }
 
 export default function InteractiveMap(props: MapProps) {
+  const { loading = null, ...mapProps } = props;
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const onLayout = ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
     // A hidden tab reports a zero size; keep the current camera instead of
@@ -327,8 +330,17 @@ export default function InteractiveMap(props: MapProps) {
       {viewport.width > 0 && viewport.height > 0 && (
         // Floors share one campus frame, so switching floors keeps the camera.
         // Refit only when the viewport itself changes (e.g. tablet resize).
-        <MapViewport key={`${viewport.width}:${viewport.height}`} {...viewport} {...props} />
+        <MapViewport key={`${viewport.width}:${viewport.height}`} {...viewport} {...mapProps} />
       )}
+      {loading ? (
+        // Covers the previous floor while the next one is drawn; taps cannot
+        // reach the old geometry underneath.
+        <View style={styles.loading} accessible accessibilityRole="progressbar"
+          accessibilityLabel={loading} accessibilityLiveRegion="polite">
+          <ActivityIndicator color={mapColors.pin} />
+          <Text style={styles.loadingText}>{loading}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -337,4 +349,7 @@ const styles = StyleSheet.create({
   viewport: { flex: 1, overflow: 'hidden', backgroundColor: mapColors.background },
   gestureSurface: { flex: 1 },
   layer: { position: 'absolute' },
+  loading: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center',
+    justifyContent: 'center', gap: 8, backgroundColor: mapColors.background },
+  loadingText: { fontSize: 15, fontWeight: '600', color: mapColors.contextText },
 });
