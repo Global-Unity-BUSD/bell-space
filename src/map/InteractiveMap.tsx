@@ -350,9 +350,9 @@ export default function InteractiveMap(props: MapProps) {
   return (
     <View style={styles.viewport} onLayout={onLayout}>
       {viewport.width > 0 && viewport.height > 0 && (
-        // Floors share one campus frame, so switching floors keeps the camera.
-        // Refit only when the viewport itself changes (e.g. tablet resize).
-        <MapViewport key={`${viewport.width}:${viewport.height}`} {...viewport} {...mapProps} />
+        // Each floor opens on its own frame, so a floor switch also remounts
+        // the viewport. Refit only when the viewport itself changes.
+        <MapViewport key={`${mapProps.floor.id}:${viewport.width}:${viewport.height}`} {...viewport} {...mapProps} />
       )}
       {loading ? (
         // Covers the previous floor while the next one is drawn; taps cannot
