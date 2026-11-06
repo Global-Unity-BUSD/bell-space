@@ -46,8 +46,10 @@ export const BUILDING_VANISH_ZOOM = 2.2;
 export const FADE = 0;
 const CHAR = 0.62;
 const LINE = 1.22;
-const PADDING = 6;
-const GAP = 3;
+// Tight enough that a four-digit room label fits the small top-wing rooms at
+// the 7x selection zoom, while still leaving a readable margin around the text.
+const PADDING = 3;
+const GAP = 2;
 const PRIORITY: Record<LabelKind, number> = { building: 300, area: 150, stair: 120, room: 60, context: 10 };
 
 function boxOf(spec: LabelSpec) {
