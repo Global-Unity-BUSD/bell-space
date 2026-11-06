@@ -12,6 +12,8 @@ Run Python with `-I`.
    horizontal/vertical dark runs in page px. `grid.py` draws a 100 px grid on a crop.
 4. Edit the coordinate lists in `campus.py` (page px or per-drawing crop px). It
    reuses the earlier Building 1 trace through `b1data.py` (derived from `floor1.py`).
+   Building 1 Floor 2's single-line plan is split into footprint, walls and dividers
+   by `planar.py`.
 5. Generate: `python3 -I campus.py <svg out dir> <dir containing page_d.png>`.
    This writes `campus-floor{1,2,3}.svg` plus overlay SVGs for review.
    Copy the SVGs into the project root under their dated names.

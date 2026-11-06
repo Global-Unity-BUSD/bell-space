@@ -98,14 +98,14 @@ for (const [key, placeId, x, y, via, note, status] of doors) {
 }
 
 // ---- Stairs: ground symbols and the symbols drawn above them ----
-// The three ground-floor stair symbols each line up (within 2.4 map units)
+// The three ground-floor stair symbols each line up (within 2.6 map units)
 // with a stair symbol on the Floor 2 plan, and those with Floor 3. That is
 // evidence, not confirmation: which floors each stair actually serves must be
 // checked at school.
 const stairs: { key: string; f1?: [number, number]; via?: string; f2: [number, number]; f3?: [number, number]; note: string }[] = [
-  { key: 'cafeteria', f1: [582, 536], via: 'b1-n-stair1', f2: [436, 123.4], f3: [436.7, 124.2], note: 'Hatched stair near the Cafeteria' },
-  { key: 'career', f1: [1474, 547], via: 'b1-n-1156', f2: [525, 125.1], f3: [525.8, 124.6], note: 'Hatched stair north of the Career Center' },
-  { key: 'quad-south', f1: [902, 882], via: 'b1-s-stair3', f2: [465.9, 158.9], note: 'Hatched stair on the south side of the Quad' },
+  { key: 'cafeteria', f1: [582, 536], via: 'b1-n-stair1', f2: [435.7, 125.7], f3: [436.5, 125.6], note: 'Hatched stair near the Cafeteria' },
+  { key: 'career', f1: [1474, 547], via: 'b1-n-1156', f2: [524.7, 127.4], f3: [525.3, 126], note: 'Hatched stair north of the Career Center' },
+  { key: 'quad-south', f1: [902, 882], via: 'b1-s-stair3', f2: [465.6, 160.8], note: 'Hatched stair on the south side of the Quad' },
 ];
 for (const s of stairs) {
   const f1 = `b1-stair-${s.key}-1`;

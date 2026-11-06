@@ -1,4 +1,4 @@
-<svg width="580" height="210" viewBox="0 0 580 210" fill="none" xmlns="http://www.w3.org/2000/svg" data-floor="2" data-coverage="partial" data-frame="campus" data-bounds="72.5 1.9 563.6 197.8">
+<svg width="580" height="210" viewBox="0 0 580 210" fill="none" xmlns="http://www.w3.org/2000/svg" data-floor="2" data-coverage="partial" data-frame="campus">
 <!-- CLEAR 2.0 campus map, Floor 2: Building 1 (12xx), Building 2 (22xx) and Building 3 (3-2xx) upper floors. Building 1 comes from the clean plan 2026-10-04_floor-2.svg; the other two from the PDF.
      Source: BHSCampusMap.pdf (2023 scan), 6000 px render straightened by 1.005 degrees.
      Campus frame: 1 unit = 10 px of that render; origin at render px (120, 1900). No real-world scale.
@@ -8,6 +8,7 @@
      stairs, elevators and entrances. The ramp is not drawn until its proposal is reviewed. They are
      not a route network. No doors or walkways are traced. -->
 <g id="footprint" data-status="documented" fill="#ffffff">
+  <path d="M516.111 21.513 L511.632 21.513 L511.632 17.494 L511.632 12.671 L511.632 5.838 L504.71 5.838 L455.032 5.838 L455.032 29.953 L468.469 29.953 L468.469 39.397 L468.469 48.842 L468.469 58.086 L468.469 66.927 L460.936 66.927 L453.403 66.927 L453.403 76.573 L433.451 76.573 L425.714 76.573 L425.714 70.545 L412.276 70.545 L412.276 76.573 L412.276 80.994 L412.276 90.238 L422.863 90.238 L422.863 114.754 L422.863 119.577 L426.528 119.577 L432.636 119.577 L432.636 120.782 L432.636 131.232 L436.301 131.232 L439.966 131.232 L439.966 120.782 L439.966 119.577 L509.596 119.577 L509.596 164.188 L475.392 164.188 L475.392 157.757 L459.918 157.757 L454.625 157.757 L454.625 164.188 L447.295 164.188 L447.295 169.117 L447.295 187.9 L453.403 187.9 L453.403 185.89 L458.289 185.89 L469.691 185.89 L481.5 185.89 L492.087 185.89 L503.488 185.89 L514.686 185.89 L525.884 185.89 L525.884 192.723 L532.399 192.723 L532.399 194.33 C537.285 199.153 557.645 199.153 562.124 194.33 L562.124 192.723 L563.346 192.723 L563.346 148.112 L556.831 148.112 L556.831 142.083 C556.016 138.868 551.13 138.868 550.315 142.083 L550.315 148.112 L540.95 148.112 L540.95 145.298 L540.95 140.877 L540.95 134.045 L534.842 134.045 L534.842 119.577 L543.393 119.577 L547.465 119.577 L547.465 114.754 L547.465 97.472 L537.285 97.472 L537.285 88.228 L537.285 78.583 L528.734 78.583 L528.734 68.937 L528.734 59.09 L528.734 49.244 L528.734 39.598 L528.734 29.149 L530.77 29.149 L530.77 19.503 L516.111 19.503 L516.111 21.513 Z" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
   <path d="M271.7 101.6 L319.5 101.6 L319.5 141.3 L355.4 141.3 L355.4 183.3 L344.8 183.3 L344.8 182.1 L333.6 182.1 L333.6 176.7 L336.9 176.7 L336.9 169.4 L255.9 169.4 L255.9 176.9 L262.8 176.9 L262.8 182.3 L251.4 182.3 L251.4 183.8 L240.3 183.8 L240.3 152.7 L255.9 152.7 L255.9 141.3 L274.2 141.3 L274.2 114.6 L271.7 114.6 Z" data-note="Building 2 Floor 2"/>
   <path d="M72.5 114.5 L189.1 114.5 L189.1 126.9 L196.3 126.9 L196.3 146.1 L72.5 146.1 Z" data-note="Building 3 Floor 2"/>
 </g>
@@ -20,211 +21,14 @@
 <g id="site" data-status="documented" stroke="#b8c2cb" stroke-width="0.3">
 </g>
 <g id="walls" data-status="documented" stroke="#788791" stroke-width="0.5" stroke-linejoin="round">
-  <path d="M515.19 65.8608 L515.19 75.6334 L520.89 75.6334" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 65.8608 L515.19 55.8845" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 45.9082 L515.19 55.8845" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 45.9082 L515.19 36.1355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M516.411 17.8117 L516.411 25.5485" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M516.411 17.8117 L511.932 17.8117" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M516.411 17.8117 L516.411 15.7758 L531.07 15.7758 L531.07 25.5485 L529.034 25.5485" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 26.3628 L468.769 35.9319" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 63.8248 L478.949 63.8248 L478.949 54.8665" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 63.8248 L461.236 63.8248" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 63.8248 L468.769 54.8665" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M453.703 73.5975 L453.703 63.8248 L461.236 63.8248" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M453.703 73.5975 L457.368 73.5975 L457.368 67.0823 L461.236 67.0823 L461.236 63.8248" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M453.703 73.5975 L433.751 73.5975" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.014 73.5975 L426.014 67.4895 L412.576 67.4895 L412.576 73.5975" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.014 73.5975 L423.163 73.5975" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.014 73.5975 L426.014 82.1486" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.014 73.5975 L433.751 73.5975" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M412.576 73.5975 L412.576 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M412.576 73.5975 L423.163 73.5975" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 87.4421 L412.576 87.4421 L412.576 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 87.4421 L423.163 82.1486" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 87.4421 L423.163 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M460.218 155.851 L460.218 162.366 L475.692 162.366" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M460.218 155.851 L454.925 155.851 L454.925 162.366" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M460.218 155.851 L475.692 155.851 L475.692 162.366" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M454.925 162.366 L447.595 162.366 L447.595 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M454.925 162.366 L454.925 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M458.589 184.355 L453.703 184.355 L453.703 186.39 L447.595 186.39 L447.595 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M458.589 184.355 L469.991 184.355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M458.589 167.36 L469.991 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M458.589 167.36 L454.925 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M526.184 184.355 L514.986 184.355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M526.184 184.355 L526.184 191.277 L532.699 191.277 L532.699 192.906 C537.585 197.792 557.945 197.792 562.424 192.906 L562.424 191.277" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M526.184 184.355 L541.25 184.355 L541.25 173.767" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.387 184.355 L503.788 184.355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.387 184.355 L481.8 184.355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M469.991 167.36 L481.8 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.387 167.456 L469.991 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M526.184 167.66 L526.184 173.767" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M503.788 184.355 L514.986 184.355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M481.8 184.355 L469.991 184.355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M481.8 184.355 L481.8 185.169" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M562.424 191.277 L563.646 191.277 L563.646 146.078 L557.131 146.078" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M562.424 191.277 L557.131 191.277 L557.131 146.078" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M557.131 146.078 L557.131 139.97 C556.316 136.713 551.43 136.713 550.615 139.97 L550.615 146.078 L541.25 146.078" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 146.078 L541.25 147.707" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 146.078 L541.25 143.228" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 131.826 L541.25 131.826 L541.25 138.749" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 131.826 L535.142 117.167 L543.693 117.167" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 131.826 L535.142 138.749" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 131.826 L531.477 131.826" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M537.585 94.7716 L547.765 94.7716 L547.765 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M537.585 94.7716 L537.585 85.4061" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 75.6334 L520.89 80.927" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 75.6334 L537.585 75.6334 L537.585 85.4061" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 89.4781 L518.447 89.4781 L518.447 80.927 L522.926 80.927 L522.926 85.4061" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 89.4781 L520.89 94.7716" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 94.7716 L515.19 94.7716 L515.19 112.281 L524.148 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M547.765 112.281 L547.765 117.167 L543.693 117.167" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M547.765 112.281 L543.693 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M532.699 112.281 L524.148 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M532.699 112.281 L543.693 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M529.034 45.9082 L529.034 75.6334" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M529.034 45.9082 L529.034 36.1355" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 36.1355 L515.19 25.5485" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M529.034 36.1355 L529.034 25.5485" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M511.932 17.8117 L511.932 26.3628 L505.01 26.3628" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M511.932 17.8117 L505.01 17.8117" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M511.932 17.8117 L511.932 13.7398" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M500.53 30.4348 L510.71 30.4348 L510.71 63.8248 L483.021 63.8248 L483.021 30.4348 L493.608 30.4348" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M500.53 30.4348 L500.53 40.2075 L497.069 40.2075" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M500.53 30.4348 L497.069 30.4348" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M493.608 30.4348 L493.608 40.2075 L497.069 40.2075" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M493.608 30.4348 L497.069 30.4348" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M497.069 30.4348 L497.069 40.2075" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M478.949 26.3628 L455.332 26.3628 L455.332 1.93115 L505.01 1.93115" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M478.949 26.3628 L478.949 35.9319" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M478.949 26.3628 L505.01 26.3628" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 82.1486 L426.014 82.1486" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 82.1486 L418.277 82.1486 L418.277 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M433.751 82.1486 L433.751 112.281 L426.828 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M433.751 82.1486 L429.271 82.1486" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M433.751 82.1486 L433.751 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 112.281 L423.163 117.167 L426.828 117.167" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 112.281 L426.828 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M412.576 78.0766 L418.277 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M423.163 73.5975 L423.163 78.0766 L418.277 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.014 82.1486 L429.271 82.1486" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M433.751 73.5975 L433.751 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.828 112.281 L426.828 117.167" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M426.828 117.167 L432.936 117.167 L432.936 118.389" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M432.936 118.389 L432.936 128.976 L436.601 128.976" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M432.936 118.389 L436.601 118.389" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M440.266 118.389 L440.266 128.976 L436.601 128.976" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M440.266 118.389 L440.266 117.167 L509.896 117.167 L509.896 162.366 L475.692 162.366" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M440.266 118.389 L436.601 118.389" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M436.601 118.389 L436.601 128.976" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M447.595 167.36 L454.925 167.36" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M526.184 173.767 L530.663 173.767" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 173.767 L541.25 160.737" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 160.737 L541.25 147.707" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 160.737 L530.663 173.767" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 160.737 L530.663 147.707" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 147.707 L535.142 147.707" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M514.782 131.826 L514.782 143.228" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M514.782 131.826 L514.782 117.167 L531.477 117.167 L531.477 120.425 L530.663 120.425" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M514.782 131.826 L531.477 131.826" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.256 147.707 L519.261 147.707" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 147.707 L535.142 143.228" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 127.754 L520.076 127.754 L520.076 124.09" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 127.754 L530.663 124.09" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 127.754 L531.477 127.754 L531.477 131.826" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 120.425 L520.076 120.425 L520.076 124.09" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 120.425 L530.663 124.09" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 124.09 L520.076 124.09" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M543.693 112.281 L543.693 117.167" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 54.8665 L468.769 45.501" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M478.949 54.8665 L478.949 45.501" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 45.501 L468.769 35.9319" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M478.949 45.501 L478.949 35.9319" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M465.512 112.281 L509.896 112.281 L509.896 94.7716" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M465.512 112.281 L456.146 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M476.099 68.7111 L465.512 68.7111 L465.512 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M476.099 68.7111 L492.997 68.7111" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.997 68.7111 L509.896 68.7111 L509.896 85.8133" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M509.896 85.8133 L509.896 91.514" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M465.512 78.0766 L447.595 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M447.595 78.0766 L439.451 78.0766 L439.451 112.281 L447.595 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M447.595 112.281 L449.631 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M456.146 112.281 L454.11 112.281" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 1.93115 L511.932 1.93115 L511.932 8.85347" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 1.93115 L505.01 8.85347" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 26.3628 L505.01 17.8117" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 17.8117 L505.01 13.7398" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 13.7398 L511.932 13.7398" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 13.7398 L505.01 8.85347" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M511.932 13.7398 L511.932 8.85347" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 8.85347 L511.932 8.85347" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 138.749 L541.25 138.749" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 138.749 L535.142 143.228" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 138.749 L541.25 143.228" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 143.228 L541.25 143.228" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M514.782 143.228 L514.782 147.707 L519.261 147.707" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M429.271 82.1486 L429.271 78.0766 L433.751 78.0766" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M514.782 150.965 L514.782 162.366 L526.184 162.366 L526.184 150.965 L514.782 150.965 Z" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
+  <path d="M511.632 21.513 L516.111 21.513 M516.111 19.503 L516.111 21.513 M516.111 19.503 L530.77 19.503 M530.77 19.503 L530.77 29.149 M528.734 29.149 L530.77 29.149 M468.469 29.953 L468.469 66.927 M453.403 66.927 L468.469 66.927 M453.403 66.927 L453.403 76.573 M453.403 185.89 L453.403 187.9 M425.714 76.573 L453.403 76.573 M425.714 70.545 L425.714 76.573 M412.276 70.545 L425.714 70.545 M412.276 70.545 L412.276 90.238 M412.276 90.238 L422.863 90.238 M422.863 90.238 L422.863 119.577 M454.625 157.757 L475.392 157.757 M454.625 157.757 L454.625 164.188 M475.392 157.757 L475.392 164.188 M447.295 164.188 L454.625 164.188 M475.392 164.188 L509.596 164.188 M447.295 164.188 L447.295 187.9 M453.403 185.89 L525.884 185.89 M447.295 187.9 L453.403 187.9 M525.884 185.89 L525.884 192.723 M525.884 192.723 L532.399 192.723 M562.124 192.723 L563.346 192.723 M532.399 192.723 L532.399 194.33 M562.124 192.723 L562.124 194.33 M563.346 148.112 L563.346 192.723 M540.95 148.112 L550.315 148.112 M556.831 148.112 L563.346 148.112 M556.831 142.083 L556.831 148.112 M550.315 142.083 L550.315 148.112 M540.95 134.045 L540.95 148.112 M534.842 134.045 L540.95 134.045 M534.842 119.577 L534.842 134.045 M422.863 119.577 L432.636 119.577 M439.966 119.577 L509.596 119.577 M534.842 119.577 L547.465 119.577 M537.285 97.472 L547.465 97.472 M547.465 97.472 L547.465 119.577 M537.285 78.583 L537.285 97.472 M528.734 78.583 L537.285 78.583 M528.734 29.149 L528.734 78.583 M511.632 5.838 L511.632 21.513 M455.032 29.953 L468.469 29.953 M455.032 5.838 L455.032 29.953 M455.032 5.838 L511.632 5.838 M432.636 119.577 L432.636 131.232 M432.636 131.232 L439.966 131.232 M439.966 119.577 L439.966 131.232 M509.596 119.577 L509.596 164.188 M532.399 194.33 C537.285 199.153 557.645 199.153 562.124 194.33 M556.831 142.083 C556.016 138.868 551.13 138.868 550.315 142.083" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg"/>
   <path d="M271.7 101.6 L319.5 101.6 L319.5 141.3 L355.4 141.3 L355.4 183.3 L344.8 183.3 L344.8 182.1 L333.6 182.1 L333.6 176.7 L336.9 176.7 L336.9 169.4 L255.9 169.4 L255.9 176.9 L262.8 176.9 L262.8 182.3 L251.4 182.3 L251.4 183.8 L240.3 183.8 L240.3 152.7 L255.9 152.7 L255.9 141.3 L274.2 141.3 L274.2 114.6 L271.7 114.6 Z" data-note="Building 2 Floor 2"/>
   <path d="M72.5 114.5 L189.1 114.5 L189.1 126.9 L196.3 126.9 L196.3 146.1 L72.5 146.1 Z" data-note="Building 3 Floor 2"/>
   <path d="M73.2 124 L188.2 124" data-note="Building 3 Floor 2"/>
   <path d="M73.2 127.8 L196.3 127.8" data-note="Building 3 Floor 2"/>
 </g>
 <g id="dividers" data-status="documented" stroke="#788791" stroke-width="0.3" stroke-dasharray="1.2 0.8">
-  <path d="M515.19 65.8608 L529.034 65.8608" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 45.9082 L529.034 45.9082" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 55.8845 L529.034 55.8845" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M458.589 184.355 L458.589 167.36" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M526.184 184.355 L526.184 173.767" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.387 184.355 L492.387 167.456" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M481.8 167.36 L492.387 167.456 L503.788 167.559" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M503.788 167.559 L526.184 167.66" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M503.788 167.559 L503.788 184.355" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M503.788 167.559 L514.782 167.609 L514.986 184.355" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M469.991 167.36 L469.991 184.355" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M481.8 184.355 L481.8 167.36" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M537.585 94.7716 L532.699 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 89.4781 L522.926 89.4781 L522.926 85.4061" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M520.89 94.7716 L524.148 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M532.699 94.7716 L532.699 112.281" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M532.699 94.7716 L524.148 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M524.148 94.7716 L524.148 112.281" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 25.5485 L529.034 25.5485" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M515.19 36.1355 L529.034 36.1355" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 173.767 L530.663 173.767" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M541.25 160.737 L530.663 160.737" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M530.663 147.707 L535.142 147.707" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M535.142 147.707 L530.256 147.707" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 54.8665 L478.949 54.8665" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 45.501 L478.949 45.501" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M468.769 35.9319 L478.949 35.9319" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M509.896 94.7716 L507.453 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M465.512 112.281 L465.512 78.0766" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M476.099 68.7111 L476.099 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.997 68.7111 L492.997 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.997 85.8133 L476.099 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M492.997 85.8133 L494.83 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M476.099 85.8133 L476.099 94.7716 L507.453 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M509.896 91.514 L507.453 91.514" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M509.896 85.8133 L505.01 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M494.83 85.8133 L494.83 91.514 L499.716 91.514" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M494.83 85.8133 L499.716 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M507.453 91.514 L507.453 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M507.453 91.514 L505.01 91.514" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M522.926 85.4061 L537.585 85.4061" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M447.595 78.0766 L447.595 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M449.631 112.281 L449.631 109.838 L451.871 109.838" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M447.595 112.281 L447.595 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M447.595 94.7716 L451.871 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M454.11 112.281 L454.11 109.838 L451.871 109.838" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M456.146 112.281 L456.146 94.7716 L451.871 94.7716" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M451.871 94.7716 L451.871 109.838" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M514.782 143.228 L519.261 143.228 L519.261 147.707" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M499.716 85.8133 L499.716 91.514" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M499.716 85.8133 L505.01 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M499.716 91.514 L505.01 91.514" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
-  <path d="M505.01 91.514 L505.01 85.8133" data-note="Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg"/>
+  <path d="M514.89 29.149 L514.89 78.583 M514.89 97.472 L514.89 114.754 M514.89 78.583 L528.734 78.583 M514.89 68.937 L528.734 68.937 M514.89 49.244 L528.734 49.244 M514.89 59.09 L528.734 59.09 M516.111 21.513 L516.111 29.149 M468.469 66.927 L478.649 66.927 M482.721 66.927 L510.41 66.927 M478.649 29.953 L478.649 66.927 M422.863 85.013 L422.863 90.238 M458.289 169.117 L458.289 185.89 M454.625 169.117 L469.691 169.117 M525.884 169.412 L525.884 185.89 M525.884 185.89 L540.95 185.89 M540.95 149.719 L540.95 185.89 M492.087 169.211 L492.087 185.89 M492.087 169.211 L503.488 169.313 M503.488 169.313 L525.872 169.413 M503.488 169.313 L503.488 185.89 M514.482 169.362 L514.686 185.89 M469.691 169.117 L469.691 185.89 M481.5 169.167 L481.5 185.89 M514.482 134.045 L534.842 134.045 M447.295 97.472 L455.846 97.472 M475.799 97.472 L509.596 97.472 M514.89 97.472 L537.285 97.472 M520.59 78.583 L520.59 83.807 M520.59 92.247 L520.59 97.472 M426.528 114.754 L433.451 114.754 M439.151 114.754 L447.295 114.754 M455.846 114.754 L509.596 114.754 M514.89 114.754 L543.393 114.754 M532.399 97.472 L532.399 114.754 M523.848 97.472 L523.848 114.754 M514.89 29.149 L528.734 29.149 M514.89 39.598 L528.734 39.598 M482.721 33.972 L493.308 33.972 M500.23 33.972 L510.41 33.972 M510.41 33.972 L510.41 66.927 M482.721 33.972 L482.721 66.927 M468.469 29.953 L504.71 29.953 M433.451 85.013 L433.451 114.754 M525.884 175.441 L540.95 175.441 M530.363 162.58 L540.95 162.58 M530.363 149.719 L530.363 175.441 M518.961 149.719 L534.842 149.719 M514.482 134.045 L514.482 145.298 M468.469 58.086 L478.649 58.086 M468.469 48.842 L478.649 48.842 M468.469 39.397 L478.649 39.397 M509.596 71.75 L509.596 88.63 M509.596 97.472 L509.596 114.754 M465.212 71.75 L465.212 114.754 M465.212 71.75 L509.596 71.75 M475.799 71.75 L475.799 97.472 M492.697 71.75 L492.697 88.63 M475.799 88.63 L494.53 88.63 M507.153 94.257 L507.153 97.472 M522.626 88.228 L537.285 88.228 M439.151 80.994 L465.212 80.994 M439.151 80.994 L439.151 114.754 M447.295 80.994 L447.295 114.754 M455.846 97.472 L455.846 114.754" data-note="Building 1 Floor 2, traced from 2026-10-04_floor-2.svg (room dividers)"/>
   <path d="M274.2 152.4 L319.5 152.4" data-note="Building 2 Floor 2"/>
   <path d="M267.7 141.3 L267.7 152.4" data-note="Building 2 Floor 2"/>
   <path d="M325.7 141.3 L325.7 151.9" data-note="Building 2 Floor 2"/>
@@ -269,12 +73,12 @@
 <g id="ramp-marks" data-status="documented" stroke="#7c3aed" stroke-width="0.3">
 </g>
 <g id="stairs" data-status="uncertain" fill="#d7f0ea" stroke="#0f766e" stroke-width="0.3">
-  <path id="stair-2-1" d="M493.6 29.8 L500.8 29.8 L500.8 40.6 L493.6 40.6 Z M493.6 32.5 L500.8 32.5 M493.6 35.2 L500.8 35.2 M493.6 37.9 L500.8 37.9" data-building="1" data-cx="497.2" data-cy="35.2" data-note="Hatched stair in the Small Quad"/>
-  <path id="stair-2-2" d="M453.3 64.4 L461.2 64.4 L461.2 73 L453.3 73 Z M453.3 66.6 L461.2 66.6 M453.3 68.7 L461.2 68.7 M453.3 70.9 L461.2 70.9" data-building="1" data-cx="457.3" data-cy="68.7" data-note="Hatched stair west of 1229"/>
-  <path id="stair-2-3" d="M432.4 117.7 L439.6 117.7 L439.6 129.2 L432.4 129.2 Z M432.4 120.6 L439.6 120.6 M432.4 123.4 L439.6 123.4 M432.4 126.3 L439.6 126.3" data-building="1" data-cx="436" data-cy="123.4" data-note="Hatched stair, south-west wing"/>
-  <path id="stair-2-4" d="M519.6 121 L530.4 121 L530.4 129.2 L519.6 129.2 Z M522.3 121 L522.3 129.2 M525 121 L525 129.2 M527.7 121 L527.7 129.2" data-building="1" data-cx="525" data-cy="125.1" data-note="Hatched stair north of the Teacher Workroom"/>
-  <path id="stair-2-5" d="M459.1 156.1 L472.8 156.1 L472.8 161.6 L459.1 161.6 Z M462.5 156.1 L462.5 161.6 M465.9 156.1 L465.9 161.6 M469.3 156.1 L469.3 161.6" data-building="1" data-cx="465.9" data-cy="158.9" data-note="Hatched stair north of 1203"/>
-  <path id="stair-2-6" d="M504.4 22.6 L511.6 22.6 L511.6 25.5 L504.4 25.5 Z M506.2 22.6 L506.2 25.5 M508 22.6 L508 25.5 M509.8 22.6 L509.8 25.5" data-building="1" data-cx="508" data-cy="24.1" data-note="PDF label STR beside the STEAM Lab"/>
+  <path id="stair-2-1" d="M493.3 33.345 L500.5 33.345 L500.5 44.005 L493.3 44.005 Z M493.3 36.01 L500.5 36.01 M493.3 38.675 L500.5 38.675 M493.3 41.34 L500.5 41.34" data-building="1" data-cx="496.9" data-cy="38.675" data-note="Hatched stair in the Small Quad"/>
+  <path id="stair-2-2" d="M453 67.495 L460.9 67.495 L460.9 75.983 L453 75.983 Z M453 69.667 L460.9 69.667 M453 71.739 L460.9 71.739 M453 73.911 L460.9 73.911" data-building="1" data-cx="457" data-cy="71.739" data-note="Hatched stair west of 1229"/>
+  <path id="stair-2-3" d="M432.1 120.102 L439.3 120.102 L439.3 131.453 L432.1 131.453 Z M432.1 122.965 L439.3 122.965 M432.1 125.728 L439.3 125.728 M432.1 128.59 L439.3 128.59" data-building="1" data-cx="435.7" data-cy="125.728" data-note="Hatched stair, south-west wing"/>
+  <path id="stair-2-4" d="M519.3 123.359 L530.1 123.359 L530.1 131.453 L519.3 131.453 Z M522 123.359 L522 131.453 M524.7 123.359 L524.7 131.453 M527.4 123.359 L527.4 131.453" data-building="1" data-cx="524.7" data-cy="127.406" data-note="Hatched stair north of the Teacher Workroom"/>
+  <path id="stair-2-5" d="M458.8 158.003 L472.5 158.003 L472.5 163.432 L458.8 163.432 Z M462.2 158.003 L462.2 163.432 M465.6 158.003 L465.6 163.432 M469 158.003 L469 163.432" data-building="1" data-cx="465.6" data-cy="160.767" data-note="Hatched stair north of 1203"/>
+  <path id="stair-2-6" d="M504.1 26.239 L511.3 26.239 L511.3 29.101 L504.1 29.101 Z M505.9 26.239 L505.9 29.101 M507.7 26.239 L507.7 29.101 M509.5 26.239 L509.5 29.101" data-building="1" data-cx="507.7" data-cy="27.719" data-note="PDF label STR beside the STEAM Lab"/>
   <path id="stair-2-7" d="M267.7 141.3 L274.2 141.3 L274.2 152.4 L267.7 152.4 Z M267.7 144.1 L274.2 144.1 M267.7 146.8 L274.2 146.8 M267.7 149.6 L274.2 149.6" data-building="2" data-cx="270.9" data-cy="146.8" data-note="PDF label STR"/>
   <path id="stair-2-8" d="M319.5 141.3 L325.7 141.3 L325.7 152.4 L319.5 152.4 Z M319.5 144.1 L325.7 144.1 M319.5 146.8 L325.7 146.8 M319.5 149.6 L325.7 149.6" data-building="2" data-cx="322.6" data-cy="146.8" data-note="PDF label STR"/>
   <path id="stair-2-9" d="M254.7 176.9 L263.2 176.9 L263.2 182.3 L254.7 182.3 Z M256.8 176.9 L256.8 182.3 M258.9 176.9 L258.9 182.3 M261.1 176.9 L261.1 182.3" data-building="2" data-cx="258.9" data-cy="179.6" data-note="PDF label STR"/>
@@ -282,45 +86,45 @@
   <path id="stair-2-11" d="M126.8 127.8 L131 127.8 L131 139.3 L126.8 139.3 Z M126.8 130.7 L131 130.7 M126.8 133.6 L131 133.6 M126.8 136.4 L131 136.4" data-building="3" data-cx="128.9" data-cy="133.6" data-note="PDF label STR"/>
 </g>
 <g id="labels">
-  <rect id="f2-b1-1242" data-label="1242" data-kind="room" data-status="documented" data-building="1" data-level="2" x="516.411" y="15.7758" width="14.7" height="9.8" data-label-x="523.635" data-label-y="21.7127" data-rotate="0"/>
-  <rect id="f2-b1-1241" data-label="1241" data-kind="room" data-status="documented" data-building="1" data-level="2" x="515.19" y="25.5485" width="13.8" height="10.6" data-label-x="521.493" data-label-y="31.4854" data-rotate="0"/>
-  <rect id="f2-b1-1240" data-label="1240" data-kind="room" data-status="documented" data-building="1" data-level="2" x="515.19" y="36.1355" width="13.8" height="9.8" data-label-x="522.087" data-label-y="41.2825" data-rotate="0"/>
-  <rect id="f2-b1-1239" data-label="1239" data-kind="room" data-status="documented" data-building="1" data-level="2" x="515.19" y="45.9082" width="13.8" height="10" data-label-x="522.096" data-label-y="51.8695" data-rotate="0"/>
-  <rect id="f2-b1-1238" data-label="1238" data-kind="room" data-status="documented" data-building="1" data-level="2" x="515.19" y="55.8845" width="13.8" height="10" data-label-x="522.087" data-label-y="60.8278" data-rotate="0"/>
-  <rect id="f2-b1-1237" data-label="1237" data-kind="room" data-status="documented" data-building="1" data-level="2" x="515.19" y="65.8608" width="13.8" height="9.8" data-label-x="521.99" data-label-y="71.4149" data-rotate="0"/>
-  <rect id="f2-b1-1245" data-label="1245" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.769" y="26.3628" width="10.2" height="9.6" data-label-x="473.981" data-label-y="31.5098" data-rotate="0"/>
-  <rect id="f2-b1-1246" data-label="1246" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.769" y="35.9319" width="10.2" height="9.6" data-label-x="474.022" data-label-y="41.2825" data-rotate="0"/>
-  <rect id="f2-b1-1247" data-label="1247" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.769" y="45.501" width="10.2" height="9.4" data-label-x="473.908" data-label-y="51.0307" data-rotate="0"/>
-  <rect id="f2-b1-1248" data-label="1248" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.769" y="54.8665" width="10.2" height="9" data-label-x="474.014" data-label-y="59.199" data-rotate="0"/>
-  <rect id="f2-b1-1223" data-label="1223" data-kind="room" data-status="documented" data-building="1" data-level="2" x="423.163" y="82.1486" width="10.6" height="30.1" data-label-x="429.548" data-label-y="96.4818" data-rotate="-90"/>
-  <rect id="f2-b1-1225" data-label="1225" data-kind="room" data-status="documented" data-building="1" data-level="2" x="439.451" y="78.0766" width="8.1" height="34.2" data-label-x="443.825" data-label-y="86.3752" data-rotate="-90"/>
-  <rect id="f2-b1-1227" data-label="1227" data-kind="room" data-status="documented" data-building="1" data-level="2" x="447.595" y="78.0766" width="17.9" height="34.2" data-label-x="456.757" data-label-y="85.2351" data-rotate="-90"/>
-  <rect id="f2-b1-1229" data-label="1229" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.512" y="68.7111" width="10.6" height="43.6" data-label-x="470.683" data-label-y="79.8031" data-rotate="-90"/>
-  <rect id="f2-b1-1230" data-label="1230" data-kind="room" data-status="documented" data-building="1" data-level="2" x="476.099" y="68.7111" width="16.9" height="17.1" data-label-x="486.279" data-label-y="77.93" data-rotate="0"/>
-  <rect id="f2-b1-1231" data-label="1231" data-kind="room" data-status="documented" data-building="1" data-level="2" x="492.997" y="68.7111" width="16.9" height="17.1" data-label-x="501.996" data-label-y="77.93" data-rotate="0"/>
-  <rect id="f2-b1-1219" data-label="1219" data-kind="room" data-status="documented" data-building="1" data-level="2" x="456.146" y="78.0766" width="9.4" height="34.2" data-label-x="460.943" data-label-y="102.964" data-rotate="-90"/>
-  <rect id="f2-b1-1218" data-label="1218" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.512" y="68.7111" width="44.4" height="43.6" data-label-x="470.683" data-label-y="101.336" data-rotate="0"/>
-  <rect id="f2-b1-1236" data-label="1236" data-kind="room" data-status="documented" data-building="1" data-level="2" x="476.099" y="85.8133" width="31.4" height="9" data-label-x="484.634" data-label-y="91.7746" data-rotate="0"/>
-  <rect id="f2-b1-1217" data-label="1217" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.512" y="94.7716" width="44.4" height="17.5" data-label-x="486.547" data-label-y="104.78" data-rotate="0"/>
-  <rect id="f2-b1-1216" data-label="1216" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.512" y="94.7716" width="44.4" height="17.5" data-label-x="501.32" data-label-y="103.176" data-rotate="0"/>
-  <rect id="f2-b1-1234" data-label="1234" data-kind="room" data-status="documented" data-building="1" data-level="2" x="522.926" y="75.6334" width="14.7" height="9.8" data-label-x="529.49" data-label-y="81.1876" data-rotate="0"/>
-  <rect id="f2-b1-1233" data-label="1233" data-kind="room" data-status="documented" data-building="1" data-level="2" x="520.89" y="85.4061" width="16.7" height="9.4" data-label-x="528.627" data-label-y="90.1459" data-rotate="0"/>
-  <rect id="f2-b1-1215" data-label="1215" data-kind="room" data-status="documented" data-building="1" data-level="2" x="515.19" y="94.7716" width="9" height="17.5" data-label-x="519.538" data-label-y="104.626" data-rotate="-90"/>
-  <rect id="f2-b1-1214" data-label="1214" data-kind="room" data-status="documented" data-building="1" data-level="2" x="524.148" y="94.7716" width="8.6" height="17.5" data-label-x="528.611" data-label-y="104.585" data-rotate="-90"/>
-  <rect id="f2-b1-1213" data-label="1213" data-kind="room" data-status="documented" data-building="1" data-level="2" x="532.699" y="94.7716" width="15.1" height="17.5" data-label-x="540.427" data-label-y="103.99" data-rotate="0"/>
-  <rect id="f2-b1-1202" data-label="1202" data-kind="room" data-status="documented" data-building="1" data-level="2" x="447.595" y="167.358" width="11" height="17" data-label-x="453.964" data-label-y="176.316" data-rotate="-90"/>
-  <rect id="f2-b1-1203" data-label="1203" data-kind="room" data-status="documented" data-building="1" data-level="2" x="458.589" y="167.358" width="11.4" height="17" data-label-x="464.551" data-label-y="176.235" data-rotate="-90"/>
-  <rect id="f2-b1-1204" data-label="1204" data-kind="room" data-status="documented" data-building="1" data-level="2" x="469.991" y="167.358" width="11.8" height="17" data-label-x="475.708" data-label-y="176.471" data-rotate="-90"/>
-  <rect id="f2-b1-1205" data-label="1205" data-kind="room" data-status="documented" data-building="1" data-level="2" x="481.8" y="162.366" width="10.6" height="22" data-label-x="487.012" data-label-y="176.471" data-rotate="-90"/>
-  <rect id="f2-b1-1206" data-label="1206" data-kind="room" data-status="documented" data-building="1" data-level="2" x="492.387" y="162.366" width="11.4" height="22" data-label-x="498.454" data-label-y="176.471" data-rotate="-90"/>
-  <rect id="f2-b1-1207" data-label="1207" data-kind="room" data-status="documented" data-building="1" data-level="2" x="503.788" y="162.366" width="22.4" height="22" data-label-x="509.692" data-label-y="176.471" data-rotate="0"/>
-  <rect id="f2-b1-1208" data-label="1208" data-kind="room" data-status="documented" data-building="1" data-level="2" x="503.788" y="162.366" width="22.4" height="22" data-label-x="521.249" data-label-y="176.471" data-rotate="0"/>
-  <rect id="f2-b1-1209" data-label="1209" data-kind="room" data-status="documented" data-building="1" data-level="2" x="526.184" y="173.767" width="15.1" height="10.6" data-label-x="534.287" data-label-y="179.729" data-rotate="0"/>
-  <rect id="f2-b1-1210" data-label="1210" data-kind="room" data-status="documented" data-building="1" data-level="2" x="530.663" y="160.737" width="10.6" height="13" data-label-x="536.347" data-label-y="167.513" data-rotate="0"/>
-  <rect id="f2-b1-1211" data-label="1211" data-kind="room" data-status="documented" data-building="1" data-level="2" x="530.663" y="147.707" width="10.6" height="13" data-label-x="535.777" data-label-y="153.644" data-rotate="0"/>
-  <rect id="f2-b1-STEAM Lab" data-label="STEAM Lab" data-kind="area" data-status="documented" data-building="1" data-level="2" x="455.332" y="1.93114" width="49.7" height="24.4" data-label-x="480.496" data-label-y="14.6356" data-rotate="0" data-title="STEAM Lab"/>
-  <rect id="f2-b1-Small Quad" data-label="Small Quad" data-kind="area" data-status="documented" data-building="1" data-level="2" x="483.021" y="40.2075" width="27.7" height="23.6" data-label-x="497.762" data-label-y="49.4264" data-rotate="0" data-lines="2" data-title="Small Quad" data-note="Open courtyard"/>
-  <rect id="f2-b1-Teacher Workroom" data-label="Teacher Workroom" data-kind="area" data-status="documented" data-building="1" data-level="2" x="514.782" y="131.826" width="20.4" height="15.9" data-label-x="525.817" data-label-y="138.398" data-rotate="0" data-lines="2" data-title="Teacher Workroom"/>
+  <rect id="f2-b1-1242" data-label="1242" data-kind="room" data-status="documented" data-building="1" data-level="2" x="516.111" y="19.503" width="14.7" height="9.6" data-label-x="523.335" data-label-y="25.363" data-rotate="0"/>
+  <rect id="f2-b1-1241" data-label="1241" data-kind="room" data-status="documented" data-building="1" data-level="2" x="514.89" y="29.149" width="13.8" height="10.4" data-label-x="521.193" data-label-y="35.008" data-rotate="0"/>
+  <rect id="f2-b1-1240" data-label="1240" data-kind="room" data-status="documented" data-building="1" data-level="2" x="514.89" y="39.598" width="13.8" height="9.6" data-label-x="521.787" data-label-y="44.678" data-rotate="0"/>
+  <rect id="f2-b1-1239" data-label="1239" data-kind="room" data-status="documented" data-building="1" data-level="2" x="514.89" y="49.244" width="13.8" height="9.8" data-label-x="521.796" data-label-y="55.128" data-rotate="0"/>
+  <rect id="f2-b1-1238" data-label="1238" data-kind="room" data-status="documented" data-building="1" data-level="2" x="514.89" y="59.09" width="13.8" height="9.8" data-label-x="521.787" data-label-y="63.969" data-rotate="0"/>
+  <rect id="f2-b1-1237" data-label="1237" data-kind="room" data-status="documented" data-building="1" data-level="2" x="514.89" y="68.937" width="13.8" height="9.6" data-label-x="521.69" data-label-y="74.419" data-rotate="0"/>
+  <rect id="f2-b1-1245" data-label="1245" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.469" y="29.953" width="10.2" height="9.4" data-label-x="473.681" data-label-y="35.033" data-rotate="0"/>
+  <rect id="f2-b1-1246" data-label="1246" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.469" y="39.397" width="10.2" height="9.4" data-label-x="473.722" data-label-y="44.678" data-rotate="0"/>
+  <rect id="f2-b1-1247" data-label="1247" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.469" y="48.842" width="10.2" height="9.2" data-label-x="473.608" data-label-y="54.3" data-rotate="0"/>
+  <rect id="f2-b1-1248" data-label="1248" data-kind="room" data-status="documented" data-building="1" data-level="2" x="468.469" y="58.086" width="10.2" height="8.8" data-label-x="473.714" data-label-y="62.362" data-rotate="0"/>
+  <rect id="f2-b1-1223" data-label="1223" data-kind="room" data-status="documented" data-building="1" data-level="2" x="422.863" y="85.013" width="10.6" height="29.7" data-label-x="429.248" data-label-y="99.16" data-rotate="-90"/>
+  <rect id="f2-b1-1225" data-label="1225" data-kind="room" data-status="documented" data-building="1" data-level="2" x="439.151" y="80.994" width="8.1" height="33.8" data-label-x="443.525" data-label-y="89.185" data-rotate="-90"/>
+  <rect id="f2-b1-1227" data-label="1227" data-kind="room" data-status="documented" data-building="1" data-level="2" x="447.295" y="80.994" width="17.9" height="33.8" data-label-x="456.457" data-label-y="88.059" data-rotate="-90"/>
+  <rect id="f2-b1-1229" data-label="1229" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.212" y="71.75" width="10.6" height="43" data-label-x="470.383" data-label-y="82.698" data-rotate="-90"/>
+  <rect id="f2-b1-1230" data-label="1230" data-kind="room" data-status="documented" data-building="1" data-level="2" x="475.799" y="71.75" width="16.9" height="16.9" data-label-x="485.979" data-label-y="80.849" data-rotate="0"/>
+  <rect id="f2-b1-1231" data-label="1231" data-kind="room" data-status="documented" data-building="1" data-level="2" x="492.697" y="71.75" width="16.9" height="16.9" data-label-x="501.696" data-label-y="80.849" data-rotate="0"/>
+  <rect id="f2-b1-1219" data-label="1219" data-kind="room" data-status="documented" data-building="1" data-level="2" x="455.846" y="80.994" width="9.4" height="33.8" data-label-x="460.643" data-label-y="105.558" data-rotate="-90"/>
+  <rect id="f2-b1-1218" data-label="1218" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.212" y="71.75" width="44.4" height="43" data-label-x="470.383" data-label-y="103.951" data-rotate="0"/>
+  <rect id="f2-b1-1236" data-label="1236" data-kind="room" data-status="documented" data-building="1" data-level="2" x="475.799" y="88.63" width="31.4" height="8.8" data-label-x="484.334" data-label-y="94.514" data-rotate="0"/>
+  <rect id="f2-b1-1217" data-label="1217" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.212" y="97.472" width="44.4" height="17.3" data-label-x="486.247" data-label-y="107.351" data-rotate="0"/>
+  <rect id="f2-b1-1216" data-label="1216" data-kind="room" data-status="documented" data-building="1" data-level="2" x="465.212" y="97.472" width="44.4" height="17.3" data-label-x="501.02" data-label-y="105.767" data-rotate="0"/>
+  <rect id="f2-b1-1234" data-label="1234" data-kind="room" data-status="documented" data-building="1" data-level="2" x="522.626" y="78.583" width="14.7" height="9.6" data-label-x="529.19" data-label-y="84.065" data-rotate="0"/>
+  <rect id="f2-b1-1233" data-label="1233" data-kind="room" data-status="documented" data-building="1" data-level="2" x="520.59" y="88.228" width="16.7" height="9.2" data-label-x="528.327" data-label-y="92.906" data-rotate="0"/>
+  <rect id="f2-b1-1215" data-label="1215" data-kind="room" data-status="documented" data-building="1" data-level="2" x="514.89" y="97.472" width="9" height="17.3" data-label-x="519.238" data-label-y="107.198" data-rotate="-90"/>
+  <rect id="f2-b1-1214" data-label="1214" data-kind="room" data-status="documented" data-building="1" data-level="2" x="523.848" y="97.472" width="8.6" height="17.3" data-label-x="528.311" data-label-y="107.158" data-rotate="-90"/>
+  <rect id="f2-b1-1213" data-label="1213" data-kind="room" data-status="documented" data-building="1" data-level="2" x="532.399" y="97.472" width="15.1" height="17.3" data-label-x="540.127" data-label-y="106.571" data-rotate="0"/>
+  <rect id="f2-b1-1202" data-label="1202" data-kind="room" data-status="documented" data-building="1" data-level="2" x="447.295" y="169.115" width="11" height="16.8" data-label-x="453.664" data-label-y="177.957" data-rotate="-90"/>
+  <rect id="f2-b1-1203" data-label="1203" data-kind="room" data-status="documented" data-building="1" data-level="2" x="458.289" y="169.115" width="11.4" height="16.8" data-label-x="464.251" data-label-y="177.876" data-rotate="-90"/>
+  <rect id="f2-b1-1204" data-label="1204" data-kind="room" data-status="documented" data-building="1" data-level="2" x="469.691" y="169.115" width="11.8" height="16.8" data-label-x="475.408" data-label-y="178.109" data-rotate="-90"/>
+  <rect id="f2-b1-1205" data-label="1205" data-kind="room" data-status="documented" data-building="1" data-level="2" x="481.5" y="164.188" width="10.6" height="21.7" data-label-x="486.712" data-label-y="178.109" data-rotate="-90"/>
+  <rect id="f2-b1-1206" data-label="1206" data-kind="room" data-status="documented" data-building="1" data-level="2" x="492.087" y="164.188" width="11.4" height="21.7" data-label-x="498.154" data-label-y="178.109" data-rotate="-90"/>
+  <rect id="f2-b1-1207" data-label="1207" data-kind="room" data-status="documented" data-building="1" data-level="2" x="503.488" y="164.188" width="22.4" height="21.7" data-label-x="509.392" data-label-y="178.109" data-rotate="0"/>
+  <rect id="f2-b1-1208" data-label="1208" data-kind="room" data-status="documented" data-building="1" data-level="2" x="503.488" y="164.188" width="22.4" height="21.7" data-label-x="520.949" data-label-y="178.109" data-rotate="0"/>
+  <rect id="f2-b1-1209" data-label="1209" data-kind="room" data-status="documented" data-building="1" data-level="2" x="525.884" y="175.441" width="15.1" height="10.4" data-label-x="533.987" data-label-y="181.325" data-rotate="0"/>
+  <rect id="f2-b1-1210" data-label="1210" data-kind="room" data-status="documented" data-building="1" data-level="2" x="530.363" y="162.58" width="10.6" height="12.9" data-label-x="536.047" data-label-y="169.268" data-rotate="0"/>
+  <rect id="f2-b1-1211" data-label="1211" data-kind="room" data-status="documented" data-building="1" data-level="2" x="530.363" y="149.719" width="10.6" height="12.9" data-label-x="535.477" data-label-y="155.579" data-rotate="0"/>
+  <rect id="f2-b1-STEAM Lab" data-label="STEAM Lab" data-kind="area" data-status="documented" data-building="1" data-level="2" x="455.032" y="5.838" width="49.7" height="24.1" data-label-x="480.196" data-label-y="18.378" data-rotate="0" data-title="STEAM Lab"/>
+  <rect id="f2-b1-Small Quad" data-label="Small Quad" data-kind="area" data-status="documented" data-building="1" data-level="2" x="482.721" y="43.617" width="27.7" height="23.3" data-label-x="497.462" data-label-y="52.716" data-rotate="0" data-lines="2" data-title="Small Quad" data-note="Open courtyard"/>
+  <rect id="f2-b1-Teacher Workroom" data-label="Teacher Workroom" data-kind="area" data-status="documented" data-building="1" data-level="2" x="514.482" y="134.045" width="20.4" height="15.7" data-label-x="525.517" data-label-y="140.532" data-rotate="0" data-lines="2" data-title="Teacher Workroom"/>
   <rect id="f2-b2-auditorium" data-label="Auditorium" data-kind="area" data-status="documented" data-building="2" data-level="2" x="274.2" y="101.6" width="45.3" height="50.8" data-label-x="297.2" data-label-y="127.4" data-rotate="0" data-title="Auditorium (upper level)" data-note="The 22xx plan includes the auditorium; it spans both levels"/>
   <rect id="f2-b2-room-2218" data-label="2218" data-kind="room" data-status="documented" data-building="2" data-level="2" x="255.9" y="141.3" width="11.8" height="11.1" data-label-x="261.9" data-label-y="146.9" data-rotate="0"/>
   <rect id="f2-b2-room-2206" data-label="2206" data-kind="room" data-status="documented" data-building="2" data-level="2" x="325.7" y="141.3" width="12" height="11.1" data-label-x="331.7" data-label-y="146.9" data-rotate="0"/>
@@ -356,12 +160,12 @@
   <rect data-max-level="0" id="f2-building-3" data-label="Building 3" data-kind="building" data-status="documented" data-building="3" data-level="2" x="72" y="114.5" width="124.5" height="32" data-label-x="134" data-label-y="132" data-rotate="0" data-title="Building 3" data-note="Name from the user"/>
 </g>
 <g id="route-candidates">
-  <circle cx="497.2" cy="35.2" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair in the Small Quad"/>
-  <circle cx="457.2" cy="68.7" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair west of 1229"/>
-  <circle cx="436" cy="123.4" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair, south-west wing"/>
-  <circle cx="524.9" cy="125" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair north of the Teacher Workroom"/>
-  <circle cx="465.8" cy="158.9" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair north of 1203"/>
-  <circle cx="508" cy="24.1" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="STR beside the STEAM Lab"/>
+  <circle cx="496.9" cy="38.675" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair in the Small Quad"/>
+  <circle cx="456.9" cy="71.739" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair west of 1229"/>
+  <circle cx="435.7" cy="125.728" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair, south-west wing"/>
+  <circle cx="524.6" cy="127.307" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair north of the Teacher Workroom"/>
+  <circle cx="465.5" cy="160.767" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="Hatched stair north of 1203"/>
+  <circle cx="507.7" cy="27.719" r="1" data-type="stair" data-building="1" data-status="uncertain" data-note="STR beside the STEAM Lab"/>
   <circle cx="270.9" cy="146.9" r="1" data-type="stair" data-building="2" data-status="uncertain" data-note="STR"/>
   <circle cx="322.6" cy="146.9" r="1" data-type="stair" data-building="2" data-status="uncertain" data-note="STR"/>
   <circle cx="258.9" cy="179.6" r="1" data-type="stair" data-building="2" data-status="uncertain" data-note="STR"/>

@@ -14,7 +14,8 @@ const LINE = { vectorEffect: 'non-scaling-stroke' as const, strokeLinejoin: 'rou
 
 export function createLevelGeometry({ plan, ghost, children }: {
   plan: FloorPlanData;
-  // Ground-level footprints shown faintly under an upper floor for orientation.
+  // Ground-level footprints shown faintly under an upper floor for orientation;
+  // the floor's own filled footprint covers them where it has rooms.
   ghost?: string;
   children?: (props: GeometryProps) => ReactNode;
 }) {
@@ -22,7 +23,8 @@ export function createLevelGeometry({ plan, ghost, children }: {
     const { layers } = plan;
     return (
       <G>
-        {ghost ? <Path d={ghost} fill={mapColors.ghost} /> : <Path d={layers.footprint} fill={mapColors.building} />}
+        {ghost ? <Path d={ghost} fill={mapColors.ghost} /> : null}
+        <Path d={layers.footprint} fill={mapColors.building} />
         {layers['open-areas'] ? <Path d={layers['open-areas']} fill={mapColors.openArea} /> : null}
         {layers['covered-areas'] ? <Path d={layers['covered-areas']} fill={mapColors.coveredArea} /> : null}
         {layers.hills ? <Path d={layers.hills} fill={mapColors.hill} stroke={mapColors.hillEdge} strokeWidth={1.2}

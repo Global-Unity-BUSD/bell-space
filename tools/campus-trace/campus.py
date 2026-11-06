@@ -7,6 +7,8 @@ out_dir, overlay_dir = sys.argv[1], sys.argv[2]
 here = os.path.dirname(os.path.abspath(__file__))
 B1 = {}
 exec(open(os.path.join(here, 'b1data.py')).read(), B1)
+PLANAR = {}
+exec(open(os.path.join(here, 'planar.py')).read(), PLANAR)
 
 ORIGIN = (120, 1900)
 def campus(p):
@@ -19,14 +21,16 @@ class Drawing:
     With to_campus, the placement maps the drawing's own coordinates straight to
     campus units (used for a source SVG that is already in export coordinates).
     """
-    def __init__(self, key, offset, place, scale, note, to_campus=False):
+    def __init__(self, key, offset, place, scale, note, to_campus=False, fit=None):
         self.key, self.offset, self.place_fn, self.scale, self.note = key, offset, place, scale, note
         self.to_campus = to_campus
+        # Optional correction in campus units, applied after the placement.
+        self.fit = fit or (lambda q: q)
     def page(self, p): return (p[0] + self.offset[0], p[1] + self.offset[1])
     def ground(self, p): return self.place_fn(self.page(p))
     def map(self, p, space):
-        if self.to_campus: return self.place_fn(p)
-        return campus(self.ground(p)) if space == 'campus' else self.page(p)
+        if self.to_campus: return self.fit(self.place_fn(p))
+        return self.fit(campus(self.ground(p))) if space == 'campus' else self.page(p)
     def unit(self, space):  # campus units per crop px, or 1 for page space
         if self.to_campus: return self.scale
         return self.scale / 10 if space == 'campus' else 1
@@ -45,46 +49,28 @@ U13_TO_U12 = sim(0.99, (3962, 562), (5076, 551))
 # already-documented placement over the ground plan (see CAMPUS_MAP.md).
 U12_EXPORT = sim(0.81439, (0, 0), (406.387, -5.887))
 U12D_TO_CAMPUS = lambda p: U12_EXPORT((p[0] + 7.5, p[1] + 9.5))
+# Building 1 Floor 2 fitted onto the Floor 1 Building 1 trace, in campus units.
+# Its lower part sits directly above Floor 1: the 1213-1219 row over 1155-1162
+# (top wall 94.8 -> 97.5, bottom 112.3 -> 114.8), the 1202-1209 row over
+# 1138-Book Room (167.5 -> 169, 184.4 -> 186.1), and the west end and east wall
+# (x 447.6 -> 447.3, 563.6 -> 562.9). Least squares: x - 0.3, and y scaled
+# by 0.987 about the north row's top wall. Every match is then within 0.3 units.
+def FIT_U12(q): return (round(q[0] - 0.3, 3), round(97.5 + 0.987 * (q[1] - 94.8), 3))
+# Building 1 Floor 3 fitted onto the fitted Floor 2 north wing it repeats: 18
+# matching outline corners (STEAM Lab, the 1245-1248 and 1237-1242 wings, the
+# south wall), least squares per axis about the STEAM Lab's NW corner. Every
+# corner is then within 0.7 units; the STEAM Lab's east step differs between
+# the two plans and is not matched.
+def FIT_U13(q): return (round(454.7 + 0.9966 * (q[0] - 455), 3), round(5.66 + 0.9806 * (q[1] - 1.9), 3))
 
-# The clean plan is one absolute M/L/H/V/C/Z path. Rewrite it into campus units
-# as one path: the C curves are the library's semicircular bump, kept as curves.
+# The clean plan is one absolute M/L/H/V/C/Z path (the C curves are the
+# library's semicircular bump). planar.py splits it into footprint, walls and
+# dividers like Floor 1.
 U12D_SVG = os.path.join(here, '..', '..', '2026-10-04_floor-2.svg')
-def design_path(fn):
-    xml = open(U12D_SVG).read()
-    d = re.search(r'<path\b[^>]*\bd="([^"]+)"', xml).group(1)
-    tokens = re.findall(r'[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?', d)
-    out, i, cmd = [], 0, None
-    x = y = 0.0
-    start = (0.0, 0.0)
-    def num():
-        nonlocal i
-        i += 1
-        return float(tokens[i - 1])
-    def pt(p):
-        q = fn(p)
-        return f'{fmt(q[0])} {fmt(q[1])}'
-    while i < len(tokens):
-        if re.fullmatch(r'[A-Za-z]', tokens[i]):
-            cmd = tokens[i]; i += 1
-            if cmd == 'Z':
-                out.append('Z'); x, y = start; cmd = None
-            elif cmd == 'M':
-                x = num(); y = num(); start = (x, y); out.append('M' + pt((x, y)))
-            continue
-        if cmd in ('M', 'L'):
-            x = num(); y = num(); out.append('L' + pt((x, y))); cmd = 'L'
-        elif cmd == 'H':
-            x = num(); out.append('L' + pt((x, y)))
-        elif cmd == 'V':
-            y = num(); out.append('L' + pt((x, y)))
-        elif cmd == 'C':
-            c1 = (num(), num()); c2 = (num(), num()); end = (num(), num())
-            out.append('C' + pt(c1) + ' ' + pt(c2) + ' ' + pt(end)); x, y = end
-        else:
-            raise SystemExit('Unsupported design path command: %s' % cmd)
-    return ' '.join(out)
-
-U12D_WALLS = design_path(U12D_TO_CAMPUS)
+U12D_SEGMENTS = PLANAR['parse_plan'](re.search(r'<path\b[^>]*\bd="([^"]+)"', open(U12D_SVG).read()).group(1))
+# Unlabeled spaces smaller than this (plan units squared; a classroom is about
+# 150) are closets or stair boxes: their lines are left out like Floor 1.
+U12_MIN_ROOM = 100
 DRAWINGS = {
     'b2': Drawing('b2', (2400, 2800), IDENT, 1, 'Ground plan, Building 2'),
     'b3': Drawing('b3', (0, 0), IDENT, 1, 'Ground plan, Building 3 (coordinates already page px)'),
@@ -94,9 +80,10 @@ DRAWINGS = {
     'u3': Drawing('u3', (800, 2300), lambda p: (p[0] + 2, p[1] + 628), 1,
                   'Building 3 Floor 2 (3-2xx): scale 1; east wall and north wall matched; west extent and vertical position uncertain'),
     'u13': Drawing('u13', (3700, 520), lambda p: U12_TO_GROUND(U13_TO_U12(p)), 1.44 * 0.99,
-                   'Building 1 Floor 3 (13xx): via STEAM Lab outline onto the 12xx inset, then the 12xx placement'),
+                   'Building 1 Floor 3 (13xx): via STEAM Lab outline onto the 12xx inset, then the 12xx placement',
+                   fit=FIT_U13),
     'u12d': Drawing('u12d', (0, 0), U12D_TO_CAMPUS, 0.81439,
-                    'Building 1 Floor 2 (12xx), traced from 2026-10-04_floor-2.svg', to_campus=True),
+                    'Building 1 Floor 2 (12xx), traced from 2026-10-04_floor-2.svg', to_campus=True, fit=FIT_U12),
 }
 
 def path(d, pts, space, close=False):
@@ -417,7 +404,7 @@ B1_STAIRS = [('stair', (543, 478, 622, 595), 'Hatched stair symbol near the Cafe
              ('stair', (1418, 510, 1530, 585), 'Hatched stair symbol north of the Career Center'),
              ('stair', (820, 860, 985, 905), 'Hatched stair symbol on the south side of the Quad')]
 # Stair symbols drawn on the Building 1 Floor 2 (12xx) plan, crop px of that inset.
-DRAWINGS['u12'] = Drawing('u12', (4600, 500), U12_TO_GROUND, 1.44, 'Building 1 Floor 2 (12xx) inset')
+DRAWINGS['u12'] = Drawing('u12', (4600, 500), U12_TO_GROUND, 1.44, 'Building 1 Floor 2 (12xx) inset', fit=FIT_U12)
 U12_STAIRS = [('stair', (745, 245, 795, 320), 'Hatched stair in the Small Quad'),
               ('stair', (465, 485, 520, 545), 'Hatched stair west of 1229'),
               ('stair', (320, 855, 370, 935), 'Hatched stair, south-west wing'),
@@ -567,8 +554,14 @@ def level_svg(level, space='campus'):
         layers['site'] += [('Parking lot edge', path(d, s, space)) for s in SITE['site']]
         add_rooms(d, SITE_ROOMS, '', 'g-site-')
     if level == 2:
-        # Building 1 Floor 2, traced from its clean single-line plan.
-        layers['walls'].append(('Building 1 Floor 2, traced from 2026-10-04_floor-2.svg', U12D_WALLS))
+        # Building 1 Floor 2, traced from its clean single-line plan and drawn
+        # like Floor 1: filled footprint, solid outer walls, dashed room dividers.
+        plan = PLANAR['Plan'](U12D_SEGMENTS, [r[5] for r in U12_ROOMS], U12_MIN_ROOM)
+        to_map = lambda p: DRAWINGS['u12d'].map(p, space)
+        note = 'Building 1 Floor 2, traced from 2026-10-04_floor-2.svg'
+        layers['footprint'].append((note, plan.footprint(to_map)))
+        layers['walls'].append((note, plan.lines(plan.walls, to_map)))
+        layers['dividers'].append((note + ' (room dividers)', plan.lines(plan.dividers, to_map)))
         add_symbols(DRAWINGS['u12'], U12_STAIRS, '1')
         add_rooms(DRAWINGS['u12d'], U12_ROOMS, '1', 'f2-b1-')
         d = DRAWINGS['u2']
@@ -586,9 +579,13 @@ def level_svg(level, space='campus'):
         d = DRAWINGS['u13']
         layers['footprint'].append(('Building 1 Floor 3', path(d, U13['outline'], space, True)))
         layers['walls'].append(('Building 1 Floor 3', path(d, U13['outline'], space, True)))
-        layers['dividers'] += [('Building 1 Floor 3 room outline', rect(d, *r, space)) for r in U13_ROOM_OUTLINES]
-        layers['dividers'].append(('Building 1 Floor 3', rect(d, 262, 42, 610, 216, space)))
-        layers['dividers'].append(('Building 1 Floor 3', rect(d, 461, 245, 658, 482, space)))
+        # Room boxes share walls with their neighbours and the outline: draw each
+        # shared line once, and none on the outer wall, like Floor 1.
+        ring = lambda pts: list(zip(pts, pts[1:] + pts[:1]))
+        boxes = U13_ROOM_OUTLINES + [(262, 42, 610, 216), (461, 245, 658, 482)]
+        sides = [e for r in boxes for e in ring([d.map(c, space) for c in ((r[0], r[1]), (r[2], r[1]), (r[2], r[3]), (r[0], r[3]))])]
+        outline = ring([d.map(c, space) for c in U13['outline']])
+        layers['dividers'].append(('Building 1 Floor 3 room outlines', ' '.join(PLANAR['merge_lines'](sides, minus=outline))))
         add_symbols(d, U13['symbols'], '1'); add_rooms(d, U13_ROOMS, '1', 'f3-b1-')
     for key, rid, label, r, at, note in BUILDING_LABELS[level]:
         prefix = {1: 'g-', 2: 'f2-', 3: 'f3-'}[level]

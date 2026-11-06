@@ -12,11 +12,6 @@ it lives here, in the SVG `data-note` attributes and in `TODO.md`.
   tracing coordinates.
 * **Campus units = (page px − (120, 1900)) / 10.** Every level uses the same
   `0 0 580 210` frame, so coordinates and room positions agree across floors.
-* **Floor framing.** The generator records each floor's drawn extent as
-  `data-bounds` on the SVG root. The app frames that content with equal top and
-  bottom margins: Floors 1 and 2 at the same 3.3× whole-canvas fit, Floor 3 at
-  about 65% of the usable height. A floor switch opens the new floor's frame;
-  the camera is not carried across floors.
 * There is **no real-world scale**. Distances are proportional to the scan,
   not measured. GPS reference points are needed before any positioning work.
 
@@ -54,8 +49,8 @@ page. Each one is placed over its building with a uniform scale + offset.
 | --- | --- | --- | --- |
 | Building 2 Floor 2 (22xx) | scale 1.0, offset (−23, +1049) page px | Auditorium walls align with the ground auditorium; plan width matches Building 2 | ~2–3 m. The two "2215" labels need checking |
 | Building 3 Floor 2 (3-2xx) | scale 1.0, offset (+2, +628) | East wall and north wall matched to the locker row | West extent (it reaches over the ramp area) and vertical position uncertain. The elevator symbol sits ~8 units west of the ground ELEV |
-| Building 1 Floor 2 (12xx) | campus = 0.81439 × (design + (7.5, 9.5)) + (406.387, −5.887) | Traced from `2026-10-04_floor-2.svg`; that clean plan is the labeled export without its room glyphs, shifted by (−7.5, −9.5) | The 1213–1218 row lands ~2.7 units south of 1155–1162. The STEAM Lab overlaps the parking lot's east edge |
-| Building 1 Floor 3 (13xx) | STEAM Lab outline → 12xx plan (scale 0.99), then as above | Identical north-wing outline | Same as 12xx, plus the 13xx/12xx STEAM Lab match |
+| Building 1 Floor 2 (12xx) | campus = 0.81439 × (design + (7.5, 9.5)) + (406.387, −5.887), then fitted onto Floor 1 (`FIT_U12`): x − 0.3, y = 97.5 + 0.987 × (y − 94.8) | Traced from `2026-10-04_floor-2.svg` (the labeled export without its room glyphs, shifted by (−7.5, −9.5)). Its lower part sits directly above Floor 1, so the fit matches the 1213–1219 row to 1155–1162, the 1202–1209 row to 1138–Book Room, the west end and the east wall: all within 0.3 units | The library bump lands ~2.5 units south of the ground bump (the rows were preferred). The north wing (STEAM Lab, Small Quad) has no Floor 1 building under it and overlaps the parking lot's east edge |
+| Building 1 Floor 3 (13xx) | STEAM Lab outline → 12xx inset (scale 0.99) and the inset placement, then fitted onto the fitted Floor 2 north wing (`FIT_U13`): x = 454.7 + 0.9966 × (x − 455), y = 5.66 + 0.9806 × (y − 1.9) | The 13xx plan repeats the 12xx north wing: 18 outline corners matched, all within 0.7 units | The STEAM Lab's east step differs between the two plans and is not matched |
 
 Building 1 Floor 2 is generated into the traced SVG from the clean line plan.
 `2026-10-04_floor2-labeled.svg` (the earlier runtime overlay) is archived: it is
@@ -77,15 +72,15 @@ the generator's `U12_ROOMS` table.
   11 on Floor 2 including six from the 12xx plan, 5 on Floor 3).
 
 **Floor 2:**
-* Faint ground footprints (thin outlines) for orientation.
+* The ground footprints as a faint grey fill, for orientation.
 * Building 1 Floor 2, Building 2 Floor 2 and Building 3 Floor 2.
 
 **Floor 3:**
-* Faint ground footprints (thin outlines).
+* The ground footprints as a faint grey fill.
 * Building 1's 13xx plan.
 
-Each upper floor draws its own footprint filled; the ground outlines sit under
-it only as orientation.
+Each upper floor draws its own footprint filled white over the grey, so the
+ground shows only where the upper floor has no building.
 
 Not traced anywhere:
 * doors and entrances, which the PDF does not draw;
@@ -96,9 +91,14 @@ Not traced anywhere:
   Parking arrow);
 * the numbered callout boxes (3, 8, 10, 3).
 
-Building 1 Floor 2 keeps the individual wall lines of its clean source plan.
-The other upper floors draw each room's rectangle, not individual traced
-partitions.
+Upper floors are drawn like Floor 1: a filled footprint, solid outer walls and
+dashed room dividers. Building 1 Floor 2 comes from its clean source plan
+through `tools/campus-trace/planar.py`, which splits the plan's lines by the
+spaces on either side: lines on the building edge are walls; lines between
+labeled rooms and corridors are dividers; dangling stubs and the lines of small
+unlabeled spaces (closets, stair boxes, under 100 plan units²) are left out.
+No line is moved. The other upper floors draw each room's rectangle, with each
+shared side drawn once.
 
 ## Features needing annotated placement (not drawn)
 
@@ -196,5 +196,5 @@ These are a survey checklist, not a route network. See `src/navigation/` and
 ## Regenerating the traces
 
 `tools/campus-trace/` holds the scripts and README. Edit the coordinate
-lists in `campus.py` and regenerate the SVGs. Don't hand-edit coordinates or
-`data-bounds` in the SVGs, or the two will drift apart.
+lists in `campus.py` and regenerate the SVGs. Don't hand-edit coordinates in
+the SVGs, or the two will drift apart.
