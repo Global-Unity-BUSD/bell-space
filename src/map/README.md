@@ -1,33 +1,17 @@
 # Interactive campus map
 
 `floors.tsx` registers three levels in one campus frame (`CAMPUS`: 580 × 210
-units, zoom 1–24). Each level has a geometry component, label specs (text
-labels plus stair markers), searchable places and its drawn `data-bounds`.
-Each floor opens framed on that content: Floors 1 and 2 use the same 3.3×
-whole-canvas fit so their margins match, and Floor 3 fills about 65% of the
-usable height. Switching floors opens the new floor's frame instead of keeping
-the previous camera. A framed floor cannot zoom out past its opening view, so
-its designed margins cannot shrink into empty canvas. Floor 2 has all three
-buildings traced in the campus SVG, including Building 1 (12xx) from
-`2026-10-04_floor-2.svg`; the earlier labeled export is archived.
+units, zoom 1–24, opening on Building 1 at 3.1×). Each level has a geometry
+component, label specs (text labels plus stair markers) and searchable places.
+Floor 2 has all three buildings traced in the campus SVG, including Building 1
+(12xx) from `2026-10-04_floor-2.svg`; the earlier labeled export is archived.
 
 Rendering (`InteractiveMap.tsx`):
-* **Geometry** is an SVG drawn for the *settled* camera. Its margin adapts per
-  axis: up to 30% beyond the viewport, but only as far as the content can
-  actually pan; a pinned axis keeps a small stroke margin. During a gesture or
-  animation, the drawn layer is translated and scaled on the GPU from the
-  settled camera to the live one. When the fingers lift or the animation ends,
-  it redraws sharply (`non-scaling-stroke` lines, detail level from the settled
-  zoom). A pure pan that outgrows the margin redraws immediately; a zoom change
-  waits 120 ms so a quick follow-up pinch can cancel it.
-* **Detail layers** appear with the settled zoom. Footprint, open and covered
-  areas, hills, site lines, walls, ramp, stairs and the faint upper-floor ghost
-  (a thin outline over the floor's own filled footprint) are always drawn; room
-  dividers join at Medium (2.5×); uncertain lines, uncertain symbols and ramp
-  slope marks join at Full (6×). See `detailPolicy.ts`.
-* **Bottom panels** (search results and the keyboard) do not remount the map.
-  The camera frames and clamps against the still-visible height, and the drawn
-  layer, labels and pins slide up by half the covered height.
+* **Geometry** is an SVG drawn for the *settled* camera, 40% larger than the
+  screen on each side. During a gesture or animation, the drawn layer is
+  translated and scaled on the GPU from the settled camera to the live one.
+  When the fingers lift or the animation ends, it redraws sharply
+  (`non-scaling-stroke` lines, detail level from the settled zoom).
 * **Labels** (`MapLabels.tsx`, `labelPlan.ts`) are native text views:
   * The plan is computed once per floor and viewport. Each label appears at
     the zoom where it fits its room and no longer overlaps a more important
@@ -40,10 +24,8 @@ Rendering (`InteractiveMap.tsx`):
 Two-finger rotation is off (`ROTATION_ENABLED`); the rotation math and tests
 remain. The campus SVGs are read by `prepareFloorPlanSvg.cjs`. Layers:
 `footprint`, `site`, `walls`, `dividers`, `uncertain-lines`,
-`uncertain-symbols`, `stairs` (one path per stair symbol), `open-areas`,
-`covered-areas`, `hills`, `ramp` and `ramp-marks`, plus `labels` and
-`route-candidates`. The SVG root carries `data-bounds` for the content frame.
-See `CAMPUS_MAP.md` for sources.
+`uncertain-symbols` and `stairs` (one path per stair symbol), plus `labels` and
+`route-candidates`. See `CAMPUS_MAP.md` for sources.
 
 # Archived: Floor 2 labeled sample map
 

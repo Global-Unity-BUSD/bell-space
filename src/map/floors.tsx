@@ -3,11 +3,10 @@ import type { ComponentType } from 'react';
 import campusFloor1Source from '../../2026-10-21_campus-floor1.svg';
 import campusFloor2Source from '../../2026-10-21_campus-floor2.svg';
 import campusFloor3Source from '../../2026-10-21_campus-floor3.svg';
-import type { Bounds, MapAnnotation, WallSegment } from './annotationLayout';
+import type { MapAnnotation, WallSegment } from './annotationLayout';
 import type { DetailThresholds } from './detailPolicy';
 import { createLevelGeometry } from './FloorPlanMap';
 import type { FloorPlanData, StairSymbol } from './floorPlanTypes';
-import type { FloorFrame } from './framing';
 import type { GeometryProps } from './InteractiveMap';
 import type { LabelSpec } from './labelPlan';
 
@@ -36,9 +35,6 @@ export type Floor = {
   labels: LabelSpec[];
   walls: WallSegment[];
   places: Place[];
-  // Bounds of the drawn lines, in campus units, and the opening frame.
-  bounds?: Bounds;
-  frame?: FloorFrame;
 };
 
 // One shared campus frame for every level (units: see CAMPUS_MAP.md).
@@ -55,15 +51,8 @@ export const CAMPUS = {
   thresholds: { mediumEnter: 2.5, mediumExit: 2.2, fullEnter: 6, fullExit: 5.4 } satisfies DetailThresholds,
   focusZoom: 7,
   padding: 8,
-};
-
-// Opening views are framed on each floor's drawn content. Floors 1 and 2 keep
-// the reference 3.3x scale and open on Building 1; Floor 3 holds only Building
-// 1, so it fills more of the map area instead of shrinking into empty canvas.
-const FLOOR_FRAMES: Record<FloorId, FloorFrame> = {
-  'floor-1': { focus: { x: 471 }, zoom: 3.3 },
-  'floor-2': { focus: { x: 488 }, zoom: 3.3 },
-  'floor-3': { focus: { x: 485 }, fillHeight: 0.65 },
+  // Open on Building 1; Buildings 2 and 3 are a pan or pinch away.
+  initial: { x: 471, y: 148, zoom: 3.3 },
 };
 
 // Building 1 Floor 2 geometry is traced in the campus Floor 2 SVG from
@@ -116,21 +105,20 @@ function labelSpecs(annotations: MapAnnotation[], stairs: StairSymbol[]): LabelS
   return [...text, ...markers];
 }
 
-function makeFloor(id: FloorId, short: string, plan: FloorPlanData, Geometry: Floor['Geometry']): Floor {
-  const annotations = plan.annotations;
-  return {
-    id, label: FLOOR_LABELS[id], short, Geometry, annotations,
-    labels: labelSpecs(annotations, plan.stairs), walls: plan.walls, places: placesOf(id, annotations),
-    bounds: plan.bounds, frame: FLOOR_FRAMES[id],
-  };
+function makeFloor(id: FloorId, short: string, Geometry: Floor['Geometry'], annotations: MapAnnotation[],
+  walls: WallSegment[], stairs: StairSymbol[]): Floor {
+  return { id, label: FLOOR_LABELS[id], short, Geometry, annotations, labels: labelSpecs(annotations, stairs), walls,
+    places: placesOf(id, annotations) };
 }
 
 const GHOST = ground.layers.footprint;
 
 export const FLOORS: Record<FloorId, Floor> = {
-  'floor-1': makeFloor('floor-1', '1', ground, createLevelGeometry({ plan: ground })),
-  'floor-2': makeFloor('floor-2', '2', upper2, createLevelGeometry({ plan: upper2, ghost: GHOST })),
-  'floor-3': makeFloor('floor-3', '3', upper3, createLevelGeometry({ plan: upper3, ghost: GHOST })),
+  'floor-1': makeFloor('floor-1', '1', createLevelGeometry({ plan: ground }), ground.annotations, ground.walls, ground.stairs),
+  'floor-2': makeFloor('floor-2', '2', createLevelGeometry({ plan: upper2, ghost: GHOST }),
+    upper2.annotations, upper2.walls, upper2.stairs),
+  'floor-3': makeFloor('floor-3', '3', createLevelGeometry({ plan: upper3, ghost: GHOST }),
+    upper3.annotations, upper3.walls, upper3.stairs),
 };
 
 export const FLOOR_ORDER: FloorId[] = ['floor-3', 'floor-2', 'floor-1'];

@@ -9,8 +9,7 @@ const LABEL_CLEARANCE = 4;
 
 // Screen-space marker whose tip follows a map point through the same camera
 // as the floor (rotation is disabled in the UI, so only pan and zoom apply).
-export default function SelectionPin({ point, labelHalfHeight = 8, width, height, fitScale, fittedWidth, fittedHeight, zoom, x, y,
-  shiftY }: {
+export default function SelectionPin({ point, labelHalfHeight = 8, width, height, fitScale, fittedWidth, fittedHeight, zoom, x, y }: {
   point: { x: number; y: number };
   labelHalfHeight?: number;
   width: number;
@@ -21,15 +20,12 @@ export default function SelectionPin({ point, labelHalfHeight = 8, width, height
   zoom: SharedValue<number>;
   x: SharedValue<number>;
   y: SharedValue<number>;
-  // Upward shift for a bottom panel/keyboard.
-  shiftY?: SharedValue<number>;
 }) {
   const lift = LABEL_CLEARANCE + labelHalfHeight;
   const style = useAnimatedStyle(() => ({
     transform: [
       { translateX: width / 2 + x.value + zoom.value * (point.x * fitScale - fittedWidth / 2) - PIN_WIDTH / 2 },
-      { translateY: height / 2 + y.value - (shiftY?.value ?? 0) + zoom.value * (point.y * fitScale - fittedHeight / 2)
-        - PIN_HEIGHT - lift },
+      { translateY: height / 2 + y.value + zoom.value * (point.y * fitScale - fittedHeight / 2) - PIN_HEIGHT - lift },
     ],
   }));
   return (

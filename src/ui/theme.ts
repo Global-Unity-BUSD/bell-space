@@ -23,6 +23,7 @@ export const mapColors = {
   background: '#eef1f4',
   building: '#ffffff',
   ghost: '#e2e7ec',
+  ghostDark: '#9da9b7',
   wall: '#6f7f8c',
   divider: '#9aa6b1',
   uncertain: '#bcc4cc',

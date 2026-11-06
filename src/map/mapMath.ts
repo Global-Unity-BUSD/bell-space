@@ -1,21 +1,5 @@
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 8;
-// The vector layer is drawn past the viewport on each side so a pan or pinch
-// can move it before it is redrawn. Drawing beyond the distance the content can
-// actually travel wastes raster work, so the margin adapts per axis.
-export const OVERSCAN = 0.3;
-// Even content pinned in the centre keeps a small margin for strokes and
-// sub-pixel rounding.
-export const OVERSCAN_MIN = 24;
-
-// `panRoom` is how far the camera can travel from the centre on this axis;
-// `lift` is the upward shift used for a bottom panel or keyboard.
-export function overscanFor(viewport: number, panRoom: number, lift = 0) {
-  'worklet';
-  const base = viewport * OVERSCAN;
-  const floor = Math.min(base, OVERSCAN_MIN);
-  return Math.max(floor, lift, Math.min(base, panRoom * 2 + lift));
-}
 
 export function clamp(value: number, min: number, max: number) {
   'worklet';
@@ -32,20 +16,6 @@ export function boundPan(offset: number, mapSize: number, viewportSize: number, 
   'worklet';
   const limit = Math.max(0, (mapSize * zoom - viewportSize) / 2);
   return clamp(offset, -limit, limit);
-}
-
-// Pan limits for content that is not centred on the whole map canvas. Sizes
-// and centres are measured at zoom 1, in screen points.
-export type PanBounds = { centreX: number; centreY: number; width: number; height: number };
-
-// Keep the content inside the viewport: when it fits, it is pinned to the
-// centre (equal margins); when it is larger, it cannot be dragged past its
-// own edge.
-export function boundFrame(offset: number, centre: number, size: number, viewportSize: number, zoom: number) {
-  'worklet';
-  const c = centre * zoom;
-  const limit = Math.max(0, (size * zoom - viewportSize) / 2);
-  return clamp(offset, c - limit, c + limit);
 }
 
 // Coordinates are relative to the viewport's center. Keep the map point under
@@ -119,7 +89,7 @@ export function rotatedSize(width: number, height: number, rotation: number) {
 export type ZoomLimits = { min: number; max: number };
 export function moveCamera(camera: MapCamera, previous: TouchFrame | null, current: TouchFrame,
   mapWidth: number, mapHeight: number, width: number, height: number, allowRotation = true,
-  limits: ZoomLimits = { min: MIN_ZOOM, max: MAX_ZOOM }, pan?: PanBounds): MapCamera {
+  limits: ZoomLimits = { min: MIN_ZOOM, max: MAX_ZOOM }): MapCamera {
   'worklet';
   if (!previous || current.count > 2 || previous.count !== current.count
     || previous.firstId !== current.firstId || previous.secondId !== current.secondId) return camera;
@@ -137,11 +107,11 @@ export function moveCamera(camera: MapCamera, previous: TouchFrame | null, curre
   const dx = previous.x - camera.x;
   const dy = previous.y - camera.y;
   const rotation = camera.rotation + delta;
-  const bounds = pan ?? { centreX: 0, centreY: 0, ...rotatedSize(mapWidth, mapHeight, rotation) };
+  const extent = rotatedSize(mapWidth, mapHeight, rotation);
   return {
     zoom, rotation,
-    x: boundFrame(current.x - ratio * (c * dx - s * dy), bounds.centreX, bounds.width, width, zoom),
-    y: boundFrame(current.y - ratio * (s * dx + c * dy), bounds.centreY, bounds.height, height, zoom),
+    x: boundPan(current.x - ratio * (c * dx - s * dy), extent.width, width, zoom),
+    y: boundPan(current.y - ratio * (s * dx + c * dy), extent.height, height, zoom),
   };
 }
 
