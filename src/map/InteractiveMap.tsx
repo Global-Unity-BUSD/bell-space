@@ -7,10 +7,12 @@ import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withDelay,
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { DETAIL_THRESHOLDS, type DetailLevel, type DetailThresholds } from './detailPolicy';
+import { contentPan, startCamera, type FloorFrame } from './framing';
 import type { LabelSpec } from './labelPlan';
 import MapLabels from './MapLabels';
-import { boundPan, cameraMatrix, clamp, fitMap, moveCamera, touchFrame, MAX_ZOOM, MIN_ZOOM,
-  type TouchFrame } from './mapMath';
+import { boundFrame, boundPan, cameraMatrix, clamp, fitMap, moveCamera, touchFrame, MAX_ZOOM, MIN_ZOOM,
+  type PanBounds, type TouchFrame, type ZoomLimits } from './mapMath';
+import type { Bounds } from './annotationLayout';
 import LiveMarker from './LiveMarker';
 import SelectionPin from './SelectionPin';
 import { mapColors } from '../ui/theme';
@@ -51,6 +53,10 @@ type MapFloor = {
   id: string;
   Geometry: ComponentType<GeometryProps>;
   labels: LabelSpec[];
+  // Bounds of the drawn content, in map units. When present, panning and the
+  // opening view are framed on the content instead of the whole canvas.
+  bounds?: Bounds;
+  frame?: FloorFrame;
 };
 type MapProps = {
   floor: MapFloor;
@@ -92,11 +98,16 @@ export function detailFor(zoom: number, t: DetailThresholds): DetailLevel {
  * Pan/zoom offsets that centre map point `p` at `zoom`, kept inside the pan bounds.
  */
 export function centreOn(p: { x: number; y: number }, zoom: number, fitScale: number,
-  fitted: { width: number; height: number }, width: number, height: number) {
+  fitted: { width: number; height: number }, width: number, height: number, pan?: PanBounds) {
   'worklet';
+  const x = -zoom * (p.x * fitScale - fitted.width / 2);
+  const y = -zoom * (p.y * fitScale - fitted.height / 2);
+  if (!pan) {
+    return { x: boundPan(x, fitted.width, width, zoom), y: boundPan(y, fitted.height, height, zoom) };
+  }
   return {
-    x: boundPan(-zoom * (p.x * fitScale - fitted.width / 2), fitted.width, width, zoom),
-    y: boundPan(-zoom * (p.y * fitScale - fitted.height / 2), fitted.height, height, zoom),
+    x: boundFrame(x, pan.centreX, pan.width, width, zoom),
+    y: boundFrame(y, pan.centreY, pan.height, height, zoom),
   };
 }
 
@@ -114,16 +125,27 @@ export function needsRedraw(zoom: number, x: number, y: number, settledZoom: num
 
 function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = null, focus = null, overlay,
   onMapTap, live = null, controlsRef }: MapProps & { width: number; height: number }) {
-  const { size, zoom: limits, thresholds } = view;
+  const { size, zoom: viewZoom, thresholds } = view;
   const { Geometry } = floor;
   const fitted = fitMap(width, height, size.width, size.height, view.padding);
   const fitScale = fitted.width / size.width;
+  const pan = useMemo<PanBounds>(() => (floor.bounds
+    ? contentPan(floor.bounds, size, fitScale)
+    : { centreX: 0, centreY: 0, width: fitted.width, height: fitted.height }),
+  [floor.bounds, size, fitScale, fitted.width, fitted.height]);
   const start = useMemo<CameraState>(() => {
-    if (!view.initial) return { zoom: limits.min, x: 0, y: 0 };
-    const zoom = clamp(view.initial.zoom, limits.min, limits.max);
-    return { zoom, ...centreOn(view.initial, zoom, fitScale, fitted, width, height) };
+    if (floor.frame) return startCamera(floor.frame, pan, size, fitScale, width, height, viewZoom);
+    if (!view.initial) return { zoom: viewZoom.min, x: 0, y: 0 };
+    const zoom = clamp(view.initial.zoom, viewZoom.min, viewZoom.max);
+    return { zoom, ...centreOn(view.initial, zoom, fitScale, fitted, width, height, pan) };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- the opening view is computed once per viewport
   }, []);
+  // A framed floor cannot zoom out past its opening view, so its margins stay
+  // as designed instead of shrinking into empty canvas.
+  const limits = useMemo<ZoomLimits>(() => ({
+    min: floor.frame ? Math.max(viewZoom.min, start.zoom) : viewZoom.min,
+    max: viewZoom.max,
+  }), [floor.frame, start.zoom, viewZoom.min, viewZoom.max]);
   const zoom = useSharedValue(start.zoom);
   const rotation = useSharedValue(0);
   const x = useSharedValue(start.x);
@@ -189,7 +211,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
       }
       const next = moveCamera(
         { zoom: zoom.value, rotation: rotation.value, x: x.value, y: y.value },
-        previous.value, current, fitted.width, fitted.height, width, height, ROTATION_ENABLED, limits,
+        previous.value, current, fitted.width, fitted.height, width, height, ROTATION_ENABLED, limits, pan,
       );
       zoom.set(next.zoom);
       rotation.set(next.rotation);
@@ -219,7 +241,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
       }
     }),
   [width, height, fitted.width, fitted.height, limits, previous, zoom, rotation, x, y, commitSettled, settleTick, tap,
-    wantsTaps, handleTap, settledZoom, settledX, settledY]);
+    wantsTaps, handleTap, settledZoom, settledX, settledY, pan]);
 
   const layerStyle = useAnimatedStyle(() => {
     const k = zoom.value / settledZoom.value;
@@ -238,8 +260,8 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
       'worklet';
       previous.set(null);
       const nextZoom = clamp(targetZoom, limits.min, limits.max);
-      const nx = boundPan(targetX, fitted.width, width, nextZoom);
-      const ny = boundPan(targetY, fitted.height, height, nextZoom);
+      const nx = boundFrame(targetX, pan.centreX, pan.width, width, nextZoom);
+      const ny = boundFrame(targetY, pan.centreY, pan.height, height, nextZoom);
       rotation.set(0);
       x.set(withTiming(nx, { duration: ANIMATION_MS }));
       y.set(withTiming(ny, { duration: ANIMATION_MS }));
@@ -272,7 +294,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
     if (targetX === undefined || targetY === undefined) return;
     // Route steps keep a little more context than a selected room.
     const nextZoom = Math.max(zoom.value, isStep ? view.focusZoom * 0.75 : view.focusZoom);
-    const offset = centreOn({ x: targetX, y: targetY }, nextZoom, fitScale, fitted, width, height);
+    const offset = centreOn({ x: targetX, y: targetY }, nextZoom, fitScale, fitted, width, height, pan);
     animateTo(nextZoom, offset.x, offset.y);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- refocus only when the target changes
   }, [targetX, targetY]);

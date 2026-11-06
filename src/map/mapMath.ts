@@ -18,6 +18,20 @@ export function boundPan(offset: number, mapSize: number, viewportSize: number, 
   return clamp(offset, -limit, limit);
 }
 
+// Pan limits for content that is not centred on the whole map canvas. Sizes
+// and centres are measured at zoom 1, in screen points.
+export type PanBounds = { centreX: number; centreY: number; width: number; height: number };
+
+// Keep the content inside the viewport: when it fits, it is pinned to the
+// centre (equal margins); when it is larger, it cannot be dragged past its
+// own edge.
+export function boundFrame(offset: number, centre: number, size: number, viewportSize: number, zoom: number) {
+  'worklet';
+  const c = centre * zoom;
+  const limit = Math.max(0, (size * zoom - viewportSize) / 2);
+  return clamp(offset, c - limit, c + limit);
+}
+
 // Coordinates are relative to the viewport's center. Keep the map point under
 // the initial focal point under the moving focal point at the new zoom.
 export function focalOffset(startOffset: number, startFocal: number, focal: number, ratio: number) {
@@ -89,7 +103,7 @@ export function rotatedSize(width: number, height: number, rotation: number) {
 export type ZoomLimits = { min: number; max: number };
 export function moveCamera(camera: MapCamera, previous: TouchFrame | null, current: TouchFrame,
   mapWidth: number, mapHeight: number, width: number, height: number, allowRotation = true,
-  limits: ZoomLimits = { min: MIN_ZOOM, max: MAX_ZOOM }): MapCamera {
+  limits: ZoomLimits = { min: MIN_ZOOM, max: MAX_ZOOM }, pan?: PanBounds): MapCamera {
   'worklet';
   if (!previous || current.count > 2 || previous.count !== current.count
     || previous.firstId !== current.firstId || previous.secondId !== current.secondId) return camera;
@@ -107,11 +121,11 @@ export function moveCamera(camera: MapCamera, previous: TouchFrame | null, curre
   const dx = previous.x - camera.x;
   const dy = previous.y - camera.y;
   const rotation = camera.rotation + delta;
-  const extent = rotatedSize(mapWidth, mapHeight, rotation);
+  const bounds = pan ?? { centreX: 0, centreY: 0, ...rotatedSize(mapWidth, mapHeight, rotation) };
   return {
     zoom, rotation,
-    x: boundPan(current.x - ratio * (c * dx - s * dy), extent.width, width, zoom),
-    y: boundPan(current.y - ratio * (s * dx + c * dy), extent.height, height, zoom),
+    x: boundFrame(current.x - ratio * (c * dx - s * dy), bounds.centreX, bounds.width, width, zoom),
+    y: boundFrame(current.y - ratio * (s * dx + c * dy), bounds.centreY, bounds.height, height, zoom),
   };
 }
 

@@ -9,8 +9,9 @@ const transformer = require('../svg-transformer.cjs');
 const { pathBounds } = require('../src/map/sourceAnnotations.cjs');
 const { planLabels, labelOpacity, screenExtent, UNCERTAIN_MIN_ZOOM, BUILDING_VANISH_ZOOM } = require('../src/map/labelPlan.ts');
 const { LAYOUT_MIN_ZOOM, nextDetailLevel } = require('../src/map/detailPolicy.ts');
-const { boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normalizeAngle, rotatedSize, touchFrame,
-  MIN_ZOOM, MAX_ZOOM } = require('../src/map/mapMath.ts');
+const { boundFrame, boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normalizeAngle, rotatedSize,
+  touchFrame, MIN_ZOOM, MAX_ZOOM } = require('../src/map/mapMath.ts');
+const { contentPan, startCamera } = require('../src/map/framing.ts');
 
 const { prepareFloorPlanSvg, segments } = require('../src/map/prepareFloorPlanSvg.cjs');
 
@@ -135,6 +136,34 @@ test('fit and bounds keep the map reachable across phone/tablet viewports and zo
       assert.equal(boundPan(-1e6, fitted.width, width, zoom), -limit);
     }
   }
+});
+
+test('floor framing centres the drawn content and fills a set share of the height', () => {
+  const canvas = { width: 580, height: 210 };
+  const width = 390; const height = 600;
+  const fitted = fitMap(width, height, canvas.width, canvas.height, 8);
+  const fitScale = fitted.width / canvas.width;
+  const bounds = { minX: 5, minY: 64, maxX: 562.9, maxY: 203.7 };
+  const pan = contentPan(bounds, canvas, fitScale);
+  const start = startCamera({ focus: { x: 471 }, zoom: 3.3 }, pan, canvas, fitScale, width, height,
+    { min: 1, max: 24 });
+  near(start.zoom, 3.3);
+  // The content is shorter than the viewport, so its vertical centre is pinned
+  // and the top and bottom margins are equal.
+  const top = height / 2 + start.y + start.zoom * (bounds.minY * fitScale - fitted.height / 2);
+  const bottom = height / 2 + start.y + start.zoom * (bounds.maxY * fitScale - fitted.height / 2);
+  assert.ok(top > 0 && Math.abs(top - (height - bottom)) < 1e-8, 'equal top and bottom margins');
+  // Horizontal panning stops at the content edge, without revealing empty canvas.
+  const limit = (pan.width * start.zoom - width) / 2;
+  near(boundFrame(1e6, pan.centreX, pan.width, width, start.zoom), pan.centreX * start.zoom + limit);
+  near(boundFrame(-1e6, pan.centreX, pan.width, width, start.zoom), pan.centreX * start.zoom - limit);
+  // A fill frame chooses the zoom from the usable height, not from the canvas.
+  const filled = startCamera({ focus: { x: 485 }, fillHeight: 0.65 }, pan, canvas, fitScale, width, height,
+    { min: 1, max: 24 });
+  near(pan.height * filled.zoom, 0.65 * height);
+  const filledTop = height / 2 + filled.y + filled.zoom * (bounds.minY * fitScale - fitted.height / 2);
+  const filledBottom = height / 2 + filled.y + filled.zoom * (bounds.maxY * fitScale - fitted.height / 2);
+  assert.ok(Math.abs(filledTop - (height - filledBottom)) < 1e-8, 'filled content is centred vertically');
 });
 
 function near(actual, expected, message = '', tolerance = 1e-8) {
@@ -384,6 +413,7 @@ function componentHarness() {
     '../ui/theme': { __esModule: true, mapColors: new Proxy({}, { get: () => '#000000' }) },
     './annotationLayout': require('../src/map/annotationLayout.ts'),
     './detailPolicy': require('../src/map/detailPolicy.ts'),
+    './framing': require('../src/map/framing.ts'),
     './mapMath': require('../src/map/mapMath.ts'),
     '../../2026-10-04_floor2-labeled.svg': { __esModule: true, default: map },
   };
