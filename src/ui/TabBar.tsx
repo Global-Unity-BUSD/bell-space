@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 50, gap: 2 },
   pressed: { opacity: 0.6 },
-  iconWrap: { width: 52, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  // The selected highlight is a pill with fully round ends.
+  iconWrap: { width: 56, height: 32, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   iconWrapSelected: { backgroundColor: colors.brandSoft },
   label: { fontSize: 11.5, fontWeight: '500' },
   selectedLabel: { fontWeight: '700' },
