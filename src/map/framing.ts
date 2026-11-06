@@ -17,6 +17,17 @@ export type FloorFrame = {
 export type StartCamera = { zoom: number; x: number; y: number };
 type Canvas = { width: number; height: number };
 
+// A search panel or keyboard can cover the bottom of the map. Camera moves use
+// the height that is still visible, and the map is drawn half the covered
+// height higher, so framed content is centred in what the student can see.
+export function visibleHeight(height: number, inset: number) {
+  return Math.max(1, height - Math.max(0, inset));
+}
+
+export function insetShift(inset: number) {
+  return Math.max(0, inset) / 2;
+}
+
 // Pan limits around the floor's drawn content, measured at zoom 1.
 export function contentPan(bounds: Bounds, canvas: Canvas, fitScale: number): PanBounds {
   const width = Math.max(0, bounds.maxX - bounds.minX) * fitScale;

@@ -234,7 +234,16 @@ export default function NavigationScreen({ review = false, live = null, liveTest
   const [notice, setNotice] = useState<string | null>(null);
   const [liveTap, setLiveTap] = useState<TapPurpose | null>(null);
   const [seenUpdate, setSeenUpdate] = useState<number | null>(null);
+  const [screenHeight, setScreenHeight] = useState(0);
+  const [bottomStackHeight, setBottomStackHeight] = useState(0);
   const keyboardInset = useKeyboardInset(container);
+  // Keep the result panel above the keyboard and leave room for the map. The
+  // panel's own list scrolls, so a short screen never pushes the map away.
+  const panelMaxHeight = screenHeight
+    ? Math.max(120, Math.min(360, screenHeight - keyboardInset - space.md - 52 - space.sm - 170))
+    : 360;
+  // Covered height: the panel stack plus the keyboard and its bottom margin.
+  const bottomInset = searching ? bottomStackHeight + keyboardInset + space.md : 0;
   const results = useMemo(() => searchPlaces(query), [query]);
   const trip = useMemo(() => (start && destination ? planTrip(start, destination, review, PLACE_NAMES) : null),
     [start, destination, review]);
@@ -390,8 +399,10 @@ export default function NavigationScreen({ review = false, live = null, liveTest
   }, [drawn, floorId]);
 
   return (
-    <View style={styles.screen} ref={container}>
+    <View style={styles.screen} ref={container}
+      onLayout={({ nativeEvent }) => setScreenHeight(nativeEvent.layout.height)}>
       <InteractiveMap floor={FLOORS[floorId]} view={CAMPUS} controlsRef={controls}
+        bottomInset={bottomInset}
         loading={loadingFloor ? `Loading ${FLOORS[loadingFloor].label}…` : null}
         selected={pinned?.floorId === floorId ? { ...pinned.anchor, labelHalfHeight: pinned.labelHalfHeight } : null}
         focus={step ? step.at : mode === 'plan' ? routeCentre : null}
@@ -438,7 +449,8 @@ export default function NavigationScreen({ review = false, live = null, liveTest
         </View>
       </View>
 
-      <View style={[styles.bottom, { bottom: space.md + keyboardInset }]} pointerEvents="box-none">
+      <View style={[styles.bottom, { bottom: space.md + keyboardInset }]} pointerEvents="box-none"
+        onLayout={({ nativeEvent }) => setBottomStackHeight(nativeEvent.layout.height)}>
         {notice && <Text style={styles.toast} accessibilityLiveRegion="polite">{notice}</Text>}
         {live && liveTest && !searching && <LiveTestPanel live={live} onTap={beginLiveTap} />}
         {liveTap && (
@@ -451,7 +463,7 @@ export default function NavigationScreen({ review = false, live = null, liveTest
           </View>
         )}
         {searching && (
-          <View style={styles.panel}>
+          <View style={[styles.panel, { maxHeight: panelMaxHeight }]}>
             <Text style={styles.panelHeading}>
               {mode === 'start' ? 'Choose a starting point' : query.trim() ? 'Results' : 'Popular places'}
             </Text>
@@ -619,10 +631,11 @@ const styles = StyleSheet.create({
   resultIconBrand: { backgroundColor: colors.brand },
   stepText: { ...type.title, fontSize: 21, lineHeight: 27 },
   panel: {
-    backgroundColor: colors.surface, borderRadius: radius.lg, paddingTop: space.md, maxHeight: 360, ...shadow,
+    backgroundColor: colors.surface, borderRadius: radius.lg, paddingTop: space.md,
+    maxHeight: 360, ...shadow,
   },
   panelHeading: { ...type.overline, paddingHorizontal: space.lg, marginBottom: space.xs },
-  panelList: { flexGrow: 0 },
+  panelList: { flexGrow: 0, flexShrink: 1 },
   panelListContent: { paddingBottom: space.xs },
   panelFoot: {
     ...type.caption, fontSize: 12.5, paddingHorizontal: space.lg, paddingVertical: space.sm,

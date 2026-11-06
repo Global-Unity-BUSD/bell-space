@@ -7,7 +7,7 @@ import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withDelay,
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { DETAIL_THRESHOLDS, type DetailLevel, type DetailThresholds } from './detailPolicy';
-import { contentPan, startCamera, type FloorFrame } from './framing';
+import { contentPan, insetShift, startCamera, visibleHeight, type FloorFrame } from './framing';
 import type { LabelSpec } from './labelPlan';
 import MapLabels from './MapLabels';
 import { boundFrame, boundPan, cameraMatrix, clamp, fitMap, moveCamera, touchFrame, MAX_ZOOM, MIN_ZOOM,
@@ -71,6 +71,9 @@ type MapProps = {
   // Live position estimate (map units) with its uncertainty radius.
   live?: { x: number; y: number; radius: number; quality: 'precise' | 'approximate' | 'unknown' } | null;
   controlsRef?: RefObject<MapControls | null>;
+  // Height covered at the bottom of the map (search panel and keyboard). The
+  // camera frames and pans on the visible part and shifts the map up.
+  bottomInset?: number;
   // Cover text shown over the map while a floor loads, e.g. "Loading Floor 2…".
   loading?: string | null;
 };
@@ -124,9 +127,11 @@ export function needsRedraw(zoom: number, x: number, y: number, settledZoom: num
 }
 
 function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = null, focus = null, overlay,
-  onMapTap, live = null, controlsRef }: MapProps & { width: number; height: number }) {
+  onMapTap, live = null, controlsRef, bottomInset = 0 }: MapProps & { width: number; height: number }) {
   const { size, zoom: viewZoom, thresholds } = view;
   const { Geometry } = floor;
+  const inset = Math.max(0, bottomInset);
+  const viewHeight = visibleHeight(height, inset);
   const fitted = fitMap(width, height, size.width, size.height, view.padding);
   const fitScale = fitted.width / size.width;
   const pan = useMemo<PanBounds>(() => (floor.bounds
@@ -134,10 +139,10 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
     : { centreX: 0, centreY: 0, width: fitted.width, height: fitted.height }),
   [floor.bounds, size, fitScale, fitted.width, fitted.height]);
   const start = useMemo<CameraState>(() => {
-    if (floor.frame) return startCamera(floor.frame, pan, size, fitScale, width, height, viewZoom);
+    if (floor.frame) return startCamera(floor.frame, pan, size, fitScale, width, viewHeight, viewZoom);
     if (!view.initial) return { zoom: viewZoom.min, x: 0, y: 0 };
     const zoom = clamp(view.initial.zoom, viewZoom.min, viewZoom.max);
-    return { zoom, ...centreOn(view.initial, zoom, fitScale, fitted, width, height, pan) };
+    return { zoom, ...centreOn(view.initial, zoom, fitScale, fitted, width, viewHeight, pan) };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- the opening view is computed once per viewport
   }, []);
   // A framed floor cannot zoom out past its opening view, so its margins stay
@@ -151,6 +156,12 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
   const x = useSharedValue(start.x);
   const y = useSharedValue(start.y);
   const previous = useSharedValue<TouchFrame | null>(null);
+  // The map is drawn this much higher than the camera, so content covered by a
+  // bottom panel is still the part that was framed.
+  const shift = useSharedValue(insetShift(inset));
+  useEffect(() => {
+    shift.set(withTiming(insetShift(inset), { duration: ANIMATION_MS }));
+  }, [inset, shift]);
 
   // The vector map is redrawn only for a settled camera. While a gesture or
   // animation runs, the drawn layer is moved and scaled on the GPU from the
@@ -173,8 +184,9 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
   // Tap → map point, using the live camera.
   const handleTap = useCallback((sx: number, sy: number) => {
     const s = fitScale * zoom.value;
-    onMapTap?.({ x: size.width / 2 + (sx - width / 2 - x.value) / s, y: size.height / 2 + (sy - height / 2 - y.value) / s });
-  }, [onMapTap, fitScale, size.width, size.height, width, height, zoom, x, y]);
+    const cameraY = y.value - shift.value;
+    onMapTap?.({ x: size.width / 2 + (sx - width / 2 - x.value) / s, y: size.height / 2 + (sy - height / 2 - cameraY) / s });
+  }, [onMapTap, fitScale, size.width, size.height, width, height, zoom, x, y, shift]);
   const tap = useSharedValue({ x: 0, y: 0, time: 0, moved: false, fingers: 0 });
   const wantsTaps = Boolean(onMapTap);
 
@@ -211,7 +223,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
       }
       const next = moveCamera(
         { zoom: zoom.value, rotation: rotation.value, x: x.value, y: y.value },
-        previous.value, current, fitted.width, fitted.height, width, height, ROTATION_ENABLED, limits, pan,
+        previous.value, current, fitted.width, fitted.height, width, viewHeight, ROTATION_ENABLED, limits, pan,
       );
       zoom.set(next.zoom);
       rotation.set(next.rotation);
@@ -240,15 +252,15 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
         })));
       }
     }),
-  [width, height, fitted.width, fitted.height, limits, previous, zoom, rotation, x, y, commitSettled, settleTick, tap,
-    wantsTaps, handleTap, settledZoom, settledX, settledY, pan]);
+  [width, height, viewHeight, fitted.width, fitted.height, limits, previous, zoom, rotation, x, y, commitSettled, settleTick,
+    tap, wantsTaps, handleTap, settledZoom, settledX, settledY, pan]);
 
   const layerStyle = useAnimatedStyle(() => {
     const k = zoom.value / settledZoom.value;
     return {
       transform: [
         { translateX: x.value - k * settledX.value },
-        { translateY: y.value - k * settledY.value },
+        { translateY: y.value - shift.value - k * settledY.value },
         { scale: k },
       ],
     };
@@ -261,7 +273,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
       previous.set(null);
       const nextZoom = clamp(targetZoom, limits.min, limits.max);
       const nx = boundFrame(targetX, pan.centreX, pan.width, width, nextZoom);
-      const ny = boundFrame(targetY, pan.centreY, pan.height, height, nextZoom);
+      const ny = boundFrame(targetY, pan.centreY, pan.height, viewHeight, nextZoom);
       rotation.set(0);
       x.set(withTiming(nx, { duration: ANIMATION_MS }));
       y.set(withTiming(ny, { duration: ANIMATION_MS }));
@@ -294,7 +306,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
     if (targetX === undefined || targetY === undefined) return;
     // Route steps keep a little more context than a selected room.
     const nextZoom = Math.max(zoom.value, isStep ? view.focusZoom * 0.75 : view.focusZoom);
-    const offset = centreOn({ x: targetX, y: targetY }, nextZoom, fitScale, fitted, width, height, pan);
+    const offset = centreOn({ x: targetX, y: targetY }, nextZoom, fitScale, fitted, width, viewHeight, pan);
     animateTo(nextZoom, offset.x, offset.y);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- refocus only when the target changes
   }, [targetX, targetY]);
@@ -304,7 +316,8 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
   const matrix = geometryMatrix(drawW, drawH, settled.x, settled.y, 0, fitScale * settled.zoom, size.width, size.height);
   const detail = detailFor(settled.zoom, thresholds);
   const camera = useMemo(() => ({ width, height, fitScale, mapWidth: size.width, mapHeight: size.height,
-    maxZoom: limits.max, zoom, x, y }), [width, height, fitScale, size.width, size.height, limits.max, zoom, x, y]);
+    maxZoom: limits.max, zoom, x, y, shiftY: shift }),
+  [width, height, fitScale, size.width, size.height, limits.max, zoom, x, y, shift]);
 
   return (
     <View style={styles.viewport}>
@@ -325,11 +338,12 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
           <MapLabels specs={floor.labels} camera={camera} />
           {live && (
             <LiveMarker point={live} radius={live.radius} quality={live.quality} width={width} height={height}
-              fitScale={fitScale} fittedWidth={fitted.width} fittedHeight={fitted.height} zoom={zoom} x={x} y={y} />
+              fitScale={fitScale} fittedWidth={fitted.width} fittedHeight={fitted.height} zoom={zoom} x={x} y={y}
+              shiftY={shift} />
           )}
           {selected && (
             <SelectionPin point={selected} labelHalfHeight={selected.labelHalfHeight} width={width} height={height} fitScale={fitScale}
-              fittedWidth={fitted.width} fittedHeight={fitted.height} zoom={zoom} x={x} y={y} />
+              fittedWidth={fitted.width} fittedHeight={fitted.height} zoom={zoom} x={x} y={y} shiftY={shift} />
           )}
         </View>
       </GestureDetector>

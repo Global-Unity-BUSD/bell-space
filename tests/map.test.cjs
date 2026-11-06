@@ -11,7 +11,7 @@ const { planLabels, labelOpacity, screenExtent, UNCERTAIN_MIN_ZOOM, BUILDING_VAN
 const { LAYOUT_MIN_ZOOM, nextDetailLevel } = require('../src/map/detailPolicy.ts');
 const { boundFrame, boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normalizeAngle, rotatedSize,
   touchFrame, MIN_ZOOM, MAX_ZOOM } = require('../src/map/mapMath.ts');
-const { contentPan, startCamera } = require('../src/map/framing.ts');
+const { contentPan, insetShift, startCamera, visibleHeight } = require('../src/map/framing.ts');
 
 const { prepareFloorPlanSvg, segments } = require('../src/map/prepareFloorPlanSvg.cjs');
 
@@ -164,6 +164,15 @@ test('floor framing centres the drawn content and fills a set share of the heigh
   const filledTop = height / 2 + filled.y + filled.zoom * (bounds.minY * fitScale - fitted.height / 2);
   const filledBottom = height / 2 + filled.y + filled.zoom * (bounds.maxY * fitScale - fitted.height / 2);
   assert.ok(Math.abs(filledTop - (height - filledBottom)) < 1e-8, 'filled content is centred vertically');
+});
+
+test('a bottom panel or keyboard shrinks the framed area and lifts the map by half its height', () => {
+  assert.equal(insetShift(0), 0);
+  assert.equal(insetShift(240), 120);
+  assert.equal(visibleHeight(650, 0), 650);
+  assert.equal(visibleHeight(650, 240), 410);
+  // Never let the covered height invert the viewport.
+  assert.equal(visibleHeight(100, 240), 1);
 });
 
 function near(actual, expected, message = '', tolerance = 1e-8) {

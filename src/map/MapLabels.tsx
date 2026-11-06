@@ -16,6 +16,8 @@ type Camera = {
   zoom: SharedValue<number>;
   x: SharedValue<number>;
   y: SharedValue<number>;
+  // Extra upward shift for the bottom panel/keyboard (see InteractiveMap).
+  shiftY?: SharedValue<number>;
 };
 
 const TEXT_STYLE = {
@@ -75,9 +77,11 @@ const MapLabel = memo(function MapLabel({ label, camera }: { label: PlannedLabel
 });
 
 export default memo(function MapLabels({ specs, camera }: { specs: LabelSpec[]; camera: Camera }) {
-  const { fitScale, maxZoom, x, y } = camera;
+  const { fitScale, maxZoom, x, y, shiftY } = camera;
   const labels = useMemo(() => planLabels(specs, fitScale, maxZoom), [specs, fitScale, maxZoom]);
-  const pan = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }, { translateY: y.value }] }));
+  const pan = useAnimatedStyle(() => ({
+    transform: [{ translateX: x.value }, { translateY: y.value - (shiftY?.value ?? 0) }],
+  }));
   return (
     <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, pan]}>
       {labels.map((label) => <MapLabel key={label.id} label={label} camera={camera} />)}
