@@ -11,7 +11,12 @@ it lives here, in the SVG `data-note` attributes and in `TODO.md`.
   the page centre (the scan is slightly rotated). These "page px" are the
   tracing coordinates.
 * **Campus units = (page px − (120, 1900)) / 10.** Every level uses the same
-  `0 0 580 210` frame, so switching floors keeps the camera in place.
+  `0 0 580 210` frame, so coordinates and room positions agree across floors.
+* **Floor framing.** The generator records each floor's drawn extent as
+  `data-bounds` on the SVG root. The app frames that content with equal top and
+  bottom margins: Floors 1 and 2 at the same 3.3× whole-canvas fit, Floor 3 at
+  about 65% of the usable height. A floor switch opens the new floor's frame;
+  the camera is not carried across floors.
 * There is **no real-world scale**. Distances are proportional to the scan,
   not measured. GPS reference points are needed before any positioning work.
 
@@ -72,12 +77,15 @@ the generator's `U12_ROOMS` table.
   11 on Floor 2 including six from the 12xx plan, 5 on Floor 3).
 
 **Floor 2:**
-* Faint ground footprints for orientation.
+* Faint ground footprints (thin outlines) for orientation.
 * Building 1 Floor 2, Building 2 Floor 2 and Building 3 Floor 2.
 
 **Floor 3:**
-* Faint ground footprints.
+* Faint ground footprints (thin outlines).
 * Building 1's 13xx plan.
+
+Each upper floor draws its own footprint filled; the ground outlines sit under
+it only as orientation.
 
 Not traced anywhere:
 * doors and entrances, which the PDF does not draw;
@@ -188,5 +196,5 @@ These are a survey checklist, not a route network. See `src/navigation/` and
 ## Regenerating the traces
 
 `tools/campus-trace/` holds the scripts and README. Edit the coordinate
-lists in `campus.py` and regenerate the SVGs. Don't hand-edit coordinates in
-the SVGs, or the two will drift apart.
+lists in `campus.py` and regenerate the SVGs. Don't hand-edit coordinates or
+`data-bounds` in the SVGs, or the two will drift apart.
