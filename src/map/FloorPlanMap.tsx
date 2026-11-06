@@ -10,11 +10,12 @@ import { mapColors } from '../ui/theme';
 // settles, so it can afford screen-space stroke widths that stay crisp and
 // evenly weighted at every zoom. Uncertain items are lighter and dotted;
 // stairs have their own fill and step lines so they read as stairs.
-const LINE = { vectorEffect: 'non-scaling-stroke' as const, strokeLinejoin: 'round' as const, fill: 'none' };
+const LINE = { vectorEffect: 'non-scaling-stroke' as const, strokeLinejoin: 'round' as const,
+  strokeLinecap: 'round' as const, fill: 'none' };
 
 export function createLevelGeometry({ plan, ghost, children }: {
   plan: FloorPlanData;
-  // Ground-level footprints shown faintly under an upper floor for orientation.
+  // Ground-level footprint outlines shown faintly under an upper floor for orientation.
   ghost?: string;
   children?: (props: GeometryProps) => ReactNode;
 }) {
@@ -22,7 +23,8 @@ export function createLevelGeometry({ plan, ghost, children }: {
     const { layers } = plan;
     return (
       <G>
-        {ghost ? <Path d={ghost} fill={mapColors.ghost} /> : <Path d={layers.footprint} fill={mapColors.building} />}
+        {ghost ? <Path d={ghost} stroke={mapColors.ghost} strokeWidth={1} {...LINE} /> : null}
+        <Path d={layers.footprint} fill={mapColors.building} />
         {layers['open-areas'] ? <Path d={layers['open-areas']} fill={mapColors.openArea} /> : null}
         {layers['covered-areas'] ? <Path d={layers['covered-areas']} fill={mapColors.coveredArea} /> : null}
         {layers.hills ? <Path d={layers.hills} fill={mapColors.hill} stroke={mapColors.hillEdge} strokeWidth={1.2}
