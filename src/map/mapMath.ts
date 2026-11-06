@@ -1,5 +1,21 @@
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 8;
+// The vector layer is drawn past the viewport on each side so a pan or pinch
+// can move it before it is redrawn. Drawing beyond the distance the content can
+// actually travel wastes raster work, so the margin adapts per axis.
+export const OVERSCAN = 0.3;
+// Even content pinned in the centre keeps a small margin for strokes and
+// sub-pixel rounding.
+export const OVERSCAN_MIN = 24;
+
+// `panRoom` is how far the camera can travel from the centre on this axis;
+// `lift` is the upward shift used for a bottom panel or keyboard.
+export function overscanFor(viewport: number, panRoom: number, lift = 0) {
+  'worklet';
+  const base = viewport * OVERSCAN;
+  const floor = Math.min(base, OVERSCAN_MIN);
+  return Math.max(floor, lift, Math.min(base, panRoom * 2 + lift));
+}
 
 export function clamp(value: number, min: number, max: number) {
   'worklet';

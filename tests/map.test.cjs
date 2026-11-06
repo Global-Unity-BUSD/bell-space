@@ -9,8 +9,8 @@ const transformer = require('../svg-transformer.cjs');
 const { pathBounds } = require('../src/map/sourceAnnotations.cjs');
 const { planLabels, labelOpacity, screenExtent, UNCERTAIN_MIN_ZOOM, BUILDING_VANISH_ZOOM } = require('../src/map/labelPlan.ts');
 const { LAYOUT_MIN_ZOOM, nextDetailLevel } = require('../src/map/detailPolicy.ts');
-const { boundFrame, boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normalizeAngle, rotatedSize,
-  touchFrame, MIN_ZOOM, MAX_ZOOM } = require('../src/map/mapMath.ts');
+const { boundFrame, boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normalizeAngle, overscanFor,
+  rotatedSize, touchFrame, OVERSCAN, MIN_ZOOM, MAX_ZOOM } = require('../src/map/mapMath.ts');
 const { contentPan, insetShift, startCamera, visibleHeight } = require('../src/map/framing.ts');
 
 const { prepareFloorPlanSvg, segments } = require('../src/map/prepareFloorPlanSvg.cjs');
@@ -173,6 +173,21 @@ test('a bottom panel or keyboard shrinks the framed area and lifts the map by ha
   assert.equal(visibleHeight(650, 240), 410);
   // Never let the covered height invert the viewport.
   assert.equal(visibleHeight(100, 240), 1);
+});
+
+test('the drawn layer overscans only as far as the camera can travel', () => {
+  // Content pinned in the centre still keeps the small stroke margin.
+  near(overscanFor(400, 0), Math.min(400 * OVERSCAN, 24));
+  near(overscanFor(400, 10), 24);
+  // A short pan draws only the reachable distance, not the full 30%.
+  near(overscanFor(400, 20), 40);
+  // A pan past the normal margin keeps the 30% cap.
+  near(overscanFor(400, 100), 400 * OVERSCAN);
+  // A bottom panel lifts the layer even when the content cannot pan.
+  near(overscanFor(400, 0, 150), 150);
+  near(overscanFor(400, 500, 150), 150);
+  // Very small viewports never demand more than their own share.
+  near(overscanFor(50, 0), 15);
 });
 
 function near(actual, expected, message = '', tolerance = 1e-8) {
@@ -433,7 +448,7 @@ function componentHarness() {
       presets: ['babel-preset-expo'],
       caller: { name: 'metro', platform: 'ios', supportsStaticESM: false },
     });
-    const context = { exports: {}, global: { Error }, require: (id) => {
+    const context = { exports: {}, global: { Error }, setTimeout, clearTimeout, require: (id) => {
       if (id.startsWith('@babel/runtime/helpers/')) return require(id);
       assert.ok(id in modules, `unexpected runtime import: ${id}`);
       return modules[id];
@@ -523,6 +538,48 @@ test('zoom buttons keep the centered point, stay in limits, and selection center
   const pin = tree.props.children.props.children.props.children.find((c) => c?.type === 'Pin');
   assert.ok(pin, 'the selection pin is drawn');
   assert.deepEqual(pin.props.point, room);
+});
+
+
+test('a pure pan redraws at once; a zoom change waits out a follow-up pinch', () => {
+  const harness = componentHarness();
+  const { needsRedraw, settleDelay, SETTLE_DELAY_MS: pinchDelay } = harness.load('InteractiveMap.tsx');
+  assert.equal(needsRedraw(3, 50, 0, 3, 0, 0, 100, 100), false, 'a short pan stays on the drawn layer');
+  assert.equal(needsRedraw(3, 80, 0, 3, 0, 0, 100, 100), true, 'a pan past the margin redraws');
+  assert.equal(needsRedraw(3, 0, -80, 3, 0, 0, 100, 20), true, 'each axis has its own margin');
+  assert.equal(needsRedraw(3.001, 0, 0, 3, 0, 0, 100, 100), true, 'any zoom change redraws');
+  assert.equal(settleDelay(3, 3), 0, 'a pure pan has nothing to wait for');
+  assert.equal(settleDelay(3.5, 3), pinchDelay, 'a pinch keeps the settle delay');
+});
+
+test('zooming out drops the finer map layers before the main structure', () => {
+  const harness = componentHarness();
+  const { createLevelGeometry } = harness.load('FloorPlanMap.tsx');
+  const plan = campus[0];
+  const Level = createLevelGeometry({ plan, ghost: 'M0 0' });
+  const drawn = (detail) => Level({ detail }).props.children.filter(Boolean).map((child) => child.props.d);
+  const has = (paths, d) => paths.includes(d);
+
+  const overview = drawn(0);
+  assert.ok(has(overview, 'M0 0'), 'the orientation ghost stays visible');
+  assert.ok(has(overview, plan.layers.footprint));
+  assert.ok(has(overview, plan.layers.walls));
+  assert.ok(has(overview, plan.layers.stairs));
+  assert.ok(has(overview, plan.layers.ramp));
+  assert.ok(!has(overview, plan.layers.dividers), 'room dividers wait for Medium');
+  assert.ok(!has(overview, plan.layers['uncertain-lines']));
+  assert.ok(!has(overview, plan.layers['uncertain-symbols']));
+  assert.ok(!has(overview, plan.layers['ramp-marks']));
+
+  const medium = drawn(1);
+  assert.ok(has(medium, plan.layers.dividers));
+  assert.ok(!has(medium, plan.layers['uncertain-lines']), 'uncertain lines wait for Full');
+  assert.ok(!has(medium, plan.layers['uncertain-symbols']));
+
+  const full = drawn(2);
+  assert.ok(has(full, plan.layers['uncertain-lines']));
+  assert.ok(has(full, plan.layers['uncertain-symbols']));
+  assert.ok(has(full, plan.layers['ramp-marks']));
 });
 
 
@@ -776,6 +833,12 @@ test('the vector layer is only scaled on the GPU between redraws', () => {
   const tree = MapViewport({ width: 390, height: 600, floor: floor2View });
   const { camera } = tree.props.children.props.children.props.children[1].props;
   harness.flush();
+  // The whole map fits this viewport, so only the small stroke margin is drawn.
+  const box = tree.props.children.props.children.props.children[0].props.style[1];
+  near(box.width, 390 + 48);
+  near(box.height, 600 + 48);
+  near(box.left, -24);
+  near(box.top, -24);
   const layerHook = harness.hooks.find((hook) => hook.value?.transform?.length === 3 && 'scale' in hook.value.transform[2]);
   assert.ok(layerHook);
   near(layerHook.value.transform[2].scale, 1);

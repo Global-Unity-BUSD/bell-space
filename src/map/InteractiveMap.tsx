@@ -10,8 +10,8 @@ import { DETAIL_THRESHOLDS, type DetailLevel, type DetailThresholds } from './de
 import { contentPan, insetShift, startCamera, visibleHeight, type FloorFrame } from './framing';
 import type { LabelSpec } from './labelPlan';
 import MapLabels from './MapLabels';
-import { boundFrame, boundPan, cameraMatrix, clamp, fitMap, moveCamera, touchFrame, MAX_ZOOM, MIN_ZOOM,
-  type PanBounds, type TouchFrame, type ZoomLimits } from './mapMath';
+import { boundFrame, boundPan, cameraMatrix, clamp, fitMap, moveCamera, overscanFor, touchFrame, MAX_ZOOM,
+  MIN_ZOOM, type PanBounds, type TouchFrame, type ZoomLimits } from './mapMath';
 import type { Bounds } from './annotationLayout';
 import LiveMarker from './LiveMarker';
 import SelectionPin from './SelectionPin';
@@ -20,11 +20,9 @@ import { mapColors } from '../ui/theme';
 // Two-finger rotation is off in the student UI; pan and pinch remain.
 export const ROTATION_ENABLED = false;
 export const ZOOM_STEP = 1.8;
-// The vector map is drawn larger than the screen so short pans never reveal
-// an empty edge before it is redrawn.
-export const OVERSCAN = 0.3;
 // After a pinch, wait briefly before redrawing so the redraw never lands on the
 // frame where the fingers lift, and a quick follow-up gesture can cancel it.
+// A pure pan only moves the drawn layer, so it redraws without that wait.
 export const SETTLE_DELAY_MS = 120;
 // A touch that moves less than this and lifts quickly is a tap.
 const TAP_SLOP = 8;
@@ -116,14 +114,21 @@ export function centreOn(p: { x: number; y: number }, zoom: number, fitScale: nu
 
 /**
  * Whether the drawn layer must be redrawn for a settled camera. A pure pan
- * that stays inside the overscan keeps the layer sharp (it is only moved), so
- * it is not redrawn; any zoom change is.
+ * that stays inside the drawn overscan keeps the layer sharp (it is only
+ * moved), so it is not redrawn; any zoom change is.
  */
 export function needsRedraw(zoom: number, x: number, y: number, settledZoom: number, settledX: number,
-  settledY: number, width: number, height: number) {
+  settledY: number, overX: number, overY: number) {
   'worklet';
   if (Math.abs(zoom - settledZoom) > 1e-4 * settledZoom) return true;
-  return Math.abs(x - settledX) > width * OVERSCAN * 0.75 || Math.abs(y - settledY) > height * OVERSCAN * 0.75;
+  return Math.abs(x - settledX) > overX * 0.75 || Math.abs(y - settledY) > overY * 0.75;
+}
+
+// A zoom change waits out a possible follow-up pinch; a pure pan redraws at
+// once because the geometry itself has not changed.
+export function settleDelay(zoom: number, settledZoom: number) {
+  'worklet';
+  return Math.abs(zoom - settledZoom) > 1e-4 * settledZoom ? SETTLE_DELAY_MS : 0;
 }
 
 function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = null, focus = null, overlay,
@@ -162,6 +167,17 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
   useEffect(() => {
     shift.set(withTiming(insetShift(inset), { duration: ANIMATION_MS }));
   }, [inset, shift]);
+  // Keep the larger drawn layer while the map slides back down from a panel or
+  // keyboard, so its bottom edge is never exposed during the animation. An
+  // opening panel is covered immediately; a closing one releases the extra
+  // height after the slide finishes.
+  const targetLift = insetShift(inset);
+  const [lift, setLift] = useState(targetLift);
+  const layerLift = Math.max(lift, targetLift);
+  useEffect(() => {
+    const timer = setTimeout(() => setLift(targetLift), ANIMATION_MS + 32);
+    return () => clearTimeout(timer);
+  }, [targetLift]);
 
   // The vector map is redrawn only for a settled camera. While a gesture or
   // animation runs, the drawn layer is moved and scaled on the GPU from the
@@ -178,6 +194,12 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
   const commitSettled = useCallback((z: number, sx: number, sy: number) => {
     setSettled((prev) => (prev.zoom === z && prev.x === sx && prev.y === sy ? prev : { zoom: z, x: sx, y: sy }));
   }, []);
+  // Each axis only draws the margin the content can actually be panned across,
+  // plus any upward shift for the bottom panel.
+  const panRoomX = Math.max(0, (pan.width * settled.zoom - width) / 2);
+  const panRoomY = Math.max(0, (pan.height * settled.zoom - viewHeight) / 2);
+  const overX = overscanFor(width, panRoomX);
+  const overY = overscanFor(height, panRoomY, layerLift);
   // The redraw is scheduled on the UI thread after a short delay; a new touch
   // cancels it (see onTouchesDown), so quick successive gestures redraw once.
   const settleTick = useSharedValue(0);
@@ -246,14 +268,19 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
     .onFinalize(() => {
       previous.set(null);
       const z = zoom.value; const sx = x.value; const sy = y.value;
-      if (needsRedraw(z, sx, sy, settledZoom.value, settledX.value, settledY.value, width, height)) {
-        settleTick.set(withDelay(SETTLE_DELAY_MS, withTiming(settleTick.value + 1, { duration: 0 }, (finished) => {
-          if (finished) scheduleOnRN(commitSettled, z, sx, sy);
-        })));
+      if (needsRedraw(z, sx, sy, settledZoom.value, settledX.value, settledY.value, overX, overY)) {
+        const delay = settleDelay(z, settledZoom.value);
+        if (delay === 0) {
+          scheduleOnRN(commitSettled, z, sx, sy);
+        } else {
+          settleTick.set(withDelay(delay, withTiming(settleTick.value + 1, { duration: 0 }, (finished) => {
+            if (finished) scheduleOnRN(commitSettled, z, sx, sy);
+          })));
+        }
       }
     }),
   [width, height, viewHeight, fitted.width, fitted.height, limits, previous, zoom, rotation, x, y, commitSettled, settleTick,
-    tap, wantsTaps, handleTap, settledZoom, settledX, settledY, pan]);
+    tap, wantsTaps, handleTap, settledZoom, settledX, settledY, pan, overX, overY]);
 
   const layerStyle = useAnimatedStyle(() => {
     const k = zoom.value / settledZoom.value;
@@ -278,7 +305,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
       x.set(withTiming(nx, { duration: ANIMATION_MS }));
       y.set(withTiming(ny, { duration: ANIMATION_MS }));
       zoom.set(withTiming(nextZoom, { duration: ANIMATION_MS }, (finished) => {
-        if (finished && needsRedraw(nextZoom, nx, ny, settledZoom.value, settledX.value, settledY.value, width, height)) {
+        if (finished && needsRedraw(nextZoom, nx, ny, settledZoom.value, settledX.value, settledY.value, overX, overY)) {
           scheduleOnRN(commitSettled, nextZoom, nx, ny);
         }
       }));
@@ -311,8 +338,8 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
   // eslint-disable-next-line react-hooks/exhaustive-deps -- refocus only when the target changes
   }, [targetX, targetY]);
 
-  const drawW = width * (1 + 2 * OVERSCAN);
-  const drawH = height * (1 + 2 * OVERSCAN);
+  const drawW = width + 2 * overX;
+  const drawH = height + 2 * overY;
   const matrix = geometryMatrix(drawW, drawH, settled.x, settled.y, 0, fitScale * settled.zoom, size.width, size.height);
   const detail = detailFor(settled.zoom, thresholds);
   const camera = useMemo(() => ({ width, height, fitScale, mapWidth: size.width, mapHeight: size.height,
@@ -326,7 +353,7 @@ function MapViewport({ width, height, floor, view = DEFAULT_VIEW, selected = nul
           accessible accessibilityLabel={`Campus map, ${floor.id.replace('-', ' ')}`}
           accessibilityHint="Drag with one finger to move the map, or pinch with two fingers to zoom. Room numbers appear as you zoom in.">
           <Animated.View pointerEvents="none" style={[styles.layer, {
-            left: -width * OVERSCAN, top: -height * OVERSCAN, width: drawW, height: drawH,
+            left: -overX, top: -overY, width: drawW, height: drawH,
           }, layerStyle]}>
             <Svg width={drawW} height={drawH}>
               <G transform={`matrix(${matrix.join(' ')})`}>

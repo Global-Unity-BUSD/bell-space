@@ -9,7 +9,9 @@ import { mapColors } from '../ui/theme';
 // of the camera group, in campus units. It is drawn only when the camera
 // settles, so it can afford screen-space stroke widths that stay crisp and
 // evenly weighted at every zoom. Uncertain items are lighter and dotted;
-// stairs have their own fill and step lines so they read as stairs.
+// stairs have their own fill and step lines so they read as stairs. Zooming out
+// drops the finer layers first: room dividers from Medium, and uncertain lines,
+// uncertain symbols and ramp slope marks only at Full detail.
 const LINE = { vectorEffect: 'non-scaling-stroke' as const, strokeLinejoin: 'round' as const,
   strokeLinecap: 'round' as const, fill: 'none' };
 
@@ -21,6 +23,8 @@ export function createLevelGeometry({ plan, ghost, children }: {
 }) {
   return memo(function LevelGeometry(props: GeometryProps) {
     const { layers } = plan;
+    const medium = props.detail >= 1;
+    const full = props.detail >= 2;
     return (
       <G>
         {ghost ? <Path d={ghost} stroke={mapColors.ghost} strokeWidth={1} {...LINE} /> : null}
@@ -30,13 +34,15 @@ export function createLevelGeometry({ plan, ghost, children }: {
         {layers.hills ? <Path d={layers.hills} fill={mapColors.hill} stroke={mapColors.hillEdge} strokeWidth={1.2}
           strokeDasharray="4 3" vectorEffect="non-scaling-stroke" /> : null}
         {layers.site ? <Path d={layers.site} stroke={mapColors.site} strokeWidth={1} {...LINE} /> : null}
-        <Path d={layers['uncertain-lines']} stroke={mapColors.uncertain} strokeWidth={0.8} strokeDasharray="1.5 2.5" {...LINE} />
-        <Path d={layers['uncertain-symbols']} stroke={mapColors.uncertain} strokeWidth={0.8} {...LINE} />
-        <Path d={layers.dividers} stroke={mapColors.divider} strokeWidth={0.8} strokeDasharray="3 2.5" {...LINE} />
+        {full ? <Path d={layers['uncertain-lines']} stroke={mapColors.uncertain} strokeWidth={0.8}
+          strokeDasharray="1.5 2.5" {...LINE} /> : null}
+        {full ? <Path d={layers['uncertain-symbols']} stroke={mapColors.uncertain} strokeWidth={0.8} {...LINE} /> : null}
+        {medium ? <Path d={layers.dividers} stroke={mapColors.divider} strokeWidth={0.8}
+          strokeDasharray="3 2.5" {...LINE} /> : null}
         <Path d={layers.walls} stroke={mapColors.wall} strokeWidth={1.3} {...LINE} />
         {layers.ramp ? <Path d={layers.ramp} fill={mapColors.rampFill} stroke={mapColors.ramp} strokeWidth={1.4}
           vectorEffect="non-scaling-stroke" strokeLinejoin="round" /> : null}
-        {layers['ramp-marks'] ? <Path d={layers['ramp-marks']} stroke={mapColors.ramp} strokeWidth={1.6} {...LINE} /> : null}
+        {full && layers['ramp-marks'] ? <Path d={layers['ramp-marks']} stroke={mapColors.ramp} strokeWidth={1.6} {...LINE} /> : null}
         {children?.(props)}
         {layers.stairs ? (
           <Path d={layers.stairs} fill={mapColors.stairFill} stroke={mapColors.stair} strokeWidth={1.1}
