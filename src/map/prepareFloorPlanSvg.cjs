@@ -116,6 +116,11 @@ function prepareFloorPlanSvg(xml) {
     .map(([tag]) => attributes(tag))
     .map((a) => ({ type: a['data-type'], building: a['data-building'], x: Number(a.cx), y: Number(a.cy),
       status: a['data-status'], note: a['data-note'] || '' }));
+  // Bounds of every drawn line, written by tools/campus-trace/campus.py. The
+  // camera frames this real content instead of trusting the shared canvas.
+  const box = (root['data-bounds'] || '').trim().split(/\s+/).map(Number);
+  const bounds = box.length === 4 && box.every(Number.isFinite)
+    ? { minX: box[0], minY: box[1], maxX: box[2], maxY: box[3] } : undefined;
   return {
     floor: Number(root['data-floor']),
     frame: root['data-frame'] || '',
@@ -123,6 +128,7 @@ function prepareFloorPlanSvg(xml) {
     viewBox: root.viewBox,
     width: Number(root.width),
     height: Number(root.height),
+    bounds,
     layers,
     annotations,
     walls: [...segments(layers.walls), ...segments(layers.dividers)],

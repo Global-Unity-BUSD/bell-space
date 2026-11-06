@@ -2,7 +2,7 @@
 # All source coordinates are pixels of the 6000 px render of BHSCampusMap.pdf,
 # straightened by 1.005 deg about the page centre ("page px").
 # Campus units = (ground page px - (120, 1900)) / 10.
-import sys, os, json, re
+import sys, os, json, re, math
 out_dir, overlay_dir = sys.argv[1], sys.argv[2]
 here = os.path.dirname(os.path.abspath(__file__))
 B1 = {}
@@ -472,6 +472,169 @@ U12_ROOMS = [
 ]
 DRAWINGS['b1'] = B1_DRAW
 
+# ---------------------------------------------------------------- Floor 2: walls vs room dividers
+# The clean plan is a single traced line network, so every segment was emitted
+# as a solid wall. Floor 1 keeps structural walls solid and room-to-room
+# partitions dotted; recover the same split from the room boxes already traced
+# in U12_ROOMS instead of hand-labelling 190 subpaths.
+NUMBER = r'[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?'
+
+def _campus_rect(r):
+    a, b = U12D_TO_CAMPUS((r[0], r[1])), U12D_TO_CAMPUS((r[2], r[3]))
+    return (min(a[0], b[0]), min(a[1], b[1]), max(a[0], b[0]), max(a[1], b[1]))
+
+U12D_ROOM_CELLS = [_campus_rect(r[4]) for r in U12_ROOMS]
+
+def _inside_room_cell(x, y):
+    return any(x0 <= x <= x1 and y0 <= y <= y1 for x0, y0, x1, y1 in U12D_ROOM_CELLS)
+
+def _room_divider(a, b):
+    """True when both sides of the segment midpoint are inside room cells.
+
+    A probe of 0.18 campus units stays within the room boxes for a partition
+    and lands in a corridor, stair or the library for a structural wall.
+    """
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    length = math.hypot(dx, dy)
+    if length < 1e-6:
+        return False
+    nx, ny = -dy / length * 0.18, dx / length * 0.18
+    mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
+    return _inside_room_cell(mx + nx, my + ny) and _inside_room_cell(mx - nx, my - ny)
+
+def split_u12d_walls():
+    """Return (walls, dividers) paths for the traced Building 1 Floor 2 plan.
+
+    Curved subpaths (the library bump) always stay walls. Straight subpaths are
+    classified per segment; mixed subpaths are split into runs so no geometry
+    is added, removed or moved.
+    """
+    walls, dividers = [], []
+    for part in re.split(r'(?=M(?=[-\d]))', U12D_WALLS):
+        part = part.strip()
+        if not part:
+            continue
+        if 'C' in part:
+            walls.append(part)
+            continue
+        start = re.search(rf'M({NUMBER}) ({NUMBER})', part)
+        points = [tuple(map(float, start.groups()))]
+        points += [tuple(map(float, m)) for m in re.findall(rf'L({NUMBER}) ({NUMBER})', part)]
+        kinds = [_room_divider(a, b) for a, b in zip(points, points[1:])]
+        if not kinds or all(kinds):
+            (dividers if kinds else walls).append(part)
+        elif not any(kinds):
+            walls.append(part)
+        else:
+            run = 0
+            for i in range(1, len(kinds) + 1):
+                if i == len(kinds) or kinds[i] != kinds[run]:
+                    chunk = points[run:i + 1]
+                    path_d = 'M' + ' L'.join(f'{fmt(x)} {fmt(y)}' for x, y in chunk)
+                    (dividers if kinds[run] else walls).append(path_d)
+                    run = i
+    return walls, dividers
+
+U12D_WALL_PARTS, U12D_DIVIDER_PARTS = split_u12d_walls()
+
+# ---------------------------------------------------------------- geometry bounds
+def path_bbox(d):
+    """Axis-aligned bounds of a path in its own coordinate space.
+
+    Handles the absolute M/L/H/V/C/Q/A/Z commands the generator emits. Curve
+    control points are included, and arcs are sampled, so the box covers the
+    drawn line without inventing geometry. Used only for camera framing.
+    """
+    tokens = re.findall(r'[A-Za-z]|' + NUMBER, d)
+    i = 0
+    cmd = None
+    x = y = 0.0
+    sx = sy = 0.0
+    box = [math.inf, math.inf, -math.inf, -math.inf]
+    def add(px, py):
+        box[0], box[1] = min(box[0], px), min(box[1], py)
+        box[2], box[3] = max(box[2], px), max(box[3], py)
+    def num():
+        nonlocal i
+        i += 1
+        return float(tokens[i - 1])
+    def arc_points(x1, y1, rx, ry, rot, large, sweep, x2, y2):
+        # Endpoint -> center parameterization, then sample the sweep.
+        phi = math.radians(rot)
+        cphi, sphi = math.cos(phi), math.sin(phi)
+        dx, dy = (x1 - x2) / 2, (y1 - y2) / 2
+        xp = cphi * dx + sphi * dy
+        yp = -sphi * dx + cphi * dy
+        rx, ry = abs(rx), abs(ry)
+        if rx < 1e-9 or ry < 1e-9:
+            return [(x2, y2)]
+        lam = (xp / rx) ** 2 + (yp / ry) ** 2
+        if lam > 1:
+            rx, ry = rx * math.sqrt(lam), ry * math.sqrt(lam)
+        den = (rx * yp) ** 2 + (ry * xp) ** 2
+        coef = math.sqrt(max(0.0, ((rx * ry) ** 2 - den) / den)) if den else 0.0
+        if large == sweep:
+            coef = -coef
+        cxp, cyp = coef * rx * yp / ry, -coef * ry * xp / rx
+        cx = cphi * cxp - sphi * cyp + (x1 + x2) / 2
+        cy = sphi * cxp + cphi * cyp + (y1 + y2) / 2
+        def angle(ux, uy, vx, vy):
+            return math.atan2(ux * vy - uy * vx, ux * vx + uy * vy)
+        ux, uy = (xp - cxp) / rx, (yp - cyp) / ry
+        vx, vy = (-xp - cxp) / rx, (-yp - cyp) / ry
+        t1 = angle(1, 0, ux, uy)
+        dt = angle(ux, uy, vx, vy)
+        if not sweep and dt > 0:
+            dt -= 2 * math.pi
+        elif sweep and dt < 0:
+            dt += 2 * math.pi
+        steps = 24
+        return [(x1, y1)] + [
+            (cphi * rx * math.cos(t1 + dt * k / steps) - sphi * ry * math.sin(t1 + dt * k / steps) + cx,
+             sphi * rx * math.cos(t1 + dt * k / steps) + cphi * ry * math.sin(t1 + dt * k / steps) + cy)
+            for k in range(steps + 1)]
+    while i < len(tokens):
+        if re.fullmatch(r'[A-Za-z]', tokens[i]):
+            cmd = tokens[i]
+            i += 1
+            if cmd in 'Zz':
+                x, y = sx, sy
+                cmd = None
+                continue
+        if not cmd:
+            raise SystemExit('Path data is missing a command: %s' % d)
+        upper, relative = cmd.upper(), cmd.islower()
+        ox, oy = (x, y) if relative else (0.0, 0.0)
+        if upper == 'M':
+            x, y = num() + ox, num() + oy
+            sx, sy = x, y
+            add(x, y)
+            cmd = 'l' if relative else 'L'
+        elif upper == 'L':
+            x, y = num() + ox, num() + oy
+            add(x, y)
+        elif upper == 'H':
+            x = num() + ox
+            add(x, y)
+        elif upper == 'V':
+            y = num() + oy
+            add(x, y)
+        elif upper in ('C', 'S', 'Q', 'T'):
+            vals = [num() for _ in range({'C': 6, 'S': 4, 'Q': 4, 'T': 2}[upper])]
+            for k in range(0, len(vals) - 2, 2):
+                add(vals[k] + ox, vals[k + 1] + oy)
+            x, y = vals[-2] + ox, vals[-1] + oy
+            add(x, y)
+        elif upper == 'A':
+            rx, ry, rot, large, sweep = (num() for _ in range(5))
+            x2, y2 = num() + ox, num() + oy
+            for px, py in arc_points(x, y, rx, ry, rot, large, sweep, x2, y2):
+                add(px, py)
+            x, y = x2, y2
+        else:
+            raise SystemExit('Unsupported path command for bounds: %s' % cmd)
+    return box if box[0] != math.inf else None
+
 # ---------------------------------------------------------------- emit
 def esc(s): return s.replace('&', '&amp;').replace('"', "'")
 def label_rect(d, space, rid, label, kind, status, r, at, rot, lines, title, note, building, level, prefix):
@@ -567,8 +730,12 @@ def level_svg(level, space='campus'):
         layers['site'] += [('Parking lot edge', path(d, s, space)) for s in SITE['site']]
         add_rooms(d, SITE_ROOMS, '', 'g-site-')
     if level == 2:
-        # Building 1 Floor 2, traced from its clean single-line plan.
-        layers['walls'].append(('Building 1 Floor 2, traced from 2026-10-04_floor-2.svg', U12D_WALLS))
+        # Building 1 Floor 2, traced from its clean single-line plan. Room
+        # partitions are dotted like Floor 1; structural walls stay solid.
+        for part in U12D_WALL_PARTS:
+            layers['walls'].append(('Building 1 Floor 2, traced from 2026-10-04_floor-2.svg', part))
+        for part in U12D_DIVIDER_PARTS:
+            layers['dividers'].append(('Building 1 Floor 2 room partition, traced from 2026-10-04_floor-2.svg', part))
         add_symbols(DRAWINGS['u12'], U12_STAIRS, '1')
         add_rooms(DRAWINGS['u12d'], U12_ROOMS, '1', 'f2-b1-')
         d = DRAWINGS['u2']
@@ -620,8 +787,21 @@ HEADER = {
 }
 for level in (1, 2, 3):
     layers, labels, cands, stairs = level_svg(level)
+    # Bounds of every drawn line, in campus units, so the app can frame each
+    # floor's real content instead of guessing from the shared 580x210 canvas.
+    bounds = [math.inf, math.inf, -math.inf, -math.inf]
+    for name, items in layers.items():
+        for note, dd in items:
+            b = path_bbox(dd)
+            if b:
+                bounds = [min(bounds[0], b[0]), min(bounds[1], b[1]), max(bounds[2], b[2]), max(bounds[3], b[3])]
+    for sid, building, note, dd, cx, cy in stairs:
+        b = path_bbox(dd)
+        if b:
+            bounds = [min(bounds[0], b[0]), min(bounds[1], b[1]), max(bounds[2], b[2]), max(bounds[3], b[3])]
+    data_bounds = ' '.join(fmt(round(v, 1)) for v in bounds)
     o = ['<svg width="580" height="210" viewBox="0 0 580 210" fill="none" xmlns="http://www.w3.org/2000/svg" '
-         f'data-floor="{level}" data-coverage="partial" data-frame="campus">',
+         f'data-floor="{level}" data-coverage="partial" data-frame="campus" data-bounds="{data_bounds}">',
          f'<!-- CLEAR 2.0 campus map, {HEADER[level]}',
          '     Source: BHSCampusMap.pdf (2023 scan), 6000 px render straightened by 1.005 degrees.',
          '     Campus frame: 1 unit = 10 px of that render; origin at render px (120, 1900). No real-world scale.',

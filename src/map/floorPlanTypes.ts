@@ -1,4 +1,4 @@
-import type { MapAnnotation, WallSegment } from './annotationLayout';
+import type { Bounds, MapAnnotation, WallSegment } from './annotationLayout';
 
 export type RouteCandidate = {
   type: 'stair' | 'elevator' | 'entrance' | 'exit';
@@ -17,6 +17,8 @@ export type FloorPlanData = {
   viewBox: string;
   width: number;
   height: number;
+  // Axis-aligned bounds of the drawn lines, in campus units (data-bounds).
+  bounds?: Bounds;
   layers: Record<'footprint' | 'site' | 'walls' | 'dividers' | 'uncertain-lines' | 'uncertain-symbols' | 'stairs'
     | 'open-areas' | 'covered-areas' | 'hills' | 'ramp' | 'ramp-marks', string>;
   annotations: MapAnnotation[];
