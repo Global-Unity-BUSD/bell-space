@@ -55,8 +55,8 @@ export default function App() {
               <View style={[styles.body, tab !== 'navigation' && styles.hidden]}>
                 <NavigationScreen review={review} live={liveOn ? live : null} liveTest={liveTest} />
               </View>
-              {/* Chat and Updates also stay mounted, so replies and new updates keep arriving. */}
-              <View style={[styles.body, tab !== 'chat' && styles.hidden]}><ErrorBoundary name="Chat"><ChatScreen /></ErrorBoundary></View>
+              {/* Chat and Updates also stay mounted; they pause while hidden and refresh when shown again. */}
+              <View style={[styles.body, tab !== 'chat' && styles.hidden]}><ErrorBoundary name="Chat"><ChatScreen active={tab === 'chat'} /></ErrorBoundary></View>
               <View style={[styles.body, tab !== 'updates' && styles.hidden]}><ErrorBoundary name="Updates"><UpdatesScreen active={tab === 'updates'} /></ErrorBoundary></View>
               {tab === 'settings' && (
                 <SettingsScreen dev={{
