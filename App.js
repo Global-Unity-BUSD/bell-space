@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { startTransition, useCallback, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -12,8 +12,27 @@ import QAScreen from './src/screens/QAScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import UpdatesScreen from './src/screens/UpdatesScreen';
 import ErrorBoundary from './src/ui/ErrorBoundary';
+import { ScreenPlaceholder } from './src/ui/Placeholder';
 import TabBar from './src/ui/TabBar';
 import { colors, space, type } from './src/ui/theme';
+
+// One tab's screen. It mounts the first time the tab opens, showing a
+// placeholder for that first frame, and then stays mounted (hidden) so going
+// back is instant and keeps its state.
+/** @param {{ shown: boolean, title: string, children: import('react').ReactNode }} props */
+function TabPanel({ shown, title, children }) {
+  const [ready, setReady] = useState(shown);
+  useEffect(() => {
+    if (!shown || ready) return;
+    const id = requestAnimationFrame(() => startTransition(() => setReady(true)));
+    return () => cancelAnimationFrame(id);
+  }, [shown, ready]);
+  return (
+    <View style={[styles.body, !shown && styles.hidden]}>
+      {ready ? children : shown ? <ScreenPlaceholder title={title} /> : null}
+    </View>
+  );
+}
 
 export default function App() {
   // No welcome or sign-in screen: the app opens on Navigation.
@@ -51,13 +70,18 @@ export default function App() {
               <Text style={styles.school}>Burbank High School</Text>
             </View>
             <View style={styles.body}>
-              {/* Navigation stays mounted so the map keeps its position between tabs. */}
-              <View style={[styles.body, tab !== 'navigation' && styles.hidden]}>
+              {/* Navigation is mounted from the start so the map is ready; it keeps its position between tabs. */}
+              <TabPanel shown={tab === 'navigation'} title="Navigation">
                 <NavigationScreen review={review} live={liveOn ? live : null} liveTest={liveTest} />
-              </View>
-              {/* Chat and Updates also stay mounted; they pause while hidden and refresh when shown again. */}
-              <View style={[styles.body, tab !== 'chat' && styles.hidden]}><ErrorBoundary name="Chat"><ChatScreen active={tab === 'chat'} /></ErrorBoundary></View>
-              <View style={[styles.body, tab !== 'updates' && styles.hidden]}><ErrorBoundary name="Updates"><UpdatesScreen active={tab === 'updates'} /></ErrorBoundary></View>
+              </TabPanel>
+              {/* Chat and Updates pause while hidden and refresh when shown again. */}
+              <TabPanel shown={tab === 'chat'} title="Chat">
+                <ErrorBoundary name="Chat"><ChatScreen active={tab === 'chat'} /></ErrorBoundary>
+              </TabPanel>
+              <TabPanel shown={tab === 'updates'} title="Updates">
+                <ErrorBoundary name="Updates"><UpdatesScreen active={tab === 'updates'} /></ErrorBoundary>
+              </TabPanel>
+              <TabPanel shown={tab === 'qa'} title="Q&A"><QAScreen onOpenTab={openTab} /></TabPanel>
               {tab === 'settings' && (
                 <SettingsScreen dev={{
                   unlocked: devUnlocked, setUnlocked: setDev,
@@ -65,7 +89,6 @@ export default function App() {
                   liveStatus: liveOn ? live.status : 'off', review, onReviewChange: setReview,
                 }} />
               )}
-              {tab === 'qa' && <QAScreen onOpenTab={openTab} />}
             </View>
             <TabBar active={highlight} onChange={openTab} />
             <StatusBar style="dark" />

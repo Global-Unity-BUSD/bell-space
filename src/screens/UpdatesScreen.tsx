@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { memo, useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
 import { loadUpdates, removePhoto, saveUpdate, uploadPhoto, watchUpdates, type UpdateFields } from '../backend/api';
 import { useAuth } from '../backend/auth';
@@ -9,6 +9,7 @@ import { dateBadge, feedOrder, formatWhen, LIMITS, SAMPLE_UPDATE, splitWhen, val
   type UpdateDraft } from '../backend/updatesLogic';
 import { Button, Card, Field, Notice, StatusPill } from '../ui/controls';
 import Icon from '../ui/Icon';
+import { SkeletonCards } from '../ui/Placeholder';
 import { colors, radius, space, type } from '../ui/theme';
 
 type Feed = Awaited<ReturnType<typeof loadUpdates>>;
@@ -193,7 +194,7 @@ function UpdatesScreen({ active }: { active: boolean }) {
       </View>
       {editor && <Button label="New update" icon="plus" onPress={() => setEditing('new')} />}
       {error && <Notice text={error} tone="error" />}
-      {configured && !feed && !error && <ActivityIndicator color={colors.brand} style={styles.spinner} />}
+      {configured && !feed && !error && <SkeletonCards />}
       {feed && feed.list.length === 0 && <Notice text="No updates yet. School announcements and events will appear here." />}
       {(configured ? feedOrder(feed?.list ?? []) : [SAMPLE_UPDATE]).map((u) => (
         <UpdateCard key={u.id} update={u} editor={editor} onEdit={() => setEditing(u)}
@@ -210,7 +211,6 @@ const styles = StyleSheet.create({
   header: { gap: 4, marginBottom: space.xs },
   title: { ...type.screenTitle },
   muted: { ...type.bodyMuted },
-  spinner: { marginTop: space.xl },
   updateCard: { padding: 0, overflow: 'hidden', gap: 0 },
   photo: { width: '100%', aspectRatio: 16 / 9, backgroundColor: colors.surfaceMuted, borderRadius: radius.sm, overflow: 'hidden' },
   cardPhoto: { borderRadius: 0 },

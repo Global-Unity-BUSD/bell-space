@@ -9,6 +9,7 @@ import { availabilityText, classify, LANGUAGES, languageLabel, MAX_TEXT, mergeMe
 import { errorText } from '../backend/client';
 import { Button, Card, Chip, Field, Notice, Segmented, StatusPill } from '../ui/controls';
 import Icon from '../ui/Icon';
+import { SkeletonCards } from '../ui/Placeholder';
 import { colors, radius, space, type } from '../ui/theme';
 import { useKeyboardInset } from '../ui/useKeyboardInset';
 
@@ -371,9 +372,10 @@ function ChatHome({ profile }: { profile: Profile }) {
 
   if (!data) {
     return (
-      <View style={styles.center}>
-        {error ? <Notice text={error} tone="error" /> : <ActivityIndicator color={colors.brand} />}
-      </View>
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Header title="Chat" />
+        {error ? <Notice text={error} tone="error" /> : <SkeletonCards count={2} />}
+      </ScrollView>
     );
   }
   const reportedIds = new Set(data.reports.map((r) => r.conversation_id));
@@ -463,7 +465,14 @@ function ChatContent() {
       </ScrollView>
     );
   }
-  if (loading) return <View style={styles.center}><ActivityIndicator color={colors.brand} /></View>;
+  if (loading) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Header title="Chat" />
+        <SkeletonCards count={2} />
+      </ScrollView>
+    );
+  }
   if (!session) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -488,7 +497,6 @@ function ChatContent() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.canvas },
   content: { padding: space.xl, paddingBottom: 48, gap: space.md },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, backgroundColor: colors.canvas },
   header: { gap: 4, marginBottom: space.xs },
   title: { ...type.screenTitle },
   muted: { ...type.bodyMuted },
