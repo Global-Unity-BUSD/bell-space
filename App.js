@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
+import { startTransition, useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +17,11 @@ import { colors, space, type } from './src/ui/theme';
 
 export default function App() {
   // No welcome or sign-in screen: the app opens on Navigation.
+  // The tab bar's highlight moves at once; the screen switch follows as
+  // low-priority work, so the tap gets visible feedback in the next frame.
+  const [highlight, setHighlight] = useState(/** @type {import('./src/ui/TabBar').TabId} */ ('navigation'));
   const [tab, setTab] = useState(/** @type {import('./src/ui/TabBar').TabId} */ ('navigation'));
+  const highlightRef = useRef(highlight);
   // Developer tools (hidden in Settings): map review shows proposed
   // (unchecked) routes; live location is off until switched on there, which
   // is also when location and motion permission are first requested.
@@ -26,8 +30,12 @@ export default function App() {
   const [liveOn, setLiveOn] = useState(false);
   const [liveTest, setLiveTest] = useState(false);
   const live = useLiveTracking(liveOn);
-  // Stable, so the memoized Q&A screen is not redrawn by a tab change.
-  const openTab = useCallback((/** @type {import('./src/ui/TabBar').TabId} */ next) => setTab(next), []);
+  const openTab = useCallback((/** @type {import('./src/ui/TabBar').TabId} */ next) => {
+    if (next === highlightRef.current) return;
+    highlightRef.current = next;
+    setHighlight(next);
+    startTransition(() => setTab(next));
+  }, []);
   // Hiding the developer tools also switches them off.
   const setDev = (/** @type {boolean} */ on) => {
     setDevUnlocked(on);
@@ -59,7 +67,7 @@ export default function App() {
               )}
               {tab === 'qa' && <QAScreen onOpenTab={openTab} />}
             </View>
-            <TabBar active={tab} onChange={openTab} />
+            <TabBar active={highlight} onChange={openTab} />
             <StatusBar style="dark" />
           </SafeAreaView>
         </SafeAreaProvider>

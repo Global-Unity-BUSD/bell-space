@@ -22,7 +22,9 @@ export default function TabBar({ active, onChange }: { active: TabId; onChange: 
         const color = selected ? colors.brand : colors.textMuted;
         return (
           <Pressable key={tab.id} accessibilityRole="tab" accessibilityState={{ selected }}
-            accessibilityLabel={tab.label} onPress={() => onChange(tab.id)}
+            // Switch on finger-down for instant feedback; onPress covers screen
+            // readers, which activate without a press-in.
+            accessibilityLabel={tab.label} onPressIn={() => onChange(tab.id)} onPress={() => onChange(tab.id)}
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}>
             <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
               <Icon name={tab.icon} color={color} size={24} strokeWidth={selected ? 2.2 : 1.8} />
