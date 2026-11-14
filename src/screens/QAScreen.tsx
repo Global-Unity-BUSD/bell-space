@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { QA_CATEGORIES, QA_ENTRIES, QA_LINK_LABEL, searchQa, type QaCategory, type QaEntry, type QaLink } from '../content/qa';
@@ -30,7 +30,7 @@ function Entry({ entry, open, onToggle, onLink }: {
   );
 }
 
-export default function QAScreen({ onOpenTab }: { onOpenTab: (tab: QaLink) => void }) {
+function QAScreen({ onOpenTab }: { onOpenTab: (tab: QaLink) => void }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<QaCategory | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -117,3 +117,5 @@ const styles = StyleSheet.create({
   askText: { ...type.body, color: colors.text },
   pressed: { opacity: 0.6 },
 });
+
+export default memo(QAScreen);

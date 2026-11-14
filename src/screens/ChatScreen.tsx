@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { acceptConversation, askGuide, endConversation, guidesAvailable, loadAccountName, loadChat, loadGuideSettings, loadMessages,
@@ -437,7 +437,7 @@ function HowItWorks() {
   );
 }
 
-export default function ChatScreen() {
+function ChatScreen() {
   const { configured, loading, session, profile, signOut } = useAuth();
   if (!configured) {
     return (
@@ -540,3 +540,5 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.45 },
   pressed: { opacity: 0.6 },
 });
+
+export default memo(ChatScreen);

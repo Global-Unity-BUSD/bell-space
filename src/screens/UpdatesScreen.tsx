@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
 import { loadUpdates, removePhoto, saveUpdate, uploadPhoto, watchUpdates, type UpdateFields } from '../backend/api';
@@ -162,7 +162,7 @@ function Editor({ update, photo, onDone }: { update: Update | null; photo?: stri
 // every minute.
 const FEED_REFRESH_MS = 60_000;
 
-export default function UpdatesScreen({ active }: { active: boolean }) {
+function UpdatesScreen({ active }: { active: boolean }) {
   const { configured, profile } = useAuth();
   const [feed, setFeed] = useState<Feed | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -238,3 +238,5 @@ const styles = StyleSheet.create({
   half: { flex: 1 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 });
+
+export default memo(UpdatesScreen);

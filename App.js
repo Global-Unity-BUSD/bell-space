@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +26,8 @@ export default function App() {
   const [liveOn, setLiveOn] = useState(false);
   const [liveTest, setLiveTest] = useState(false);
   const live = useLiveTracking(liveOn);
+  // Stable, so the memoized Q&A screen is not redrawn by a tab change.
+  const openTab = useCallback((/** @type {import('./src/ui/TabBar').TabId} */ next) => setTab(next), []);
   // Hiding the developer tools also switches them off.
   const setDev = (/** @type {boolean} */ on) => {
     setDevUnlocked(on);
@@ -55,9 +57,9 @@ export default function App() {
                   liveStatus: liveOn ? live.status : 'off', review, onReviewChange: setReview,
                 }} />
               )}
-              {tab === 'qa' && <QAScreen onOpenTab={setTab} />}
+              {tab === 'qa' && <QAScreen onOpenTab={openTab} />}
             </View>
-            <TabBar active={tab} onChange={setTab} />
+            <TabBar active={tab} onChange={openTab} />
             <StatusBar style="dark" />
           </SafeAreaView>
         </SafeAreaProvider>
