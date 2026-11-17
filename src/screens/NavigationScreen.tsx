@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentRef, type ReactNode } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import InteractiveMap, { type MapControls } from '../map/InteractiveMap';
@@ -212,7 +212,7 @@ function ResultRow({ place, onPress, routed }: { place: Place; onPress: () => vo
 }
 
 
-export default function NavigationScreen({ review = false, live = null, liveTest = false }: {
+function NavigationScreen({ review = false, live = null, liveTest = false }: {
   review?: boolean;
   // Present only while live location is switched on in Settings.
   live?: LiveTracking | null;
@@ -649,3 +649,5 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 17, color: colors.text, height: '100%' },
   searchCancel: { fontSize: 16, fontWeight: '600', color: colors.brand },
 });
+
+export default memo(NavigationScreen);

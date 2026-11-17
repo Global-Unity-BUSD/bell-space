@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
+import { createContext, memo, useCallback, useContext, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { acceptConversation, askGuide, endConversation, guidesAvailable, loadAccountName, loadChat, loadGuideSettings, loadMessages,
@@ -9,6 +9,7 @@ import { availabilityText, classify, LANGUAGES, languageLabel, MAX_TEXT, mergeMe
 import { errorText } from '../backend/client';
 import { Button, Card, Chip, Field, Notice, Segmented, StatusPill } from '../ui/controls';
 import Icon from '../ui/Icon';
+import { SkeletonCards } from '../ui/Placeholder';
 import { colors, radius, space, type } from '../ui/theme';
 import { useKeyboardInset } from '../ui/useKeyboardInset';
 
@@ -17,6 +18,9 @@ type Viewer = 'student' | 'guide' | 'reviewer';
 // The queue also refreshes on a timer: a question another guide accepts stops
 // being visible to you, so no realtime event reaches you for it.
 const QUEUE_REFRESH_MS = 10_000;
+// False while another tab is shown: Chat stops listening and polling, and
+// reloads when it is opened again.
+const ChatActive = createContext(true);
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 const day = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -87,7 +91,9 @@ function AskForm({ profile, onAsked }: { profile: Profile; onAsked: (c: Conversa
   const [error, setError] = useState<string | null>(null);
   const key = `${topic}:${language}`;
 
+  const active = useContext(ChatActive);
   useEffect(() => {
+    if (!active) return;
     let live = true;
     const check = () => guidesAvailable(topic, language)
       .then((count) => { if (live) setAvailableCount({ key: `${topic}:${language}`, count }); })
@@ -95,7 +101,7 @@ function AskForm({ profile, onAsked }: { profile: Profile; onAsked: (c: Conversa
     check();
     const id = setInterval(check, 15_000);
     return () => { live = false; clearInterval(id); };
-  }, [topic, language]);
+  }, [topic, language, active]);
 
   const status = availabilityText(available?.key === key ? available.count : null, topic, language);
   const send = async () => {
@@ -224,13 +230,15 @@ function Thread({ conversation, viewer, reportIds, askedBy, onBack, onChanged }:
   const [account, setAccount] = useState<string | null>(null);
   const id = conversation.id;
   const names = partyNames(conversation, viewer);
+  const active = useContext(ChatActive);
 
   useEffect(() => {
+    if (!active) return;
     let live = true;
     loadMessages(id).then((m) => { if (live) setMessages((t) => mergeMessages(t, m)); }).catch((e) => setError(errorText(e)));
     const stop = watchMessages(id, (m) => setMessages((t) => mergeMessages(t, [m])));
     return () => { live = false; stop(); };
-  }, [id]);
+  }, [id, active]);
   // Reviewers see which account asked, even when it was anonymous to the guide.
   useEffect(() => {
     if (!askedBy) return;
@@ -240,14 +248,14 @@ function Thread({ conversation, viewer, reportIds, askedBy, onBack, onChanged }:
   }, [askedBy]);
   const pending = conversation.status === 'pending';
   useEffect(() => {
-    if (!pending || viewer !== 'student') return;
+    if (!pending || viewer !== 'student' || !active) return;
     let live = true;
     const check = () => guidesAvailable(conversation.topic, conversation.language)
       .then((n) => { if (live) setWaiting(n); }).catch(() => {});
     check();
     const id = setInterval(check, 15_000);
     return () => { live = false; clearInterval(id); };
-  }, [pending, viewer, conversation.topic, conversation.language]);
+  }, [pending, viewer, conversation.topic, conversation.language, active]);
 
   const send = async () => {
     const problem = validateText(draft);
@@ -353,18 +361,21 @@ function ChatHome({ profile }: { profile: Profile }) {
   const refresh = useCallback(() => {
     loadChat(profile.id).then((d) => { setData(d); setError(null); }).catch((e) => setError(errorText(e)));
   }, [profile.id]);
+  const active = useContext(ChatActive);
   useEffect(() => {
+    if (!active) return;
     refresh();
     const stop = watchConversations(refresh);
     const id = profile.role === 'guide' ? setInterval(refresh, QUEUE_REFRESH_MS) : null;
     return () => { stop(); if (id) clearInterval(id); };
-  }, [refresh, profile.role]);
+  }, [refresh, profile.role, active]);
 
   if (!data) {
     return (
-      <View style={styles.center}>
-        {error ? <Notice text={error} tone="error" /> : <ActivityIndicator color={colors.brand} />}
-      </View>
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Header title="Chat" />
+        {error ? <Notice text={error} tone="error" /> : <SkeletonCards count={2} />}
+      </ScrollView>
     );
   }
   const reportedIds = new Set(data.reports.map((r) => r.conversation_id));
@@ -437,7 +448,13 @@ function HowItWorks() {
   );
 }
 
-export default function ChatScreen() {
+function ChatScreen({ active }: { active: boolean }) {
+  return <ChatActive.Provider value={active}><ChatContent /></ChatActive.Provider>;
+}
+
+export default memo(ChatScreen);
+
+function ChatContent() {
   const { configured, loading, session, profile, signOut } = useAuth();
   if (!configured) {
     return (
@@ -448,7 +465,14 @@ export default function ChatScreen() {
       </ScrollView>
     );
   }
-  if (loading) return <View style={styles.center}><ActivityIndicator color={colors.brand} /></View>;
+  if (loading) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Header title="Chat" />
+        <SkeletonCards count={2} />
+      </ScrollView>
+    );
+  }
   if (!session) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -473,7 +497,6 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.canvas },
   content: { padding: space.xl, paddingBottom: 48, gap: space.md },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, backgroundColor: colors.canvas },
   header: { gap: 4, marginBottom: space.xs },
   title: { ...type.screenTitle },
   muted: { ...type.bodyMuted },

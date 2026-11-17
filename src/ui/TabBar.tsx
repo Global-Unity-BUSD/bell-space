@@ -22,7 +22,9 @@ export default function TabBar({ active, onChange }: { active: TabId; onChange: 
         const color = selected ? colors.brand : colors.textMuted;
         return (
           <Pressable key={tab.id} accessibilityRole="tab" accessibilityState={{ selected }}
-            accessibilityLabel={tab.label} onPress={() => onChange(tab.id)}
+            // Switch on finger-down for instant feedback; onPress covers screen
+            // readers, which activate without a press-in.
+            accessibilityLabel={tab.label} onPressIn={() => onChange(tab.id)} onPress={() => onChange(tab.id)}
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}>
             <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
               <Icon name={tab.icon} color={color} size={24} strokeWidth={selected ? 2.2 : 1.8} />
@@ -42,7 +44,8 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 50, gap: 2 },
   pressed: { opacity: 0.6 },
-  iconWrap: { width: 52, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  // The selected highlight is a pill with fully round ends.
+  iconWrap: { width: 56, height: 32, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   iconWrapSelected: { backgroundColor: colors.brandSoft },
   label: { fontSize: 11.5, fontWeight: '500' },
   selectedLabel: { fontWeight: '700' },

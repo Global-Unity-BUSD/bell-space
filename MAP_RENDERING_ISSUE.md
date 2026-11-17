@@ -2,6 +2,14 @@
 
 ## Status — Android stutter reported gone (2026-11-01)
 
+**2026-11-05 note:** the settled vector layer now sizes its overscan per axis
+to the distance the content can actually pan (plus any bottom-panel lift), a
+pure pan redraws immediately after the gesture while zoom changes keep the
+120 ms settle delay, and zooming out now drops the finer geometry layers
+(dividers below Medium; uncertain lines, uncertain symbols and ramp marks below
+Full). The automated map tests cover the new rules; none of this is measured on
+the Android device yet.
+
 **2026-11-01 note:** the per-switch mount of the Building 1 Floor 2 labeled
 export was removed; Floor 2 now draws its traced walls and labels from
 `2026-10-21_campus-floor2.svg`. The user reports the Android stutter is gone

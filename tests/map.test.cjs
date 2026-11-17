@@ -516,9 +516,11 @@ test('campus levels share one frame and keep documented and uncertain items apar
       assert.ok(['stair', 'elevator', 'entrance', 'exit', 'ramp'].includes(c.type));
     }
   });
-  // Floor 2 includes the traced Building 1 (12xx) plan, curves included.
-  assert.ok(campus[1].walls.length > 300, 'Floor 2 traces Building 1 Floor 2');
+  // Floor 2 includes the traced Building 1 (12xx) plan, drawn like Floor 1:
+  // a filled footprint, solid outer walls and dashed room dividers.
   assert.match(campus[1].layers.walls, /C/, 'the library bump stays a curve');
+  assert.match(campus[1].layers.footprint, /C/, 'Building 1 Floor 2 is filled, library bump included');
+  assert.ok(segments(campus[1].layers.dividers).length > 80, 'Building 1 Floor 2 rooms are divided like Floor 1');
   const ground = campus[0];
   for (const id of ['g-b1-cafeteria', 'g-b1-quad', 'g-b1-library', 'g-b1-admin-offices', 'g-b1-room-1155',
     'g-b2-auditorium', 'g-b2-stage', 'g-b2-room-2107', 'g-b2-room-2101', 'g-b3-gym-3-101', 'g-b3-pool',
@@ -582,8 +584,13 @@ test('upper floors are placed over their buildings in the campus frame', () => {
   assert.equal(b1Labels.length, 39);
   for (const a of b1Labels) assert.ok(inside(a.anchor, b1, 90), `Floor 2 ${a.id} sits over Building 1`);
   // Rooms 1202–1208 sit over the 1138–1144 row; 1213 sits over the 1155 end.
-  near(b1Labels.find((a) => a.id === 'f2-b1-1202').anchor.y, byId(ground, 'g-b1-room-1139').anchor.y, '', 3);
-  assert.ok(Math.abs(b1Labels.find((a) => a.id === 'f2-b1-1213').anchor.x - byId(ground, 'g-b1-room-1155').anchor.x) < 8);
+  near(b1Labels.find((a) => a.id === 'f2-b1-1202').anchor.y, byId(ground, 'g-b1-room-1139').anchor.y, '', 1);
+  const f2Room1213 = b1Labels.find((a) => a.id === 'f2-b1-1213').anchor;
+  near(f2Room1213.x, byId(ground, 'g-b1-room-1155').anchor.x, '', 1);
+  near(f2Room1213.y, byId(ground, 'g-b1-room-1155').anchor.y, '', 1);
+  // Floor 3 repeats Floor 2's north wing and is fitted onto it.
+  near(byId(campus[2], 'f3-b1-steam-lab').anchor.x, byId(campus[1], 'f2-b1-STEAM Lab').anchor.x, '', 1);
+  near(byId(campus[2], 'f3-b1-steam-lab').anchor.y, byId(campus[1], 'f2-b1-STEAM Lab').anchor.y, '', 1);
   for (const a of campus[2].annotations.filter((l) => l.kind === 'room')) {
     assert.ok(inside(a.anchor, { minX: 400, maxX: 580, minY: 0, maxY: 120 }, 0), `Floor 3 ${a.id} sits over Building 1's north wing`);
   }
