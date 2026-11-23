@@ -20,7 +20,9 @@ npx expo lint
 npx tsc --noEmit
 ```
 
-Chat and Updates need a Supabase project: see `PILOT_SETUP.md`.
+Chat and Updates in the app still use the Supabase pilot (`PILOT_SETUP.md`)
+until they are switched to the new server. The server and staff website:
+`server/README.md` (plan: `BACKEND_PLAN.md`).
 
 ## Layout
 
@@ -30,6 +32,10 @@ Chat and Updates need a Supabase project: see `PILOT_SETUP.md`.
 * `assets/photos/`: provided event photos (see its README for permissions).
 * `src/backend/`: Supabase client, sign-in, chat/update rules and API calls.
 * `supabase/migrations/`: database schema and access rules; `tools/pilot/setup-accounts.mjs`: test accounts.
+* `server/`: self-hosted backend (API, live hints, access rules in `server/migrations/`).
+* `web/`: staff website (Updates, student support, accounts).
+* `shared/`: API types and labels used by the server, website and (later) the app.
+* `deploy/`: docker-compose, environment example and backup script for the BUSD server.
 * `src/ui/`: tab bar, icons, theme, shared controls.
 * `src/map/`: map rendering, gestures, labels, floor registry (`floors.tsx`).
 * `src/navigation/`: route finder, Building 1 route data, route drawing.

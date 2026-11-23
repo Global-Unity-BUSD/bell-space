@@ -1,5 +1,45 @@
 # Current TODO
 
+## Current Task: self-hosted server and staff website (2026-11-22)
+
+Plan: `BACKEND_PLAN.md`. Run: `server/README.md`. Done (plan steps 1–5):
+* **Server** (`server/`): one Node service, PostgreSQL (PGlite in development and tests).
+  Access rules in `server/migrations/001_init.sql`; sessions, scrypt passwords, `/v1/` API,
+  WebSocket hints (ids only).
+* **Support chat (CLEAR 2.0):** submit → staff assign a guide or keep it with staff →
+  guide may decline or mark done → staff follow-up in the same thread → resolved.
+  Names visible, no anonymous mode. Supervision setting (`all_requests` default,
+  `reported_only`), and staff views are recorded.
+* **Staff website** (`web/`): sign-in; Student support (queue, assign, thread, reports,
+  history); Updates (draft, publish, photos); Accounts (create, roles, guides,
+  passwords, disable, supervision, recent changes). Pages are shown by permission.
+* **Test accounts:** `npm run seed:test` (2 students, 2 guides, 3 staff).
+* **Checks:** 22 server tests, website build, lint and typecheck. A browser
+  run against the dev server covered the support flow with live updates, Updates
+  publish, and Accounts.
+
+* **App on the server** (plan step 6): `.env.local` sets `EXPO_PUBLIC_BACKEND=server` and
+  `EXPO_PUBLIC_SERVER_URL`. New Chat screen (`SupportChatScreen.tsx`): ask, waiting for
+  staff review, live thread, withdraw, report; guides also get "Assigned to you" with
+  Mark done and Decline. Updates is a read-only feed (staff post on the website).
+  Supabase is kept as a fallback (`EXPO_PUBLIC_BACKEND=supabase`).
+  Checked in the app's web build at phone size: Riley signs in, asks, gets assigned,
+  receives Gina's reply live, replies.
+
+* **Staff portal redesign:** left menu (Chats, Updates, Accounts), tables, plain controls,
+  Light / Dark / System theme. Two staff types: Chats, and Chats + Updates (also Accounts
+  and the supervision setting). Students and guides are test accounts, listed read-only.
+
+Not done yet:
+* [ ] Guide view in the app (Assigned to you, Mark done, Decline) is covered by tests, not yet tapped through.
+* [ ] Not yet run on an iPhone or Android phone against the server.
+* [ ] The phone stores its session token in AsyncStorage, as the Supabase pilot did;
+  expo-secure-store would be safer (new dependency, needs approval).
+* [ ] `deploy/` is written but not run (no Docker on this machine).
+* [ ] Unused uploaded photos (uploaded, never saved) are not cleaned up.
+* [ ] Staff cannot take a request back from a guide; only the guide can decline.
+* [ ] Later: push notifications; BUSD sign-on.
+
 ## Current Task: Bell Space product pass (2026-10-26)
 
 * **Diagnosis:** on the phone, Chat and Updates said "not available", and
