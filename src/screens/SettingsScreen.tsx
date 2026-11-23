@@ -3,9 +3,12 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 
 import { useAuth } from '../backend/auth';
 import { ROLE_LABEL } from '../backend/chatLogic';
+import { BACKEND } from '../backend/mode';
+import { roleLabel, useServerAuth } from '../backend/server/auth';
 import type { LiveStatus } from '../positioning/useLiveTracking';
 import { colors, radius, space, type } from '../ui/theme';
 import { SignIn } from './ChatScreen';
+import { ServerSignIn } from './SupportChatScreen';
 
 function Row({ label, value, last, onPress }: { label: string; value: string; last?: boolean; onPress?: () => void }) {
   const row = (
@@ -54,8 +57,31 @@ export type DevTools = {
   review: boolean; onReviewChange: (on: boolean) => void;
 };
 
-/** Sign-in status for Chat (and posting updates). */
-function Account() {
+/** Sign-in status on the Bell Space server. */
+function ServerAccount() {
+  const { configured, me, signOut } = useServerAuth();
+  if (!configured) {
+    return (
+      <View style={styles.group}>
+        <Row label="Chat" value="Not connected yet" last />
+        <Text style={styles.groupNote}>Chat sign-in becomes available once the school connects Bell Space. Navigation and Q&A work now.</Text>
+      </View>
+    );
+  }
+  if (!me) {
+    return <View style={styles.signIn}><ServerSignIn intro="Sign in to use Chat. Navigation, Q&A and Updates work without signing in." /></View>;
+  }
+  return (
+    <View style={styles.group}>
+      <Row label="Signed in as" value={me.display_name} />
+      <Row label="Role" value={roleLabel(me)} />
+      <ActionRow label="Sign out" onPress={signOut} />
+    </View>
+  );
+}
+
+/** Sign-in status for Chat and posting updates on the Supabase pilot (fallback backend). */
+function SupabaseAccount() {
   const { configured, session, profile, signOut } = useAuth();
   if (!configured) {
     return (
@@ -88,7 +114,7 @@ export default function SettingsScreen({ dev }: { dev: DevTools }) {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title} accessibilityRole="header">Settings</Text>
       <Text style={styles.section}>Account</Text>
-      <Account />
+      {BACKEND === 'server' ? <ServerAccount /> : <SupabaseAccount />}
       <Text style={styles.section}>About Bell Space</Text>
       <View style={styles.group}>
         <Text style={styles.about}>

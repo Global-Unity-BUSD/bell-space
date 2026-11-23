@@ -2,9 +2,15 @@ import * as ImagePicker from 'expo-image-picker';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
+import type { Update as ServerUpdate } from '../../shared/api';
+
 import { loadUpdates, removePhoto, saveUpdate, uploadPhoto, watchUpdates, type UpdateFields } from '../backend/api';
 import { useAuth } from '../backend/auth';
 import { errorText } from '../backend/client';
+import { BACKEND } from '../backend/mode';
+import { loadUpdates as loadServerUpdates } from '../backend/server/api';
+import { serverUrl } from '../backend/server/client';
+import { useLive } from '../backend/server/live';
 import { dateBadge, feedOrder, formatWhen, LIMITS, SAMPLE_UPDATE, splitWhen, validateUpdate, type Update,
   type UpdateDraft } from '../backend/updatesLogic';
 import { Button, Card, Field, Notice, StatusPill } from '../ui/controls';
@@ -163,7 +169,8 @@ function Editor({ update, photo, onDone }: { update: Update | null; photo?: stri
 // every minute.
 const FEED_REFRESH_MS = 60_000;
 
-function UpdatesScreen({ active }: { active: boolean }) {
+/** The Supabase pilot feed, with the in-app editor for admins (fallback backend). */
+function SupabaseUpdates({ active }: { active: boolean }) {
   const { configured, profile } = useAuth();
   const [feed, setFeed] = useState<Feed | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -204,6 +211,40 @@ function UpdatesScreen({ active }: { active: boolean }) {
     </ScrollView>
   );
 }
+
+/** The Bell Space server feed: published updates for everyone. Staff post them on the website. */
+function ServerUpdates({ active }: { active: boolean }) {
+  const [list, setList] = useState<ServerUpdate[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const refresh = useCallback(() => {
+    loadServerUpdates().then((l) => { setList(l); setError(null); }).catch((e) => setError(errorText(e)));
+  }, []);
+  useEffect(() => {
+    if (!active) return;
+    refresh();
+    const id = setInterval(refresh, FEED_REFRESH_MS);
+    return () => clearInterval(id);
+  }, [active, refresh]);
+  useLive(active, (h) => { if (h.t === 'updates' || h.t === 'resync') refresh(); });
+  const shown = feedOrder((list ?? []).filter((u) => u.status === 'published')) as ServerUpdate[];
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <View style={styles.header}>
+        <Text style={styles.title} accessibilityRole="header">Updates</Text>
+        <Text style={styles.muted}>Announcements and events at Burbank High School.</Text>
+      </View>
+      {error && <Notice text={error} tone="error" />}
+      {!list && !error && <SkeletonCards />}
+      {list && shown.length === 0 && <Notice text="No updates yet. School announcements and events will appear here." />}
+      {shown.map((u) => (
+        <UpdateCard key={u.id} update={u} editor={false} onEdit={() => {}}
+          photo={u.photo_url ? { uri: serverUrl(u.photo_url) } : u.sample ? SAMPLE_PHOTOS[u.title] : undefined} />
+      ))}
+    </ScrollView>
+  );
+}
+
+const UpdatesScreen = BACKEND === 'server' ? ServerUpdates : SupabaseUpdates;
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.canvas },

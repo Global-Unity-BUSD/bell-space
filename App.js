@@ -5,11 +5,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthProvider } from './src/backend/auth';
+import { BACKEND } from './src/backend/mode';
+import { ServerAuthProvider } from './src/backend/server/auth';
 import { useLiveTracking } from './src/positioning/useLiveTracking';
 import ChatScreen from './src/screens/ChatScreen';
 import NavigationScreen from './src/screens/NavigationScreen';
 import QAScreen from './src/screens/QAScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import SupportChatScreen from './src/screens/SupportChatScreen';
 import UpdatesScreen from './src/screens/UpdatesScreen';
 import ErrorBoundary from './src/ui/ErrorBoundary';
 import { ScreenPlaceholder } from './src/ui/Placeholder';
@@ -33,6 +36,11 @@ function TabPanel({ shown, title, children }) {
     </View>
   );
 }
+
+// Chat, Updates and sign-in use the Bell Space server, or the Supabase pilot
+// as a fallback (EXPO_PUBLIC_BACKEND, see src/backend/mode.ts).
+const Accounts = BACKEND === 'server' ? ServerAuthProvider : AuthProvider;
+const Chat = BACKEND === 'server' ? SupportChatScreen : ChatScreen;
 
 export default function App() {
   // No welcome or sign-in screen: the app opens on Navigation.
@@ -62,7 +70,7 @@ export default function App() {
   };
   return (
     <GestureHandlerRootView style={styles.root}>
-      <AuthProvider>
+      <Accounts>
         <SafeAreaProvider>
           <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
             <View style={styles.header}>
@@ -76,7 +84,7 @@ export default function App() {
               </TabPanel>
               {/* Chat and Updates pause while hidden and refresh when shown again. */}
               <TabPanel shown={tab === 'chat'} title="Chat">
-                <ErrorBoundary name="Chat"><ChatScreen active={tab === 'chat'} /></ErrorBoundary>
+                <ErrorBoundary name="Chat"><Chat active={tab === 'chat'} /></ErrorBoundary>
               </TabPanel>
               <TabPanel shown={tab === 'updates'} title="Updates">
                 <ErrorBoundary name="Updates"><UpdatesScreen active={tab === 'updates'} /></ErrorBoundary>
@@ -94,7 +102,7 @@ export default function App() {
             <StatusBar style="dark" />
           </SafeAreaView>
         </SafeAreaProvider>
-      </AuthProvider>
+      </Accounts>
     </GestureHandlerRootView>
   );
 }

@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
+import { BACKEND } from './mode';
+
 // Supabase project for the Chat/Updates pilot. Set both in `.env.local`
 // (see `.env.example`). The publishable (anon) key is safe in the app: what
 // each account may read or change is enforced by the database policies in
@@ -9,7 +11,8 @@ import { AppState, Platform } from 'react-native';
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_KEY;
 
-export const backend: SupabaseClient | null = url && key
+// Only when the Supabase pilot is the chosen backend (src/backend/mode.ts).
+export const backend: SupabaseClient | null = BACKEND === 'supabase' && url && key
   ? createClient(url, key, {
     auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
   })
