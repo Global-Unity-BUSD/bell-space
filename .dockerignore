@@ -1,0 +1,13 @@
+**/node_modules
+**/.expo
+server/data
+web/dist
+apps
+maps
+reference
+docs
+tools
+.git
+.claude
+deploy/.env
+deploy/backups

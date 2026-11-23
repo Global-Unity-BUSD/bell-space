@@ -1,0 +1,43 @@
+# Bell Space on one server: PostgreSQL + the Bell Space server (API, live
+# hints, staff website). Put HTTPS in front (BUSD's reverse proxy), forwarding
+# to port 8787. Usage, from this folder:
+#   cp .env.example .env    # then set the passwords
+#   docker compose up -d --build
+#   docker compose exec server npm run create-staff -- --email you@school.org --name "Your Name" --all
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bellspace
+      POSTGRES_USER: bellspace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bellspace -d bellspace"]
+      interval: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ..
+      dockerfile: deploy/server.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      BELL_ENV: production
+      DATABASE_URL: postgres://bellspace:${POSTGRES_PASSWORD}@db:5432/bellspace
+      DATA_DIR: /data
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    volumes:
+      - server-data:/data
+    ports:
+      - "${PORT:-8787}:8787"
+
+volumes:
+  db-data:
+  server-data:
