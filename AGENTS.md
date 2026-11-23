@@ -142,14 +142,25 @@ LOD / Detail Visibility
 
 Do not introduce unnecessary architecture.
 
+### Backend and staff website
+
+Updates and Chat are moving from the Supabase pilot to a self-hosted server
+(`server/`) and a staff website (`web/`); `BACKEND_PLAN.md` is the plan and its
+order of work. Keep it one service plus PostgreSQL. Keep access rules in the
+database migrations (`server/migrations/`) and test them in `server/tests/`.
+The app uses the server by default (`src/backend/server/`,
+`SupportChatScreen.tsx`). The Supabase pilot (`supabase/`, `PILOT_SETUP.md`,
+`src/backend/{client,auth,api}.ts`, `ChatScreen.tsx`) is kept as a fallback,
+chosen with `EXPO_PUBLIC_BACKEND=supabase` (`src/backend/mode.ts`); keep it
+working, but build new features on the server.
+
 Avoid adding:
 
-* backend services beyond the Chat/Updates pilot (`PILOT_SETUP.md`); keep access rules in
-  the database migration and test them in `tests/pilot-rules.test.mjs`
-* databases
+* backend services beyond that one server (no microservices, no third-party backends)
+* databases other than its PostgreSQL
 * state-management libraries
-* APIs
-* authentication
+* APIs outside `/v1/` on that server
+* authentication other than the plan's sessions (until BUSD's identity system)
 * unnecessary abstractions
 * unnecessary dependencies
 
@@ -251,3 +262,4 @@ At completion, briefly report:
 ## Core Rule
 
 **Build exactly what is requested, build it cleanly, verify it, and stop.**
+
