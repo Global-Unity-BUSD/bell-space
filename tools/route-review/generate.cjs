@@ -7,8 +7,8 @@
 // and reference/review/entrances.jpg.
 const { writeFileSync } = require('node:fs');
 const { resolve } = require('node:path');
-const { BUILDING1_NETWORK } = require('../../src/navigation/data/building1.ts');
-const WALK = require('../../src/navigation/data/building1Walkable.ts');
+const { BUILDING1_NETWORK } = require('../../apps/src/navigation/data/building1.ts');
+const WALK = require('../../apps/src/navigation/data/building1Walkable.ts');
 
 const [pageImage, outDir] = process.argv.slice(2);
 const root = resolve(__dirname, '../..');

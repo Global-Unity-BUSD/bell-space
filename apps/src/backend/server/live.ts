@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import type { LiveHint } from '../../../shared/api';
+import type { LiveHint } from '../../../../shared/api';
 import { SERVER_URL } from '../mode';
 import { currentToken } from './client';
 

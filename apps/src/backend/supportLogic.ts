@@ -1,7 +1,7 @@
 // Student/guide Chat rules for the Bell Space server (CLEAR 2.0 flow) that
 // don't need the network (tested in tests/support-app.test.cjs). Access
 // control itself is in the server's database (server/migrations).
-import type { RequestMessage, RequestStatus, SupportRequest } from '../../shared/api';
+import type { RequestMessage, RequestStatus, SupportRequest } from '../../../shared/api';
 
 export type Viewer = 'student' | 'guide';
 export type Tone = 'pending' | 'active' | 'closed';

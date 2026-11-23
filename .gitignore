@@ -37,8 +37,8 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
-/android
+/apps/ios
+/apps/android
 
 # Supabase CLI local state
 supabase/.temp/

@@ -1,7 +1,7 @@
 import { createContext, memo, useCallback, useContext, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { checkText, LANGUAGES, languageLabel, LIMITS, TOPICS, topicLabel, type Me, type RequestMessage, type SupportRequest, type Topic } from '../../shared/api';
+import { checkText, LANGUAGES, languageLabel, LIMITS, TOPICS, topicLabel, type Me, type RequestMessage, type SupportRequest, type Topic } from '../../../shared/api';
 import {
   declineRequest, loadRequest, loadSupport, markDone, reportRequest, sendMessage, submitRequest, withdrawRequest, type SupportOverview,
 } from '../backend/server/api';

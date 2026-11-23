@@ -1,4 +1,4 @@
-import type { RequestMessage, SupportRequest, Topic, Update } from '../../../shared/api';
+import type { RequestMessage, SupportRequest, Topic, Update } from '../../../../shared/api';
 import { call } from './client';
 
 // The server's /v1/ API for the app (students and guides). Staff use the website.

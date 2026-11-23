@@ -1,8 +1,8 @@
 import type { ComponentType } from 'react';
 
-import campusFloor1Source from '../../2026-10-21_campus-floor1.svg';
-import campusFloor2Source from '../../2026-10-21_campus-floor2.svg';
-import campusFloor3Source from '../../2026-10-21_campus-floor3.svg';
+import campusFloor1Source from '../../../maps/2026-10-21_campus-floor1.svg';
+import campusFloor2Source from '../../../maps/2026-10-21_campus-floor2.svg';
+import campusFloor3Source from '../../../maps/2026-10-21_campus-floor3.svg';
 import type { MapAnnotation, WallSegment } from './annotationLayout';
 import type { DetailThresholds } from './detailPolicy';
 import { createLevelGeometry } from './FloorPlanMap';

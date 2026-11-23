@@ -66,7 +66,7 @@ def FIT_U13(q): return (round(454.7 + 0.9966 * (q[0] - 455), 3), round(5.66 + 0.
 # The clean plan is one absolute M/L/H/V/C/Z path (the C curves are the
 # library's semicircular bump). planar.py splits it into footprint, walls and
 # dividers like Floor 1.
-U12D_SVG = os.path.join(here, '..', '..', '2026-10-04_floor-2.svg')
+U12D_SVG = os.path.join(here, '..', '..', 'maps', '2026-10-04_floor-2.svg')
 U12D_SEGMENTS = PLANAR['parse_plan'](re.search(r'<path\b[^>]*\bd="([^"]+)"', open(U12D_SVG).read()).group(1))
 # Unlabeled spaces smaller than this (plan units squared; a classroom is about
 # 150) are closets or stair boxes: their lines are left out like Floor 1.

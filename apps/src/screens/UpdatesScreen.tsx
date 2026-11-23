@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
-import type { Update as ServerUpdate } from '../../shared/api';
+import type { Update as ServerUpdate } from '../../../shared/api';
 
 import { loadUpdates, removePhoto, saveUpdate, uploadPhoto, watchUpdates, type UpdateFields } from '../backend/api';
 import { useAuth } from '../backend/auth';

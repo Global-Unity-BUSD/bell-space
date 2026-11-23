@@ -14,9 +14,9 @@ const { boundPan, cameraMatrix, clamp, fitMap, focalOffset, moveCamera, normaliz
 
 const { prepareFloorPlanSvg, segments } = require('../src/map/prepareFloorPlanSvg.cjs');
 
-const source = readFileSync(resolve(__dirname, '../2026-10-04_floor2-labeled.svg'), 'utf8');
+const source = readFileSync(resolve(__dirname, '../../maps/2026-10-04_floor2-labeled.svg'), 'utf8');
 const map = prepareLabeledSvg(source);
-const campusSource = [1, 2, 3].map((n) => readFileSync(resolve(__dirname, `../2026-10-21_campus-floor${n}.svg`), 'utf8'));
+const campusSource = [1, 2, 3].map((n) => readFileSync(resolve(__dirname, `../../maps/2026-10-21_campus-floor${n}.svg`), 'utf8'));
 const campus = campusSource.map((xml) => prepareFloorPlanSvg(xml));
 const CAMPUS_MIN_ZOOMS = [1, 2.2, 5.4];
 const floor2View = { id: 'floor-2', Geometry: 'Floor', labels: [] };
@@ -102,7 +102,7 @@ test('Metro transforms fresh source-derived annotation metadata and tracks adapt
   const key = transformer.getCacheKey(options);
   assert.match(key, /^[0-9a-f]{64}$/);
   const transformed = transformer.transform({
-    filename: resolve(root, '2026-10-04_floor2-labeled.svg'), src: source,
+    filename: resolve(root, '../maps/2026-10-04_floor2-labeled.svg'), src: source,
     options: { dev: true, platform: 'ios', projectRoot: root },
   });
   const context = { module: { exports: {} } };
@@ -385,7 +385,7 @@ function componentHarness() {
     './annotationLayout': require('../src/map/annotationLayout.ts'),
     './detailPolicy': require('../src/map/detailPolicy.ts'),
     './mapMath': require('../src/map/mapMath.ts'),
-    '../../2026-10-04_floor2-labeled.svg': { __esModule: true, default: map },
+    '../../../maps/2026-10-04_floor2-labeled.svg': { __esModule: true, default: map },
   };
   const load = (name, exposeViewport = false) => {
     const filename = resolve(__dirname, '../src/map', name);
@@ -632,7 +632,7 @@ test('Metro accepts the campus map files and rejects any other SVG', () => {
   const root = resolve(__dirname, '..');
   for (const n of [1, 2, 3]) {
     const transformed = transformer.transform({
-      filename: resolve(root, `2026-10-21_campus-floor${n}.svg`), src: campusSource[n - 1],
+      filename: resolve(root, `../maps/2026-10-21_campus-floor${n}.svg`), src: campusSource[n - 1],
       options: { dev: true, platform: 'ios', projectRoot: root },
     });
     const context = { module: { exports: {} } };

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { G, Path } from 'react-native-svg';
 
-import map from '../../2026-10-04_floor2-labeled.svg';
+import map from '../../../maps/2026-10-04_floor2-labeled.svg';
 import type { DetailLevel } from './detailPolicy';
 import type { MapPlacement } from './placement';
 

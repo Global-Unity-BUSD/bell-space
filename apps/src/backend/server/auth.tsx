@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import type { Me } from '../../../shared/api';
+import type { Me } from '../../../../shared/api';
 import { SERVER_URL } from '../mode';
 import { call, setSession } from './client';
 import { reconnectLive } from './live';
