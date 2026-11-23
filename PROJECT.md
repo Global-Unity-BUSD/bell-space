@@ -67,7 +67,11 @@ These are not part of the current stage unless specifically requested:
 * indoor positioning beyond the iPhone experiment (BLE beacons)
 * automatic floor detection
 * Q&A content and backend
-* school sign-in (SSO) and production use of Chat (needs school approval, `PILOT_SETUP.md`)
+* school sign-in (SSO) and production use of Chat (needs school approval)
+* push notifications (`BACKEND_PLAN.md`, later step)
+
+In progress: a self-hosted server and staff website for Updates and the
+staff-supervised support chat (`BACKEND_PLAN.md`).
 * teacher directory data
 
 ## Important Principles
