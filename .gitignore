@@ -46,3 +46,8 @@ supabase/.temp/
 # local working notes
 MAP_LOADING_NOTES.md
 session-6b2d45b7-5337-4842-8f3d-bb19cd4d918b.md
+
+# Bell Space server: development database and photos; deploy secrets and backups
+server/data/
+deploy/.env
+deploy/backups/
