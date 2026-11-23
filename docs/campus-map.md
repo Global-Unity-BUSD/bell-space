@@ -19,11 +19,11 @@ it lives here, in the SVG `data-note` attributes and in `TODO.md`.
 
 | App floor | Contents | Source drawing | File |
 | --- | --- | --- | --- |
-| Floor 1 | Buildings 3 (left), 2 (middle), 1 (right), parking, tennis courts, ramp | The long ground-level drawing at the bottom of the PDF | `2026-10-21_campus-floor1.svg` |
-| Floor 2 | Building 1 (12xx) | Upper-right drawing | `2026-10-21_campus-floor2.svg` |
-| Floor 2 | Building 2 (22xx) | Upper-middle drawing | `2026-10-21_campus-floor2.svg` |
-| Floor 2 | Building 3 (3-2xx) | Upper-left drawing | `2026-10-21_campus-floor2.svg` |
-| Floor 3 | Building 1 (13xx) | Drawing left of the 12xx plan | `2026-10-21_campus-floor3.svg` |
+| Floor 1 | Buildings 3 (left), 2 (middle), 1 (right), parking, tennis courts, ramp | The long ground-level drawing at the bottom of the PDF | `maps/2026-10-21_campus-floor1.svg` |
+| Floor 2 | Building 1 (12xx) | Upper-right drawing | `maps/2026-10-21_campus-floor2.svg` |
+| Floor 2 | Building 2 (22xx) | Upper-middle drawing | `maps/2026-10-21_campus-floor2.svg` |
+| Floor 2 | Building 3 (3-2xx) | Upper-left drawing | `maps/2026-10-21_campus-floor2.svg` |
+| Floor 3 | Building 1 (13xx) | Drawing left of the 12xx plan | `maps/2026-10-21_campus-floor3.svg` |
 
 The building names come from the user. Only "BUILDING 3" is printed in the
 PDF.
@@ -49,11 +49,11 @@ page. Each one is placed over its building with a uniform scale + offset.
 | --- | --- | --- | --- |
 | Building 2 Floor 2 (22xx) | scale 1.0, offset (−23, +1049) page px | Auditorium walls align with the ground auditorium; plan width matches Building 2 | ~2–3 m. The two "2215" labels need checking |
 | Building 3 Floor 2 (3-2xx) | scale 1.0, offset (+2, +628) | East wall and north wall matched to the locker row | West extent (it reaches over the ramp area) and vertical position uncertain. The elevator symbol sits ~8 units west of the ground ELEV |
-| Building 1 Floor 2 (12xx) | campus = 0.81439 × (design + (7.5, 9.5)) + (406.387, −5.887), then fitted onto Floor 1 (`FIT_U12`): x − 0.3, y = 97.5 + 0.987 × (y − 94.8) | Traced from `2026-10-04_floor-2.svg` (the labeled export without its room glyphs, shifted by (−7.5, −9.5)). Its lower part sits directly above Floor 1, so the fit matches the 1213–1219 row to 1155–1162, the 1202–1209 row to 1138–Book Room, the west end and the east wall: all within 0.3 units | The library bump lands ~2.5 units south of the ground bump (the rows were preferred). The north wing (STEAM Lab, Small Quad) has no Floor 1 building under it and overlaps the parking lot's east edge |
+| Building 1 Floor 2 (12xx) | campus = 0.81439 × (design + (7.5, 9.5)) + (406.387, −5.887), then fitted onto Floor 1 (`FIT_U12`): x − 0.3, y = 97.5 + 0.987 × (y − 94.8) | Traced from `maps/2026-10-04_floor-2.svg` (the labeled export without its room glyphs, shifted by (−7.5, −9.5)). Its lower part sits directly above Floor 1, so the fit matches the 1213–1219 row to 1155–1162, the 1202–1209 row to 1138–Book Room, the west end and the east wall: all within 0.3 units | The library bump lands ~2.5 units south of the ground bump (the rows were preferred). The north wing (STEAM Lab, Small Quad) has no Floor 1 building under it and overlaps the parking lot's east edge |
 | Building 1 Floor 3 (13xx) | STEAM Lab outline → 12xx inset (scale 0.99) and the inset placement, then fitted onto the fitted Floor 2 north wing (`FIT_U13`): x = 454.7 + 0.9966 × (x − 455), y = 5.66 + 0.9806 × (y − 1.9) | The 13xx plan repeats the 12xx north wing: 18 outline corners matched, all within 0.7 units | The STEAM Lab's east step differs between the two plans and is not matched |
 
 Building 1 Floor 2 is generated into the traced SVG from the clean line plan.
-`2026-10-04_floor2-labeled.svg` (the earlier runtime overlay) is archived: it is
+`maps/2026-10-04_floor2-labeled.svg` (the earlier runtime overlay) is archived: it is
 no longer imported by the app, and its room label positions were converted into
 the generator's `U12_ROOMS` table.
 
@@ -135,7 +135,7 @@ user and must be placed from a site visit or a measured source:
 * The Career Center is entered from its bottom side, below its name.
 * The PDF does not draw doors. Each door point is centred on its room's wall,
   so its position along the wall is **approximate**; only the side is confirmed.
-  Data: `B1_ENTRANCES` in `src/navigation/data/building1Walkable.ts`. Overlay:
+  Data: `B1_ENTRANCES` in `apps/src/navigation/data/building1Walkable.ts`. Overlay:
   `reference/review/entrances.jpg`.
 * "1-159" (between 1160 and 1158) has no entrance: its label is uncertain.
 
@@ -190,7 +190,7 @@ exit pictograms and the ramp that can be seen in its source drawing. All are
 | Floor 2 | 11 stairs (six from the 12xx plan), 1 elevator |
 | Floor 3 | 4 stairs |
 
-These are a survey checklist, not a route network. See `src/navigation/` and
+These are a survey checklist, not a route network. See `apps/src/navigation/` and
 `TODO.md`.
 
 ## Regenerating the traces

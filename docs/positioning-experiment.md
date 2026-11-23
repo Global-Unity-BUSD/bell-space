@@ -20,12 +20,12 @@ Settings → **Live location (experimental)**:
 
 | Piece | File |
 | --- | --- |
-| Sensors: `expo-location` `watchPositionAsync` (BestForNavigation, 1 s), `watchHeadingAsync`; `expo-sensors` `Pedometer.watchStepCount` | `src/positioning/useLiveTracking.ts` |
-| Fusion, dead reckoning, quality, route gating (pure, tested) | `src/positioning/tracker.ts` |
-| Reference capture, checkpoints, error summary (pure, tested) | `src/positioning/calibration.ts` |
-| GPS → campus fit (least-squares similarity) | `src/positioning/positionGate.ts` |
-| Measured references shipped with the app (empty) | `src/positioning/referencePoints.ts` |
-| Test panel / marker | `src/positioning/LiveTestPanel.tsx`, `src/map/LiveMarker.tsx` |
+| Sensors: `expo-location` `watchPositionAsync` (BestForNavigation, 1 s), `watchHeadingAsync`; `expo-sensors` `Pedometer.watchStepCount` | `apps/src/positioning/useLiveTracking.ts` |
+| Fusion, dead reckoning, quality, route gating (pure, tested) | `apps/src/positioning/tracker.ts` |
+| Reference capture, checkpoints, error summary (pure, tested) | `apps/src/positioning/calibration.ts` |
+| GPS → campus fit (least-squares similarity) | `apps/src/positioning/positionGate.ts` |
+| Measured references shipped with the app (empty) | `apps/src/positioning/referencePoints.ts` |
+| Test panel / marker | `apps/src/positioning/LiveTestPanel.tsx`, `apps/src/map/LiveMarker.tsx` |
 
 * **Alignment is measured, never guessed.** GPS is turned into map positions
   only after at least **3 reference points** are captured: stand on a spot you
@@ -101,4 +101,4 @@ walls; dead reckoning drifts a few metres per 20–30 m.
 
 No iPhone measurements yet. `MEASURED_REFERENCES` is empty, so the app has
 no GPS alignment until references are captured in a session or pasted into
-`src/positioning/referencePoints.ts` from a shared log.
+`apps/src/positioning/referencePoints.ts` from a shared log.

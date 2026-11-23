@@ -6,7 +6,7 @@
 --   listed below;
 -- * every change to accounts, sessions and support requests goes through the
 --   security-definer functions below, which check who is calling.
--- Plan and flow: BACKEND_PLAN.md. Tests: server/tests/rules.test.ts.
+-- Plan and flow: docs/backend-plan.md. Tests: server/tests/rules.test.ts.
 
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'app_user') then

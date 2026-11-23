@@ -37,7 +37,7 @@ export type Floor = {
   places: Place[];
 };
 
-// One shared campus frame for every level (units: see CAMPUS_MAP.md).
+// One shared campus frame for every level (units: see docs/campus-map.md).
 // The svg.d.ts wildcard types every map as the Floor 2 export; the traced
 // campus plans have their own adapter and shape.
 const ground = campusFloor1Source as unknown as FloorPlanData;

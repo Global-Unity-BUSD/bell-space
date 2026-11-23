@@ -25,7 +25,7 @@ Two-finger rotation is off (`ROTATION_ENABLED`); the rotation math and tests
 remain. The campus SVGs are read by `prepareFloorPlanSvg.cjs`. Layers:
 `footprint`, `site`, `walls`, `dividers`, `uncertain-lines`,
 `uncertain-symbols` and `stairs` (one path per stair symbol), plus `labels` and
-`route-candidates`. See `CAMPUS_MAP.md` for sources.
+`route-candidates`. See `docs/campus-map.md` for sources.
 
 # Archived: Floor 2 labeled sample map
 

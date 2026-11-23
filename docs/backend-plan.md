@@ -89,7 +89,7 @@ submitted ──(staff assigns)──→ with_guide ──(guide marks done)─�
    Done 2026-11-22. `EXPO_PUBLIC_BACKEND=server` is the default.
 7. Supabase stays as a fallback (decided 2026-11-22): `EXPO_PUBLIC_BACKEND=supabase`
    brings back the pilot's sign-in, Chat and in-app Updates editor
-   (`src/backend/{client,auth,api}.ts`, `ChatScreen.tsx`, `supabase/`). No data
+   (`apps/src/backend/{client,auth,api}.ts`, `ChatScreen.tsx`, `apps/supabase/`). No data
    is moved between the two. Remove it only when it is no longer wanted.
 8. Later: push notifications (needs a development build, an Apple Developer
    account and FCM credentials; see below).

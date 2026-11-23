@@ -1,4 +1,4 @@
-// Generates the route-review checklist (ROUTE_REVIEW.md) and overlays of the
+// Generates the route-review checklist (docs/route-review.md) and overlays of the
 // proposed Building 1 network and the room entrances on the campus PDF,
 // straight from the route data.
 // Usage: node tools/route-review/generate.cjs <path to page_d.png> <out dir for the overlay SVG>
@@ -25,7 +25,7 @@ const stairs = edges.filter((e) => e.kind !== 'walk');
 const rows = (list, f) => list.map(f).join('\n');
 const md = `# Route Review: Building 1
 
-Generated from \`src/navigation/data/building1.ts\` by \`tools/route-review/generate.cjs\`.
+Generated from \`apps/src/navigation/data/building1.ts\` by \`tools/route-review/generate.cjs\`.
 Overlay: \`reference/proposals/building1-network.jpg\` (IDs match this list).
 
 At school, confirm or correct each item, then set its \`status\` to \`'checked'\` in the data
@@ -34,7 +34,7 @@ checked items; a route appears only when every door, walkway and stair on it is 
 
 ## Open areas: routed now
 
-These use the walkable-space data in \`src/navigation/data/building1Walkable.ts\`
+These use the walkable-space data in \`apps/src/navigation/data/building1Walkable.ts\`
 (source: ${WALK.B1_GROUND_SPACE.source}). Routes stay inside it, keep clear of walls,
 and go around stairs.
 
@@ -108,7 +108,7 @@ ${rows(stairs, (e) => `| \`${short(e.from)}\` → \`${short(e.to)}\` | ${e.kind}
   have no routes.
 * **Building entrances** from Third Street and Harvard Road.
 `;
-writeFileSync(resolve(root, 'ROUTE_REVIEW.md'), md);
+writeFileSync(resolve(root, 'docs/route-review.md'), md);
 
 // ---- overlay ----
 const color = { checked: '#1769ff', proposed: '#ea580c', unknown: '#b91c1c' };
@@ -135,7 +135,7 @@ for (const n of nodes.filter((x) => x.level === 1)) {
 }
 svg.push('<rect x="3895" y="3800" width="1150" height="80" rx="10" fill="#ffffff" opacity="0.95"/>');
 svg.push('<text x="3910" y="3832" font-size="24" font-weight="700" fill="#111827">Building 1 Floor 1 route proposal: confirm at school</text>');
-svg.push('<text x="3910" y="3864" font-size="18" fill="#374151">Orange dashed: proposed walkway. Circles: proposed doors (red = unknown). Teal: stairs. IDs match ROUTE_REVIEW.md.</text>');
+svg.push('<text x="3910" y="3864" font-size="18" fill="#374151">Orange dashed: proposed walkway. Circles: proposed doors (red = unknown). Teal: stairs. IDs match docs/route-review.md.</text>');
 svg.push('</svg>');
 if (outDir) writeFileSync(resolve(outDir, 'building1-network.svg'), svg.join('\n'));
 

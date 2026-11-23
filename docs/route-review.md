@@ -1,6 +1,6 @@
 # Route Review: Building 1
 
-Generated from `src/navigation/data/building1.ts` by `tools/route-review/generate.cjs`.
+Generated from `apps/src/navigation/data/building1.ts` by `tools/route-review/generate.cjs`.
 Overlay: `reference/proposals/building1-network.jpg` (IDs match this list).
 
 At school, confirm or correct each item, then set its `status` to `'checked'` in the data
@@ -9,7 +9,7 @@ checked items; a route appears only when every door, walkway and stair on it is 
 
 ## Open areas: routed now
 
-These use the walkable-space data in `src/navigation/data/building1Walkable.ts`
+These use the walkable-space data in `apps/src/navigation/data/building1Walkable.ts`
 (source: User, 2026-10-22: the student area, Quad, Lunch Shelter and the open space between them are generally walkable. Edges from the campus PDF walls.). Routes stay inside it, keep clear of walls,
 and go around stairs.
 

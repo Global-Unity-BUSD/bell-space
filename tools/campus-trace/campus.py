@@ -46,7 +46,7 @@ U12_TO_GROUND = sim(1.44, (5760, 1510), (5654, 3300))
 U13_TO_U12 = sim(0.99, (3962, 562), (5076, 551))
 # Building 1 Floor 2: the clean single-line plan 2026-10-04_floor-2.svg is the
 # same drawing as the labeled export minus (7.5, 9.5), so it uses the export's
-# already-documented placement over the ground plan (see CAMPUS_MAP.md).
+# already-documented placement over the ground plan (see docs/campus-map.md).
 U12_EXPORT = sim(0.81439, (0, 0), (406.387, -5.887))
 U12D_TO_CAMPUS = lambda p: U12_EXPORT((p[0] + 7.5, p[1] + 9.5))
 # Building 1 Floor 2 fitted onto the Floor 1 Building 1 trace, in campus units.
@@ -623,7 +623,7 @@ for level in (1, 2, 3):
          '     Source: BHSCampusMap.pdf (2023 scan), 6000 px render straightened by 1.005 degrees.',
          '     Campus frame: 1 unit = 10 px of that render; origin at render px (120, 1900). No real-world scale.',
          '     data-status="documented": drawn and legible in the source. "uncertain": needs an in-person check.',
-         '     Upper floors are placed by estimated transforms; see CAMPUS_MAP.md for alignment notes.',
+         '     Upper floors are placed by estimated transforms; see docs/campus-map.md for alignment notes.',
          '     stairs: one path per stair symbol in the PDF (never merged). route-candidates are unverified',
          '     stairs, elevators and entrances. The ramp is not drawn until its proposal is reviewed. They are',
          '     not a route network. No doors or walkways are traced. -->']

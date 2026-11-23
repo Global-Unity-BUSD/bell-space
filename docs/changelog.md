@@ -134,7 +134,7 @@
 * **Campus:** ground level now spans Buildings 3, 2 and 1 plus parking,
   tennis courts and the reported ramp. Upper floors (22xx, 3-2xx, 12xx, 13xx)
   are placed over their buildings in one shared frame. Every uncertain label,
-  symbol and placement is recorded (`CAMPUS_MAP.md`).
+  symbol and placement is recorded (`docs/campus-map.md`).
 * **Rendering:** geometry is drawn as vectors through the camera matrix with
   screen-width strokes (sharp to 24×). This replaces the scaled bitmap and
   needs an iPhone smoothness check.

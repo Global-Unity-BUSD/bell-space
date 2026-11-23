@@ -2,20 +2,20 @@
 
 Backend: **Supabase** (login, Postgres with row-level security, realtime,
 photo storage). It works in Expo Go with no native build. All access rules
-live in `supabase/migrations/20261025000000_pilot.sql` and are tested against
-real Postgres in `tests/pilot-rules.test.mjs`. Without a backend the app still
+live in `apps/supabase/migrations/20261025000000_pilot.sql` and are tested against
+real Postgres in `apps/tests/pilot-rules.test.mjs`. Without a backend the app still
 runs; Chat and Updates then say they aren't available yet.
 
 ## Connect the backend (about 10 minutes)
 
 1. Create a free project at supabase.com (pick a US West region).
 2. **SQL Editor → New query**: paste all of
-   `supabase/migrations/20261025000000_pilot.sql` and run it.
+   `apps/supabase/migrations/20261025000000_pilot.sql` and run it.
 3. **Authentication → Sign In / Providers**: turn **off** "Allow new users to
    sign up", so only pilot accounts exist.
 4. **Project Settings → API keys**: copy the Project URL, the
    publishable (anon) key, and the secret (service-role) key.
-5. In `map-project-main/`:
+5. In `apps/`:
    ```bash
    cp .env.example .env.local
    ```

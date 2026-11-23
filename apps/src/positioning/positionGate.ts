@@ -1,4 +1,4 @@
-// Groundwork for the iPhone positioning experiment (POSITIONING_EXPERIMENT.md).
+// Groundwork for the iPhone positioning experiment (docs/positioning-experiment.md).
 // No sensors are read here. This module turns surveyed reference points into
 // a GPS → campus-map transform and decides whether a phone fix is accurate
 // enough to be used as a navigation start. Until a fix passes, students pick

@@ -2,7 +2,7 @@
 
 One Node service plus PostgreSQL: the `/v1/` API for the app and the staff
 website, real-time hints (`/v1/live`), and the built staff website at `/`.
-Design and order of work: `../BACKEND_PLAN.md`. Node 22.18+ (runs `.ts` directly).
+Design and order of work: `docs/backend-plan.md`. Node 22.18+ (runs `.ts` directly).
 
 ## Run on your computer (no Docker needed)
 
@@ -16,8 +16,8 @@ npm run dev                # http://127.0.0.1:8787
 ```
 
 Staff website, either:
-* built and served by the server: `cd web && npm install && npm run build`, then open http://127.0.0.1:8787
-* with live reload: `cd web && npm run dev`, then open http://localhost:5173 (API proxied to :8787)
+* built and served by the server: `cd ../web && npm install && npm run build`, then open http://127.0.0.1:8787
+* with live reload: `cd ../web && npm run dev`, then open http://localhost:5173 (API proxied to :8787)
 
 Test accounts (`@bellspace.test`, fictional): `student1`, `student2`,
 `guide1`, `guide2` (students who are also guides), `staff-chats` (Chats) and
@@ -26,14 +26,14 @@ guides use the app; the website is for staff.
 
 ## The app against this server
 
-In the repo root `.env.local` (see `.env.example`):
+In `apps/.env.local` (see `apps/.env.example`):
 
 ```bash
 EXPO_PUBLIC_BACKEND=server
 EXPO_PUBLIC_SERVER_URL=http://<this computer's Wi-Fi address>:8787
 ```
 
-Start the server so the phone can reach it, then restart Expo with `--clear`:
+Start the server so the phone can reach it, then restart Expo from `apps/` with `--clear`:
 
 ```powershell
 $env:HOST = '0.0.0.0'; $env:CORS_ORIGINS = 'http://localhost:8081'; npm run dev

@@ -1,48 +1,57 @@
 # Bell Space
 
-Student app for Burbank High School (Expo SDK 58 / React Native 0.88). See
-`PROJECT.md` for scope, `TODO.md` for current work and `AGENTS.md` for rules.
+Student app for Burbank High School: indoor campus maps and directions, school
+Updates, a staff-supervised support Chat, and Q&A. Staff manage Updates and
+Chat on a website. Everything runs on one school-managed server.
 
-## Run on an iPhone (Expo Go)
+* Scope and status: [docs/project.md](docs/project.md) and [TODO.md](TODO.md)
+* How the parts fit together: [docs/architecture.md](docs/architecture.md)
+* All documentation: [docs/README.md](docs/README.md)
+* Rules for AI agents working here: [AGENTS.md](AGENTS.md)
 
-1. Install **Expo Go** from the App Store.
-2. From this folder: `npm install` (first time only), then
-   `npx expo start --clear`.
-   Use `--clear` after any change to `svg-transformer.cjs` or the map adapters.
-3. Scan the QR code with the iPhone Camera app. The phone and computer must
-   be on the same Wi-Fi. If the network blocks that, use `npx expo start --tunnel`.
+## Folders
+
+| Folder | What it is |
+| --- | --- |
+| [`apps/`](apps) | The phone app (Expo SDK 58 / React Native 0.88) |
+| [`server/`](server) | Backend: `/v1/` API, live updates, PostgreSQL migrations with the access rules |
+| [`web/`](web) | Staff website (React + Vite), served by the server |
+| [`shared/`](shared) | API types and labels used by the app, server and website |
+| [`maps/`](maps) | Floor-plan SVGs, the source of truth for the campus map |
+| [`tools/`](tools) | `campus-trace` (generates `maps/`), `route-review` (generates `docs/route-review.md`) |
+| [`reference/`](reference) | Traced overlays and review images |
+| [`docs/`](docs) | Documentation |
+
+## Run it
+
+Each part has its own dependencies: run `npm install` once inside `apps/`,
+`server/` and `web/`.
+
+**Server and staff website** (details: [server/README.md](server/README.md)):
+
+```bash
+cd server
+npm run seed:test        # test accounts, one shared password (stop the server first)
+npm run dev              # http://127.0.0.1:8787
+cd ../web && npm run build   # the server then serves the website at /
+```
+
+**Phone app** (Expo Go, same Wi-Fi as this computer):
+
+```bash
+cd apps
+npx expo start --clear
+```
+
+Scan the QR code with the phone camera. `apps/.env.local` chooses the backend
+(see `apps/.env.example`). For a phone, start the server with `HOST=0.0.0.0` and
+set `EXPO_PUBLIC_SERVER_URL` to this computer's Wi-Fi address. Use `--clear`
+after changing `.env.local`, `svg-transformer.cjs` or the map adapters.
 
 ## Checks
 
 ```bash
-npm test
-npx expo lint
-npx tsc --noEmit
+cd apps   && npm test && npx expo lint && npx tsc --noEmit
+cd server && npm test && npx tsc --noEmit
+cd web    && npx tsc --noEmit && npm run build
 ```
-
-Chat and Updates in the app still use the Supabase pilot (`PILOT_SETUP.md`)
-until they are switched to the new server. The server and staff website:
-`server/README.md` (plan: `BACKEND_PLAN.md`).
-
-## Layout
-
-* `App.js`: app shell (header, tabs).
-* `src/screens/`: Navigation, Chat, Updates, Q&A and Settings.
-* `src/content/qa.ts`: Q&A questions and answers (sample content until the school approves them).
-* `assets/photos/`: provided event photos (see its README for permissions).
-* `src/backend/`: Supabase client, sign-in, chat/update rules and API calls.
-* `supabase/migrations/`: database schema and access rules; `tools/pilot/setup-accounts.mjs`: test accounts.
-* `server/`: self-hosted backend (API, live hints, access rules in `server/migrations/`).
-* `web/`: staff website (Updates, student support, accounts).
-* `shared/`: API types and labels used by the server, website and (later) the app.
-* `deploy/`: docker-compose, environment example and backup script for the BUSD server.
-* `src/ui/`: tab bar, icons, theme, shared controls.
-* `src/map/`: map rendering, gestures, labels, floor registry (`floors.tsx`).
-* `src/navigation/`: route finder, Building 1 route data, route drawing.
-* `src/positioning/`: GPS→map fit and accuracy gate for the sensor experiment.
-* `ROUTE_REVIEW.md`, `reference/proposals/`: route and ramp proposals to confirm at school.
-* `2026-10-21_campus-floor{1,2,3}.svg`: traced campus levels (uncertain items marked).
-* `2026-10-04_floor2-labeled.svg`: archived Building 1 Floor 2 export (no longer imported).
-* `reference/overlays/`: traces over the PDF, and the campus composite.
-* `tools/campus-trace/`: scripts that generate the campus SVGs.
-* `CAMPUS_MAP.md`, `POSITIONING_EXPERIMENT.md`: map sources/uncertainty and the sensor plan.

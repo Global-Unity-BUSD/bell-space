@@ -1,6 +1,6 @@
 # Campus trace tools
 
-Scripts that produced `2026-10-21_campus-floor{1,2,3}.svg` from `BHSCampusMap.pdf`.
+Scripts that produced `maps/2026-10-21_campus-floor{1,2,3}.svg` from `BHSCampusMap.pdf`.
 They use only the Python standard library and macOS `sips`/`qlmanage`.
 Run Python with `-I`.
 
@@ -16,7 +16,7 @@ Run Python with `-I`.
    by `planar.py`.
 5. Generate: `python3 -I campus.py <svg out dir> <dir containing page_d.png>`.
    This writes `campus-floor{1,2,3}.svg` plus overlay SVGs for review.
-   Copy the SVGs into the project root under their dated names.
+   Copy the SVGs into `maps/` under their dated names.
 
 Placement transforms for the upper-floor drawings are at the top of
-`campus.py`; their evidence and uncertainty are in `CAMPUS_MAP.md`.
+`campus.py`; their evidence and uncertainty are in `docs/campus-map.md`.

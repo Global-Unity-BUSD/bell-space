@@ -26,13 +26,13 @@ and Q&A are planned parts of the same app.
   first: open areas and the classroom rows, Library, Book Room and Career Center
   (entrance side confirmed, door position approximate).
 * Live location is an experiment, off by default (Settings). It is used only
-  when its measured accuracy allows (`POSITIONING_EXPERIMENT.md`).
+  when its measured accuracy allows (`docs/positioning-experiment.md`).
 
 ## Maps
 
 One campus frame holds every level, so students can pan across all three
 buildings and switch floors without losing their place. Details, sources and
-uncertainty: `CAMPUS_MAP.md`.
+uncertainty: `docs/campus-map.md`.
 
 | Floor | Contents |
 | --- | --- |
@@ -53,7 +53,7 @@ In-person checks (doors, paths, stairs, elevators, ramp)
     ↓
 Verified route network + manual starting point → real directions
     ↓
-iPhone live-location experiment (POSITIONING_EXPERIMENT.md, current)
+iPhone live-location experiment (docs/positioning-experiment.md, current)
     ↓
 Tune or drop live guidance from measured walk tests
 ```
@@ -68,10 +68,10 @@ These are not part of the current stage unless specifically requested:
 * automatic floor detection
 * Q&A content and backend
 * school sign-in (SSO) and production use of Chat (needs school approval)
-* push notifications (`BACKEND_PLAN.md`, later step)
+* push notifications (`docs/backend-plan.md`, later step)
 
 In progress: a self-hosted server and staff website for Updates and the
-staff-supervised support chat (`BACKEND_PLAN.md`).
+staff-supervised support chat (`docs/backend-plan.md`).
 * teacher directory data
 
 ## Important Principles

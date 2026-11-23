@@ -2,7 +2,7 @@
 
 ## Current Task: self-hosted server and staff website (2026-11-22)
 
-Plan: `BACKEND_PLAN.md`. Run: `server/README.md`. Done (plan steps 1–5):
+Plan: `docs/backend-plan.md`. Run: `server/README.md`. Done (plan steps 1–5):
 * **Server** (`server/`): one Node service, PostgreSQL (PGlite in development and tests).
   Access rules in `server/migrations/001_init.sql`; sessions, scrypt passwords, `/v1/` API,
   WebSocket hints (ids only).
@@ -54,17 +54,17 @@ Not done yet:
     available, connected and ended.
   * Updates: date badges, a 16:9 photo frame, and the sample football event
     with the provided photo (bundled, offline too).
-  * Q&A: categories, search, and links to tabs. The answers are sample content in `src/content/qa.ts`.
+  * Q&A: categories, search, and links to tabs. The answers are sample content in `apps/src/content/qa.ts`.
   * Settings: Account / About Bell Space / hidden Developer tools.
 * **Waiting on you:**
-  * Supabase project and `.env.local` (`PILOT_SETUP.md`), then the two-phone test.
+  * Supabase project and `.env.local` (`docs/supabase-pilot.md`), then the two-phone test.
   * Photo-release approval (`assets/photos/README.md`) and the final Q&A wording.
 
 ## Current Task: two-phone pilot for Chat and Updates (2026-10-25)
 
-Implemented (see `PILOT_SETUP.md`):
+Implemented (see `docs/supabase-pilot.md`):
 * **Backend:** Supabase migration with row-level security and checked chat functions,
-  tested on real Postgres (`tests/pilot-rules.test.mjs`); seed script for 4 test accounts.
+  tested on real Postgres (`apps/tests/pilot-rules.test.mjs`); seed script for 4 test accounts.
 * **Chat:** sign-in only for Chat and posting.
   * Students: Ask as (Anonymous to guide / Show my name), topic, optional
     language and question. Pending, Active and Closed states, with a clear
@@ -79,23 +79,23 @@ Implemented (see `PILOT_SETUP.md`):
   proposed routes) open after tapping Version 5 times.
 
 ### Waiting on you
-* Create the Supabase project and run the two-phone test (`PILOT_SETUP.md`).
-* School approvals listed in `PILOT_SETUP.md` before real students use Chat.
+* Create the Supabase project and run the two-phone test (`docs/supabase-pilot.md`).
+* School approvals listed in `docs/supabase-pilot.md` before real students use Chat.
 
 ## Current Task: Building 1 entrances and the live-location experiment (2026-10-22)
 
 Implemented:
-* **Entrances** (`B1_ENTRANCES` in `src/navigation/data/building1Walkable.ts`):
+* **Entrances** (`B1_ENTRANCES` in `apps/src/navigation/data/building1Walkable.ts`):
   * 1155–1162 are entered from their bottom side (the Quad); 1138–1144 and the
     Book Room from their top side.
   * The Library is entered from the gap by the Career Center and the Book Room,
     and the Career Center from its bottom side.
   * Each entrance has a door point and an approach point in walkable space. The sides
     are checked, but the door positions are **approximate**
-    (`reference/review/entrances.jpg`, `ROUTE_REVIEW.md`).
+    (`reference/review/entrances.jpg`, `docs/route-review.md`).
   * Other rooms (Cafeteria, Admin, 1-159, …) stay unavailable.
 * **AR removed** (the button, the badge and the roadmap step).
-* **Live location (experimental):** see `POSITIONING_EXPERIMENT.md`. It is off by
+* **Live location (experimental):** see `docs/positioning-experiment.md`. It is off by
   default, and permissions are asked only when it is switched on. It does not work
   until 3+ reference points are measured.
 
@@ -108,7 +108,7 @@ Implemented:
 * [ ] Cafeteria: no Directions ("entrance hasn't been confirmed").
 * [ ] Settings → Live location on: the permission prompts appear only now. The
   chip shows "Map not aligned yet".
-* [ ] Walk test in `POSITIONING_EXPERIMENT.md`, then Share log.
+* [ ] Walk test in `docs/positioning-experiment.md`, then Share log.
 
 ### Waiting on you
 
@@ -160,25 +160,25 @@ lunch-shelter, routes).
 * Senior Hill: mark its exact spot (no mark was found in the annotations).
 * Ramp: confirm the Floor 2 landing (`reference/review/ramp.jpg`).
 * Lunch Shelter: confirm its open sides (south and west assumed; north?).
-* `ROUTE_REVIEW.md`: barriers in the open space, room entrances, stairs.
+* `docs/route-review.md`: barriers in the open space, room entrances, stairs.
 
 ## Android Performance (stutter resolved, 2026-11-01)
 
 Diagnose and fix persistent Android map slowdown and unexpected white shapes
 over floor lines. The reported stutter followed switching to Floor 2, which
 mounted the Building 1 labeled export. The 2026-11-01 build traces that floor
-into `2026-10-21_campus-floor2.svg` and removes the overlay; the user reports
+into `maps/2026-10-21_campus-floor2.svg` and removes the overlay; the user reports
 the stutter is gone.
 
-**Read [MAP_RENDERING_ISSUE.md](./MAP_RENDERING_ISSUE.md)** for the detailed
+**Read [docs/map-rendering-issue.md](docs/map-rendering-issue.md)** for the detailed
 investigation plan. The white shapes were never reproduced and remain
 unconfirmed; profiling is optional unless a new slowdown appears.
 
 ### Fixed — Floor 2 Export Overlay (2026-11-01)
 
-* Building 1 Floor 2 is now traced into `2026-10-21_campus-floor2.svg` from
-  `2026-10-04_floor-2.svg`, so floor switching no longer mounts
-  `2026-10-04_floor2-labeled.svg` and its 377 filled subpaths. The export is
+* Building 1 Floor 2 is now traced into `maps/2026-10-21_campus-floor2.svg` from
+  `maps/2026-10-04_floor-2.svg`, so floor switching no longer mounts
+  `maps/2026-10-04_floor2-labeled.svg` and its 377 filled subpaths. The export is
   archived, not deleted.
 * Verified: `node --test tests/map.test.cjs` (40 tests), `npx expo lint`,
   `npx tsc --noEmit`. The user reports the Android stutter is gone; this is
@@ -187,7 +187,7 @@ unconfirmed; profiling is optional unless a new slowdown appears.
 ### Open Issue — Persistent Slowdown and White Artifacts
 
 * [ ] Collect phone model/Android version, a marked screenshot of the white
-  shapes, and a short reproduction video; see `MAP_RENDERING_ISSUE.md`, Step 1.
+  shapes, and a short reproduction video; see `docs/map-rendering-issue.md`, Step 1.
 * [ ] Establish repeatable Android gesture/frame-time baselines, with three
   measured runs per case and no screen recording during timing captures.
 * [ ] Add temporary layer/halo/LOD diagnostic switches and compare variants
@@ -197,7 +197,7 @@ unconfirmed; profiling is optional unless a new slowdown appears.
 * [ ] Implement the evidence-backed fix and repeat the same device measurements.
 * [ ] Confirm the white artifacts are explained/addressed, then verify gestures,
   label alignment, clipping, detail levels, and iOS regression behavior.
-* [ ] Record findings in `MAP_RENDERING_ISSUE.md` and remove temporary controls.
+* [ ] Record findings in `docs/map-rendering-issue.md` and remove temporary controls.
 
 ### Two-Finger Rotation and Gesture Performance
 
@@ -230,7 +230,7 @@ unconfirmed; profiling is optional unless a new slowdown appears.
 ### Remaining Map Work
 
 * [ ] Resolve the confirmed persistent Android stutter and reported white artifacts
-  using [MAP_RENDERING_ISSUE.md](./MAP_RENDERING_ISSUE.md). Native SVG drawing,
+  using [docs/map-rendering-issue.md](docs/map-rendering-issue.md). Native SVG drawing,
   label halos/updates, fades, and build-mode overhead are hypotheses to test.
 * [ ] Improve the zoomed-out layout and explore cleaner organization of visible
   rooms/labels, priorities, spacing, and omissions while retaining useful orientation.
@@ -313,11 +313,11 @@ unconfirmed; profiling is optional unless a new slowdown appears.
   rate; compare the same 10-second pan, off-center pinch/twist, combined movement,
   and LOD-crossing sequences at 1×/2×/4×/8×. Capture UI/JS frame times and dropped
   frames in development and release builds. Repeat on Android, then check iOS.
-  See `src/map/README.md` for gesture edge cases.
+  See `apps/src/map/README.md` for gesture edge cases.
 
 ### Implementation / Verification Notes (2026-10-05)
 
-* Only `2026-10-04_floor2-labeled.svg` is imported. Its geometry is extracted
+* Only `maps/2026-10-04_floor2-labeled.svg` is imported. Its geometry is extracted
   at bundle time; the original SVG is unchanged. Its export mask hid the wall
   subpaths, so those existing subpaths are rendered outside that mask.
 * Source-derived annotations replace approximate range labels. Exact glyph
@@ -346,8 +346,8 @@ unconfirmed; profiling is optional unless a new slowdown appears.
 * The `areas` runtime error was caused by a transformed SVG from an older
   adapter remaining in Metro's cache. The transformer now keys its cache on
   the adapter source. Restart an existing session with `npx expo start --clear`.
-* See `src/map/README.md` for the source adapter, LOD policy and device checks.
-* See `SUMMARY.md` for today's architecture, decisions, limitations, and next steps.
+* See `apps/src/map/README.md` for the source adapter, LOD policy and device checks.
+* See `docs/changelog.md` for today's architecture, decisions, limitations, and next steps.
 
 ## Not Current
 

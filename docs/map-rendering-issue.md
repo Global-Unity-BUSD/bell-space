@@ -12,7 +12,7 @@ the Android device yet.
 
 **2026-11-01 note:** the per-switch mount of the Building 1 Floor 2 labeled
 export was removed; Floor 2 now draws its traced walls and labels from
-`2026-10-21_campus-floor2.svg`. The user reports the Android stutter is gone
+`maps/2026-10-21_campus-floor2.svg`. The user reports the Android stutter is gone
 after that change. The white-artifact question was not re-reported and stays
 unconfirmed.
 
@@ -45,7 +45,7 @@ levels. Use this document for the detailed investigation and `TODO.md` for statu
 
 ### White label halos — suspected artifact source
 
-`src/map/AnnotationLayer.tsx` draws each source label twice: a light-colored
+`apps/src/map/AnnotationLayer.tsx` draws each source label twice: a light-colored
 filled/stroked path (`#f8fafc`, 1.5-pixel non-scaling stroke), then the dark label.
 The light path is a readability halo. It can cover nearby floor lines and also
 adds drawing work. It is a hypothesis, not a confirmed explanation for the
