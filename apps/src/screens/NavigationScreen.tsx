@@ -11,6 +11,7 @@ import RouteOverlay from '../navigation/RouteOverlay';
 import LiveTestPanel, { type TapPurpose } from '../positioning/LiveTestPanel';
 import { currentRadius, routeGuidance } from '../positioning/tracker';
 import type { LiveTracking } from '../positioning/useLiveTracking';
+import { useI18n } from '../i18n';
 import { Button, StatusPill } from '../ui/controls';
 import Icon, { type IconName } from '../ui/Icon';
 import { useKeyboardInset } from '../ui/useKeyboardInset';
@@ -67,14 +68,15 @@ function MapButton({ icon, label, onPress, children }: {
 }
 
 function FloorPicker({ floorId, onChange }: { floorId: FloorId; onChange: (id: FloorId) => void }) {
+  const { t, word } = useI18n();
   return (
-    <View style={styles.floorPicker} accessibilityRole="radiogroup" accessibilityLabel="Floor">
-      <Text style={styles.floorCaption} importantForAccessibility="no">FLOOR</Text>
+    <View style={styles.floorPicker} accessibilityRole="radiogroup" accessibilityLabel={t('nav.floor')}>
+      <Text style={styles.floorCaption} importantForAccessibility="no">{t('nav.floorCaption')}</Text>
       {FLOOR_ORDER.map((id) => {
         const selected = id === floorId;
         return (
           <Pressable key={id} accessibilityRole="radio" accessibilityState={{ selected }}
-            accessibilityLabel={FLOORS[id].label} onPress={() => onChange(id)} hitSlop={2}
+            accessibilityLabel={word(FLOORS[id].label)} onPress={() => onChange(id)} hitSlop={2}
             style={[styles.floorOption, selected && styles.floorOptionSelected]}>
             <Text style={[styles.floorText, selected && styles.floorTextSelected]}>{FLOORS[id].short}</Text>
           </Pressable>
@@ -85,6 +87,7 @@ function FloorPicker({ floorId, onChange }: { floorId: FloorId; onChange: (id: F
 }
 
 function PlaceHeader({ place }: { place: Place }) {
+  const { phrase } = useI18n();
   return (
     <View style={styles.placeHeader}>
       <View style={styles.cardIcon}>
@@ -92,7 +95,7 @@ function PlaceHeader({ place }: { place: Place }) {
       </View>
       <View style={styles.cardText}>
         <Text style={styles.cardTitle} numberOfLines={1}>{place.title}</Text>
-        <Text style={styles.cardSubtitle} numberOfLines={1}>{place.subtitle}</Text>
+        <Text style={styles.cardSubtitle} numberOfLines={1}>{phrase(place.subtitle)}</Text>
       </View>
     </View>
   );
@@ -101,6 +104,7 @@ function PlaceHeader({ place }: { place: Place }) {
 function SelectionCard({ place, review, onDirections, onCancel }: {
   place: Place; review: boolean; onDirections: () => void; onCancel: () => void;
 }) {
+  const { t, phrase } = useI18n();
   const status = destinationStatus(place, review);
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
@@ -109,12 +113,12 @@ function SelectionCard({ place, review, onDirections, onCancel }: {
         <Icon name={status.offered ? 'check' : 'info'} color={status.offered ? colors.success : colors.textMuted} size={16}
           strokeWidth={2.4} />
         <Text style={[styles.routeStatusText, status.offered && styles.routeStatusOk]}>
-          {status.offered ? 'Verified route available' : status.reason}
+          {status.offered ? t('nav.verified') : phrase(status.reason ?? '')}
         </Text>
       </View>
       <View style={styles.actions}>
-        {status.offered && <Button label="Directions" icon="navigation" onPress={onDirections} grow />}
-        <Button label="Close" kind="secondary" onPress={onCancel} grow={!status.offered} />
+        {status.offered && <Button label={t('nav.directions')} icon="navigation" onPress={onDirections} grow />}
+        <Button label={t('common.close')} kind="secondary" onPress={onCancel} grow={!status.offered} />
       </View>
     </View>
   );
@@ -124,15 +128,16 @@ function PlanCard({ start, destination, trip, onStart, onChangeStart, onCancel }
   start: TripStart; destination: Place; trip: Trip;
   onStart: () => void; onChangeStart: () => void; onCancel: () => void;
 }) {
+  const { t, phrase, word } = useI18n();
   const available = trip.status === 'available';
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
       <View style={styles.legs}>
         <View style={styles.leg}>
           <View style={[styles.legDot, styles.legStart]} />
-          <Text style={styles.legText} numberOfLines={1}>{start.title}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Change starting point" onPress={onChangeStart} hitSlop={8}>
-            <Text style={styles.link}>Change</Text>
+          <Text style={styles.legText} numberOfLines={1}>{word(start.title)}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('nav.changeStart')} onPress={onChangeStart} hitSlop={8}>
+            <Text style={styles.link}>{t('nav.change')}</Text>
           </Pressable>
         </View>
         <View style={styles.legLine} />
@@ -144,18 +149,18 @@ function PlanCard({ start, destination, trip, onStart, onChangeStart, onCancel }
       {available && trip.reviewOnly && (
         <View style={styles.reviewNote}>
           <Icon name="info" color={colors.previewText} size={15} />
-          <Text style={styles.reviewText}>Review route: uses connections not yet checked at school.</Text>
+          <Text style={styles.reviewText}>{t('nav.reviewNote')}</Text>
         </View>
       )}
       {!available && (
         <View style={styles.unavailable}>
-          <Text style={styles.unavailableTitle}>No route for this trip yet</Text>
-          {trip.reasons.map((r) => <Text key={r} style={styles.unavailableText}>{r}</Text>)}
+          <Text style={styles.unavailableTitle}>{t('nav.noRoute')}</Text>
+          {trip.reasons.map((r) => <Text key={r} style={styles.unavailableText}>{phrase(r)}</Text>)}
         </View>
       )}
       <View style={styles.actions}>
-        {available && <Button label={trip.reviewOnly ? 'Start review route' : 'Start directions'} icon="navigation" onPress={onStart} grow />}
-        <Button label="Cancel" kind="secondary" onPress={onCancel} grow={!available} />
+        {available && <Button label={t(trip.reviewOnly ? 'nav.startReview' : 'nav.start')} icon="navigation" onPress={onStart} grow />}
+        <Button label={t('common.cancel')} kind="secondary" onPress={onCancel} grow={!available} />
       </View>
     </View>
   );
@@ -165,48 +170,50 @@ function GuideCard({ trip, index, onStep, onEnd, liveNote, onSetLocation }: {
   trip: Extract<Trip, { status: 'available' }>; index: number; onStep: (i: number) => void; onEnd: () => void;
   liveNote?: LiveNote | null; onSetLocation?: () => void;
 }) {
+  const { t, phrase } = useI18n();
   const { steps } = trip;
   const step = steps[index];
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
-      <Text style={styles.stepCount}>Step {index + 1} of {steps.length} · Floor {step.level}</Text>
-      <Text style={styles.stepText}>{step.text}</Text>
-      {trip.reviewOnly && <Text style={styles.reviewInline}>Review route, not yet checked at school</Text>}
+      <Text style={styles.stepCount}>{t('nav.stepCount', { n: index + 1, total: steps.length, floor: step.level })}</Text>
+      <Text style={styles.stepText}>{phrase(step.text)}</Text>
+      {trip.reviewOnly && <Text style={styles.reviewInline}>{t('nav.reviewInline')}</Text>}
       {liveNote && (
         <View style={styles.liveNote}>
           <View style={[styles.liveDot, liveNote.tone === 'ok' ? styles.liveDotOk : styles.liveDotWarn]} />
           <Text style={styles.liveNoteText}>{liveNote.text}</Text>
           {liveNote.fix && onSetLocation && (
-            <Pressable accessibilityRole="button" accessibilityLabel="Set my location on the map" onPress={onSetLocation} hitSlop={8}>
-              <Text style={styles.link}>Set location</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('nav.setLocationA11y')} onPress={onSetLocation} hitSlop={8}>
+              <Text style={styles.link}>{t('nav.setLocation')}</Text>
             </Pressable>
           )}
         </View>
       )}
       <View style={styles.actions}>
-        <Button label="Back" kind="secondary" onPress={() => onStep(Math.max(0, index - 1))} />
+        <Button label={t('common.back')} kind="secondary" onPress={() => onStep(Math.max(0, index - 1))} />
         {index < steps.length - 1
-          ? <Button label="Next" onPress={() => onStep(index + 1)} grow />
-          : <Button label="Done" onPress={onEnd} grow />}
-        <Button label="End" kind="quiet" onPress={onEnd} />
+          ? <Button label={t('nav.next')} onPress={() => onStep(index + 1)} grow />
+          : <Button label={t('nav.done')} onPress={onEnd} grow />}
+        <Button label={t('nav.end')} kind="quiet" onPress={onEnd} />
       </View>
     </View>
   );
 }
 
 function ResultRow({ place, onPress, routed }: { place: Place; onPress: () => void; routed?: boolean }) {
+  const { t, phrase } = useI18n();
   return (
     <Pressable accessibilityRole="button" onPress={onPress}
-      accessibilityLabel={`${place.title}, ${place.subtitle}${routed === undefined ? '' : routed ? ', route available' : ', map only'}`}
+      accessibilityLabel={`${place.title}, ${phrase(place.subtitle)}${routed === undefined ? '' : `, ${t(routed ? 'nav.routeAvailable' : 'nav.mapOnly')}`}`}
       style={({ pressed }) => [styles.result, pressed && styles.resultPressed]}>
       <View style={styles.resultIcon}>
         <Icon name={placeIcon(place)} color={colors.textMuted} size={19} />
       </View>
       <View style={styles.resultText}>
         <Text style={styles.resultTitle} numberOfLines={1}>{place.title}</Text>
-        <Text style={styles.resultSubtitle} numberOfLines={1}>{place.subtitle}</Text>
+        <Text style={styles.resultSubtitle} numberOfLines={1}>{phrase(place.subtitle)}</Text>
       </View>
-      {routed !== undefined && <StatusPill label={routed ? 'Route' : 'Map only'} tone={routed ? 'active' : 'closed'} style={styles.resultPill} />}
+      {routed !== undefined && <StatusPill label={t(routed ? 'nav.route' : 'nav.mapOnly')} tone={routed ? 'active' : 'closed'} style={styles.resultPill} />}
     </Pressable>
   );
 }
@@ -235,6 +242,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
   const [liveTap, setLiveTap] = useState<TapPurpose | null>(null);
   const [seenUpdate, setSeenUpdate] = useState<number | null>(null);
   const keyboardInset = useKeyboardInset(container);
+  const { t, word } = useI18n();
   const results = useMemo(() => searchPlaces(query), [query]);
   const trip = useMemo(() => (start && destination ? planTrip(start, destination, review, PLACE_NAMES) : null),
     [start, destination, review]);
@@ -356,7 +364,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
     }
     if (mode !== 'tap') return;
     const snapped = startFromTap(point);
-    if (!snapped) { setNotice('Tap a spot in Building 1’s open area.'); return; }
+    if (!snapped) { setNotice(t('nav.tapOpenArea')); return; }
     applyStart({ title: 'Marked spot', level: 1, point: snapped });
   };
   const choose = (place: Place) => {
@@ -367,7 +375,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
       const point = startPointFor(place.id);
       if (point) applyStart({ title: place.title, level: 1, point, placeId: place.id });
       else if (review) applyStart({ title: place.title, level: 1, point: place.anchor, placeId: place.id });
-      else setNotice('Pick an open area or tap the map to set your start.');
+      else setNotice(t('nav.pickOpenArea'));
       return;
     }
     showFloor(place.floorId);
@@ -392,7 +400,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
   return (
     <View style={styles.screen} ref={container}>
       <InteractiveMap floor={FLOORS[floorId]} view={CAMPUS} controlsRef={controls}
-        loading={loadingFloor ? `Loading ${FLOORS[loadingFloor].label}…` : null}
+        loading={loadingFloor ? t('nav.loadingFloor', { floor: word(FLOORS[loadingFloor].label) }) : null}
         selected={pinned?.floorId === floorId ? { ...pinned.anchor, labelHalfHeight: pinned.labelHalfHeight } : null}
         focus={step ? step.at : mode === 'plan' ? routeCentre : null}
         onMapTap={mode === 'tap' || liveTap ? onMapTap : undefined}
@@ -423,12 +431,12 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
         </View>
         <View style={styles.controls}>
           <View style={styles.zoomGroup}>
-            <MapButton icon="plus" label="Zoom in" onPress={() => controls.current?.zoomIn()} />
+            <MapButton icon="plus" label={t('nav.zoomIn')} onPress={() => controls.current?.zoomIn()} />
             <View style={styles.divider} />
-            <MapButton icon="minus" label="Zoom out" onPress={() => controls.current?.zoomOut()} />
+            <MapButton icon="minus" label={t('nav.zoomOut')} onPress={() => controls.current?.zoomOut()} />
           </View>
           <View style={styles.zoomGroup}>
-            <MapButton icon="reset" label="Reset view to Building 1" onPress={() => controls.current?.reset()} />
+            <MapButton icon="reset" label={t('nav.reset')} onPress={() => controls.current?.reset()} />
           </View>
           {live && (
             <View style={styles.zoomGroup}>
@@ -453,7 +461,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
         {searching && (
           <View style={styles.panel}>
             <Text style={styles.panelHeading}>
-              {mode === 'start' ? 'Choose a starting point' : query.trim() ? 'Results' : 'Popular places'}
+              {t(mode === 'start' ? 'nav.chooseStart' : query.trim() ? 'nav.results' : 'nav.popular')}
             </Text>
             <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
               style={styles.panelList} contentContainerStyle={styles.panelListContent}>
@@ -479,14 +487,14 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                 </View>
               ))}
               {mode === 'start' && (
-                <Pressable accessibilityRole="button" accessibilityLabel="Tap a spot on the map to set your start"
+                <Pressable accessibilityRole="button" accessibilityLabel={t('nav.tapSpotA11y')}
                   onPress={chooseStartOnMap} style={({ pressed }) => [styles.result, pressed && styles.resultPressed]}>
                   <View style={[styles.resultIcon, styles.resultIconBrand]}>
                     <Icon name="navigation" color="#ffffff" size={19} />
                   </View>
                   <View style={styles.resultText}>
-                    <Text style={styles.resultTitle}>Tap a spot on the map</Text>
-                    <Text style={styles.resultSubtitle}>Anywhere in Building 1’s open area</Text>
+                    <Text style={styles.resultTitle}>{t('nav.tapSpot')}</Text>
+                    <Text style={styles.resultSubtitle}>{t('nav.tapSpotHint')}</Text>
                   </View>
                 </Pressable>
               )}
@@ -496,12 +504,12 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
               ))}
               {list.length === 0 && (
                 <View style={styles.empty}>
-                  <Text style={styles.emptyTitle}>No matching rooms or places</Text>
-                  <Text style={styles.emptyText}>Try a room number such as 1155, or a place such as Library.</Text>
+                  <Text style={styles.emptyTitle}>{t('nav.noMatch')}</Text>
+                  <Text style={styles.emptyText}>{t('nav.noMatchHint')}</Text>
                 </View>
               )}
             </ScrollView>
-            <Text style={styles.panelFoot}>Teacher search is coming soon.</Text>
+            <Text style={styles.panelFoot}>{t('nav.teacherSoon')}</Text>
           </View>
         )}
         {!searching && !liveTap && mode === 'browse' && destination && (
@@ -509,11 +517,11 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
         )}
         {mode === 'tap' && !liveTap && (
           <View style={styles.card}>
-            <Text style={styles.stepCount}>Set your starting point</Text>
-            <Text style={styles.tapText}>Tap where you are in Building 1’s open area: the Quad, Student Area, Lunch Shelter or a walkway.</Text>
+            <Text style={styles.stepCount}>{t('nav.setStart')}</Text>
+            <Text style={styles.tapText}>{t('nav.setStartText')}</Text>
             <View style={styles.actions}>
-              <Button label="Back" kind="secondary" onPress={pickStart} />
-              <Button label="Cancel" kind="quiet" onPress={clearTrip} />
+              <Button label={t('common.back')} kind="secondary" onPress={pickStart} />
+              <Button label={t('common.cancel')} kind="quiet" onPress={clearTrip} />
             </View>
           </View>
         )}
@@ -526,9 +534,9 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
         {mode !== 'guide' && mode !== 'tap' && !liveTap && (
           <View style={[styles.search, searching && styles.searchActive]}>
             <Icon name="search" color={colors.textMuted} size={21} />
-            <TextInput value={query} placeholder={mode === 'start' ? 'Search for where you are' : 'Search rooms and places'}
+            <TextInput value={query} placeholder={t(mode === 'start' ? 'nav.searchStart' : 'nav.search')}
               placeholderTextColor={colors.textFaint} style={styles.searchInput}
-              accessibilityLabel={mode === 'start' ? 'Search for a starting point' : 'Search rooms and places'}
+              accessibilityLabel={t(mode === 'start' ? 'nav.searchStartA11y' : 'nav.search')}
               returnKeyType="search" autoCorrect={false} autoCapitalize="none" clearButtonMode="while-editing"
               onChangeText={(text) => { setQuery(text); setSearching(true); }}
               // Results stay open on blur so a tap on one is never lost;
@@ -536,8 +544,8 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
               onFocus={() => setSearching(true)}
               onSubmitEditing={() => { if (query.trim() && list[0]) choose(list[0]); }} />
             {searching && (
-              <Pressable accessibilityRole="button" accessibilityLabel="Close search" onPress={closeSearch} hitSlop={8}>
-                <Text style={styles.searchCancel}>Cancel</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={t('nav.closeSearch')} onPress={closeSearch} hitSlop={8}>
+                <Text style={styles.searchCancel}>{t('common.cancel')}</Text>
               </Pressable>
             )}
           </View>

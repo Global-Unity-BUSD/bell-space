@@ -13,6 +13,7 @@ import { serverUrl } from '../backend/server/client';
 import { useLive } from '../backend/server/live';
 import { dateBadge, feedOrder, formatWhen, LIMITS, SAMPLE_UPDATE, splitWhen, validateUpdate, type Update,
   type UpdateDraft } from '../backend/updatesLogic';
+import { useI18n } from '../i18n';
 import { Button, Card, Field, Notice, StatusPill } from '../ui/controls';
 import Icon from '../ui/Icon';
 import { SkeletonCards } from '../ui/Placeholder';
@@ -39,7 +40,8 @@ function Photo({ source, label, flush }: { source: ImageSourcePropType; label: s
 }
 
 function DateBadge({ iso }: { iso: string | null }) {
-  const badge = dateBadge(iso);
+  const { t, locale } = useI18n();
+  const badge = dateBadge(iso, locale);
   return (
     <View style={styles.badge} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       {badge ? (
@@ -47,7 +49,7 @@ function DateBadge({ iso }: { iso: string | null }) {
           <Text style={styles.badgeMonth}>{badge.month}</Text>
           <Text style={styles.badgeDay}>{badge.day}</Text>
         </>
-      ) : <Text style={styles.badgeTba}>TBA</Text>}
+      ) : <Text style={styles.badgeTba} numberOfLines={1} adjustsFontSizeToFit>{t('updates.tba')}</Text>}
     </View>
   );
 }
@@ -55,15 +57,16 @@ function DateBadge({ iso }: { iso: string | null }) {
 function UpdateCard({ update, photo, editor, onEdit }: {
   update: Update; photo?: ImageSourcePropType; editor: boolean; onEdit: () => void;
 }) {
-  const when = formatWhen(update.starts_at);
+  const { t, locale } = useI18n();
+  const when = formatWhen(update.starts_at, locale);
   return (
     <Card style={styles.updateCard}>
-      {photo && <Photo source={photo} label={`Photo for ${update.title}`} flush />}
+      {photo && <Photo source={photo} label={t('updates.photoFor', { title: update.title })} flush />}
       <View style={styles.updateBody}>
         {(update.sample || update.status === 'draft') && (
           <View style={styles.pills}>
-            {update.sample && <StatusPill label="Sample event" tone="sample" />}
-            {update.status === 'draft' && <StatusPill label="Draft: only editors see this" tone="draft" />}
+            {update.sample && <StatusPill label={t('updates.sample')} tone="sample" />}
+            {update.status === 'draft' && <StatusPill label={t('updates.draft')} tone="draft" />}
           </View>
         )}
         <View style={styles.headline}>
@@ -72,17 +75,17 @@ function UpdateCard({ update, photo, editor, onEdit }: {
             <Text style={styles.updateTitle} accessibilityRole="header">{update.title}</Text>
             <View style={styles.metaRow}>
               <Icon name="clock" color={colors.textMuted} size={15} />
-              <Text style={styles.meta}>{when ?? 'Date to be announced'}</Text>
+              <Text style={styles.meta}>{when ?? t('updates.dateTba')}</Text>
             </View>
             <View style={styles.metaRow}>
               <Icon name="pin" color={colors.textMuted} size={15} />
-              <Text style={styles.meta}>{update.location || 'Location to be announced'}</Text>
+              <Text style={styles.meta}>{update.location || t('updates.locationTba')}</Text>
             </View>
           </View>
         </View>
         {!!update.body && <Text style={styles.text}>{update.body}</Text>}
-        {update.sample && <Text style={styles.caption}>Sample for the pilot, not a real game listing. Photo from a Burbank High School game.</Text>}
-        {editor && <Button label="Edit" kind="secondary" onPress={onEdit} />}
+        {update.sample && <Text style={styles.caption}>{t('updates.sampleCaption')}</Text>}
+        {editor && <Button label={t('updates.edit')} kind="secondary" onPress={onEdit} />}
       </View>
     </Card>
   );
@@ -172,6 +175,7 @@ const FEED_REFRESH_MS = 60_000;
 /** The Supabase pilot feed, with the in-app editor for admins (fallback backend). */
 function SupabaseUpdates({ active }: { active: boolean }) {
   const { configured, profile } = useAuth();
+  const { t } = useI18n();
   const [feed, setFeed] = useState<Feed | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Update | 'new' | null>(null);
@@ -196,24 +200,25 @@ function SupabaseUpdates({ active }: { active: boolean }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Updates</Text>
-        <Text style={styles.muted}>Announcements and events at Burbank High School.</Text>
+        <Text style={styles.title} accessibilityRole="header">{t('updates.title')}</Text>
+        <Text style={styles.muted}>{t('updates.subtitle')}</Text>
       </View>
-      {editor && <Button label="New update" icon="plus" onPress={() => setEditing('new')} />}
+      {editor && <Button label={t('updates.new')} icon="plus" onPress={() => setEditing('new')} />}
       {error && <Notice text={error} tone="error" />}
       {configured && !feed && !error && <SkeletonCards />}
-      {feed && feed.list.length === 0 && <Notice text="No updates yet. School announcements and events will appear here." />}
+      {feed && feed.list.length === 0 && <Notice text={t('updates.empty')} />}
       {(configured ? feedOrder(feed?.list ?? []) : [SAMPLE_UPDATE]).map((u) => (
         <UpdateCard key={u.id} update={u} editor={editor} onEdit={() => setEditing(u)}
           photo={u.photo_path && feed?.photos[u.photo_path] ? { uri: feed.photos[u.photo_path] } : u.sample ? SAMPLE_PHOTOS[u.title] : undefined} />
       ))}
-      {!configured && <Text style={styles.caption}>Live school updates appear here once Updates is connected.</Text>}
+      {!configured && <Text style={styles.caption}>{t('updates.notConnected')}</Text>}
     </ScrollView>
   );
 }
 
 /** The Bell Space server feed: published updates for everyone. Staff post them on the website. */
 function ServerUpdates({ active }: { active: boolean }) {
+  const { t, phrase } = useI18n();
   const [list, setList] = useState<ServerUpdate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(() => {
@@ -230,12 +235,12 @@ function ServerUpdates({ active }: { active: boolean }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Updates</Text>
-        <Text style={styles.muted}>Announcements and events at Burbank High School.</Text>
+        <Text style={styles.title} accessibilityRole="header">{t('updates.title')}</Text>
+        <Text style={styles.muted}>{t('updates.subtitle')}</Text>
       </View>
-      {error && <Notice text={error} tone="error" />}
+      {error && <Notice text={phrase(error)} tone="error" />}
       {!list && !error && <SkeletonCards />}
-      {list && shown.length === 0 && <Notice text="No updates yet. School announcements and events will appear here." />}
+      {list && shown.length === 0 && <Notice text={t('updates.empty')} />}
       {shown.map((u) => (
         <UpdateCard key={u.id} update={u} editor={false} onEdit={() => {}}
           photo={u.photo_url ? { uri: serverUrl(u.photo_url) } : u.sample ? SAMPLE_PHOTOS[u.title] : undefined} />

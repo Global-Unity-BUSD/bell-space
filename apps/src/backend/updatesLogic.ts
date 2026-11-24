@@ -27,10 +27,10 @@ export const SAMPLE_UPDATE: Update = {
 };
 
 /** Month and day for a card's date badge, in the phone's local time. */
-export function dateBadge(iso: string | null): { month: string; day: string } | null {
+export function dateBadge(iso: string | null, locale = 'en-US'): { month: string; day: string } | null {
   if (!iso) return null;
   const d = new Date(iso);
-  return { month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(), day: String(d.getDate()) };
+  return { month: d.toLocaleDateString(locale, { month: 'short' }).replace('.', '').toUpperCase(), day: String(d.getDate()) };
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -59,11 +59,11 @@ export function splitWhen(iso: string | null): { date: string; time: string } {
   return { date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, time: `${pad(d.getHours())}:${pad(d.getMinutes())}` };
 }
 
-export function formatWhen(iso: string | null) {
+export function formatWhen(iso: string | null, locale = 'en-US') {
   if (!iso) return null;
   const d = new Date(iso);
-  const day = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const day = d.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  const time = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
   return `${day} · ${time}`;
 }
 

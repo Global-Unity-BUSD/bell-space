@@ -1,20 +1,22 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useI18n, type Key } from '../i18n';
 import Icon, { type IconName } from './Icon';
 import { colors } from './theme';
 
 export type TabId = 'updates' | 'navigation' | 'chat' | 'qa' | 'settings';
-export const TABS: { id: TabId; label: string; icon: IconName }[] = [
-  { id: 'updates', label: 'Updates', icon: 'updates' },
-  { id: 'navigation', label: 'Navigation', icon: 'navigation' },
-  { id: 'chat', label: 'Chat', icon: 'chat' },
-  { id: 'qa', label: 'Q&A', icon: 'qa' },
-  { id: 'settings', label: 'Settings', icon: 'settings' },
+export const TABS: { id: TabId; label: Key; icon: IconName }[] = [
+  { id: 'updates', label: 'tabs.updates', icon: 'updates' },
+  { id: 'navigation', label: 'tabs.navigation', icon: 'navigation' },
+  { id: 'chat', label: 'tabs.chat', icon: 'chat' },
+  { id: 'qa', label: 'tabs.qa', icon: 'qa' },
+  { id: 'settings', label: 'tabs.settings', icon: 'settings' },
 ];
 
 export default function TabBar({ active, onChange }: { active: TabId; onChange: (tab: TabId) => void }) {
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   return (
     <View accessibilityRole="tablist" style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       {TABS.map((tab) => {
@@ -24,12 +26,13 @@ export default function TabBar({ active, onChange }: { active: TabId; onChange: 
           <Pressable key={tab.id} accessibilityRole="tab" accessibilityState={{ selected }}
             // Switch on finger-down for instant feedback; onPress covers screen
             // readers, which activate without a press-in.
-            accessibilityLabel={tab.label} onPressIn={() => onChange(tab.id)} onPress={() => onChange(tab.id)}
+            accessibilityLabel={t(tab.label)} onPressIn={() => onChange(tab.id)} onPress={() => onChange(tab.id)}
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}>
             <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
               <Icon name={tab.icon} color={color} size={24} strokeWidth={selected ? 2.2 : 1.8} />
             </View>
-            <Text style={[styles.label, { color }, selected && styles.selectedLabel]}>{tab.label}</Text>
+            <Text style={[styles.label, { color }, selected && styles.selectedLabel]} numberOfLines={1} adjustsFontSizeToFit
+              minimumFontScale={0.7}>{t(tab.label)}</Text>
           </Pressable>
         );
       })}

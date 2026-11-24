@@ -1,15 +1,16 @@
 import { createContext, memo, useCallback, useContext, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { checkText, LANGUAGES, languageLabel, LIMITS, TOPICS, topicLabel, type Me, type RequestMessage, type SupportRequest, type Topic } from '../../../shared/api';
+import { LANGUAGES, languageLabel, LIMITS, TOPICS, type Me, type RequestMessage, type SupportRequest, type Topic } from '../../../shared/api';
 import {
   declineRequest, loadRequest, loadSupport, markDone, reportRequest, sendMessage, submitRequest, withdrawRequest, type SupportOverview,
 } from '../backend/server/api';
 import { useServerAuth } from '../backend/server/auth';
 import { useLive } from '../backend/server/live';
 import {
-  canSend, mergeMessages, otherParty, senderLabel, splitLists, stateCard, STATUS_TONE, STUDENT_STATUS, viewerOf, type Viewer,
+  canSend, checkInput, mergeMessages, otherParty, senderLabel, splitLists, stateCard, STATUS_TONE, studentStatus, viewerOf, type Viewer,
 } from '../backend/supportLogic';
+import { useI18n, type Key, type Translator } from '../i18n';
 import { Button, Card, Chip, Field, Notice, StatusPill } from '../ui/controls';
 import Icon from '../ui/Icon';
 import { SkeletonCards } from '../ui/Placeholder';
@@ -23,11 +24,17 @@ import { useKeyboardInset } from '../ui/useKeyboardInset';
 // False while another tab is shown: Chat stops listening and reloads when opened again.
 const ChatActive = createContext(true);
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
-const time = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-const day = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const time = (iso: string, locale: string) => new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+const day = (iso: string, locale: string) => new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+// Topic and request-language names in the app's language.
+const topicName = (t: Translator['t'], topic: Topic) => t(`topic.${topic}`);
+const KNOWN_LANGUAGES = ['en', 'es', 'hy', 'ru'];
+const languageName = (t: Translator['t'], l: string) => (KNOWN_LANGUAGES.includes(l) ? t(`language.${l}` as Key) : languageLabel(l));
+const meta = (t: Translator['t'], r: SupportRequest) => `${topicName(t, r.topic)}${r.language ? ` · ${languageName(t, r.language)}` : ''}`;
 
 export function ServerSignIn({ intro }: { intro: string }) {
   const { signIn } = useServerAuth();
+  const { t, phrase } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -36,18 +43,18 @@ export function ServerSignIn({ intro }: { intro: string }) {
     setBusy(true); setError(null);
     const e = await signIn(email, password);
     setBusy(false);
-    if (e) setError(e);
+    if (e) setError(phrase(e));
   };
   return (
     <Card>
-      <Text style={styles.cardTitle}>Sign in</Text>
+      <Text style={styles.cardTitle}>{t('common.signIn')}</Text>
       <Text style={styles.muted}>{intro}</Text>
-      <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false}
+      <Field label={t('common.email')} value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false}
         keyboardType="email-address" textContentType="username" autoComplete="email" />
-      <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry textContentType="password"
+      <Field label={t('common.password')} value={password} onChangeText={setPassword} secureTextEntry textContentType="password"
         autoComplete="password" onSubmitEditing={submit} />
       {error && <Notice text={error} tone="error" />}
-      <Button label="Sign in" onPress={submit} busy={busy} disabled={!email.trim() || !password} />
+      <Button label={t('common.signIn')} onPress={submit} busy={busy} disabled={!email.trim() || !password} />
     </Card>
   );
 }
@@ -61,85 +68,83 @@ function Header({ title, subtitle }: { title: string; subtitle?: string }) {
   );
 }
 
-const HOW_IT_WORKS = [
-  'Choose a topic and write your question.',
-  'School staff review it and choose a trained student guide, or help you themselves.',
-  'Message here until you have what you need. Staff check in at the end.',
-];
+const HOW_IT_WORKS: Key[] = ['chat.how1', 'chat.how2', 'chat.how3'];
 
 function HowItWorks() {
+  const { t } = useI18n();
   return (
     <Card>
-      <Text style={styles.cardTitle}>How Chat works</Text>
+      <Text style={styles.cardTitle}>{t('chat.howTitle')}</Text>
       <View style={styles.steps}>
-        {HOW_IT_WORKS.map((t, i) => (
-          <View key={t} style={styles.stepRow}>
+        {HOW_IT_WORKS.map((key, i) => (
+          <View key={key} style={styles.stepRow}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>{i + 1}</Text></View>
-            <Text style={styles.stepText}>{t}</Text>
+            <Text style={styles.stepText}>{t(key)}</Text>
           </View>
         ))}
       </View>
-      <Text style={styles.caption}>Counseling, safety and private matters stay with qualified staff. There is no open messaging between students.</Text>
+      <Text style={styles.caption}>{t('chat.howNote')}</Text>
     </Card>
   );
 }
 
 function RequestRow({ r, viewer, onPress }: { r: SupportRequest; viewer: Viewer; onPress: () => void }) {
+  const { t, locale } = useI18n();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${topicLabel(r.topic)}, ${STUDENT_STATUS[r.status]}, ${otherParty(r, viewer)}`}
+    <Pressable accessibilityRole="button" accessibilityLabel={`${topicName(t, r.topic)}, ${studentStatus(r.status, t)}, ${otherParty(r, viewer, t)}`}
       onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
       <View style={styles.rowText}>
         <View style={styles.rowTop}>
-          <StatusPill label={STUDENT_STATUS[r.status]} tone={STATUS_TONE[r.status]} />
-          <Text style={styles.rowMeta}>{topicLabel(r.topic)}{r.language ? ` · ${languageLabel(r.language)}` : ''} · {day(r.created_at)}</Text>
+          <StatusPill label={studentStatus(r.status, t)} tone={STATUS_TONE[r.status]} />
+          <Text style={styles.rowMeta}>{meta(t, r)} · {day(r.created_at, locale)}</Text>
         </View>
         <Text style={styles.rowTitle} numberOfLines={2}>{r.question}</Text>
-        <Text style={styles.rowMeta}>{otherParty(r, viewer)}</Text>
+        <Text style={styles.rowMeta}>{otherParty(r, viewer, t)}</Text>
       </View>
     </Pressable>
   );
 }
 
 function AskForm({ staffReadsAll, onAsked }: { staffReadsAll: boolean; onAsked: (r: SupportRequest) => void }) {
+  const { t, phrase } = useI18n();
   const [topic, setTopic] = useState<Topic>('navigation');
   const [language, setLanguage] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const send = async () => {
-    const problem = checkText(question, LIMITS.question, 'your question');
+    const problem = checkInput(question, LIMITS.question, 'check.question', t);
     if (problem) { setError(problem); return; }
     setBusy(true); setError(null);
     try {
       const r = await submitRequest(topic, language, question.trim());
       setQuestion('');
       onAsked(r);
-    } catch (e) { setError(errorText(e)); } finally { setBusy(false); }
+    } catch (e) { setError(phrase(errorText(e))); } finally { setBusy(false); }
   };
   return (
     <Card>
-      <Text style={styles.cardTitle}>Ask for help</Text>
+      <Text style={styles.cardTitle}>{t('chat.askTitle')}</Text>
       <View style={styles.group}>
-        <Text style={styles.label}>Topic</Text>
-        <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Topic">
-          {TOPICS.map((t) => <Chip key={t.id} label={t.label} selected={topic === t.id} onPress={() => setTopic(t.id)} />)}
+        <Text style={styles.label}>{t('chat.topic')}</Text>
+        <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t('chat.topic')}>
+          {TOPICS.map((x) => <Chip key={x.id} label={topicName(t, x.id)} selected={topic === x.id} onPress={() => setTopic(x.id)} />)}
         </View>
       </View>
       <View style={styles.group}>
-        <Text style={styles.label}>Language (optional)</Text>
-        <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Language">
-          <Chip label="Any language" selected={language === null} onPress={() => setLanguage(null)} />
-          {LANGUAGES.map((l) => <Chip key={l.id} label={l.label} selected={language === l.id} onPress={() => setLanguage(l.id)} />)}
+        <Text style={styles.label}>{t('chat.languageOptional')}</Text>
+        <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t('chat.language')}>
+          <Chip label={t('chat.anyLanguage')} selected={language === null} onPress={() => setLanguage(null)} />
+          {LANGUAGES.map((l) => <Chip key={l.id} label={languageName(t, l.id)} selected={language === l.id} onPress={() => setLanguage(l.id)} />)}
         </View>
       </View>
-      <Field label="Your question" value={question} onChangeText={setQuestion} multiline maxLength={LIMITS.question}
-        placeholder="For example: how do I get to the Career Center?" />
+      <Field label={t('chat.question')} value={question} onChangeText={setQuestion} multiline maxLength={LIMITS.question}
+        placeholder={t('chat.questionPlaceholder')} />
       <Text style={styles.caption}>
-        The guide or staff member helping you sees your name. {staffReadsAll
-          ? 'School support staff can read support conversations.' : 'School staff can read a conversation if it is reported.'}
+        {t('chat.privacy')} {t(staffReadsAll ? 'chat.staffReadsAll' : 'chat.staffReadsReported')}
       </Text>
       {error && <Notice text={error} tone="error" />}
-      <Button label="Send question" icon="send" onPress={send} busy={busy} disabled={!question.trim()} />
+      <Button label={t('chat.sendQuestion')} icon="send" onPress={send} busy={busy} disabled={!question.trim()} />
     </Card>
   );
 }
@@ -158,6 +163,7 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
   const [reason, setReason] = useState('');
   const [reported, setReported] = useState(false);
   const active = useContext(ChatActive);
+  const { t, phrase, locale } = useI18n();
   const id = request.id;
   const viewer = viewerOf(request, me.id);
   const lastId = messages.at(-1)?.id ?? 0;
@@ -174,19 +180,19 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
   }, [id, active, hint]);
 
   const send = async () => {
-    const problem = checkText(draft, LIMITS.message);
+    const problem = checkInput(draft, LIMITS.message, 'check.message', t);
     if (problem) { setError(problem); return; }
     setBusy(true); setError(null);
     try {
       const m = await sendMessage(id, draft.trim());
       setDraft('');
-      setMessages((t) => mergeMessages(t, [m]));
-    } catch (e) { setError(errorText(e)); }
+      setMessages((list) => mergeMessages(list, [m]));
+    } catch (e) { setError(phrase(errorText(e))); }
     setBusy(false);
   };
   const act = async (fn: () => Promise<unknown>, after?: () => void) => {
     setError(null);
-    try { await fn(); setPanel(null); setReason(''); after?.(); onChanged(); } catch (e) { setError(errorText(e)); }
+    try { await fn(); setPanel(null); setReason(''); after?.(); onChanged(); } catch (e) { setError(phrase(errorText(e))); }
   };
   const writable = canSend(request, viewer);
   const open = request.status !== 'resolved';
@@ -194,19 +200,19 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
   return (
     <View style={styles.thread} ref={container}>
       <View style={styles.threadHeader}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back to chats" onPress={onBack} hitSlop={10} style={styles.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('chat.backToChats')} onPress={onBack} hitSlop={10} style={styles.back}>
           <Icon name="back" color={colors.brand} size={24} />
         </Pressable>
         <View style={styles.rowText}>
-          <Text style={styles.threadTitle} numberOfLines={1}>{otherParty(request, viewer)}</Text>
-          <Text style={styles.rowMeta}>{topicLabel(request.topic)}{request.language ? ` · ${languageLabel(request.language)}` : ''}</Text>
+          <Text style={styles.threadTitle} numberOfLines={1}>{otherParty(request, viewer, t)}</Text>
+          <Text style={styles.rowMeta}>{meta(t, request)}</Text>
         </View>
-        <StatusPill label={STUDENT_STATUS[request.status]} tone={STATUS_TONE[request.status]} />
+        <StatusPill label={studentStatus(request.status, t)} tone={STATUS_TONE[request.status]} />
       </View>
       <ScrollView ref={scroller} style={styles.messages} contentContainerStyle={styles.messagesContent}
         onContentSizeChange={() => scroller.current?.scrollToEnd({ animated: true })} keyboardDismissMode="interactive">
         {(() => {
-          const s = stateCard(request, viewer, staffReadsAll);
+          const s = stateCard(request, viewer, staffReadsAll, t);
           return (
             <View style={[styles.state, styles[`state_${s.tone}`]]} accessibilityLiveRegion="polite">
               <Text style={styles.stateTitle}>{s.title}</Text>
@@ -216,7 +222,7 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
         })()}
         <View style={[styles.bubble, viewer === 'student' ? styles.bubbleMine : styles.bubbleTheirs]}>
           <Text style={[styles.bubbleLabel, viewer === 'student' && styles.bubbleLabelMine]}>
-            {viewer === 'student' ? 'You asked' : `${request.student_name} asked`}
+            {viewer === 'student' ? t('chat.youAsked') : t('chat.theyAsked', { name: request.student_name })}
           </Text>
           <Text style={[styles.bubbleText, viewer === 'student' && styles.bubbleTextMine]}>{request.question}</Text>
         </View>
@@ -224,49 +230,49 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
           const mine = m.sender_id === me.id;
           return (
             <View key={m.id} style={[styles.bubble, mine ? styles.bubbleMine : m.sender_role === 'staff' ? styles.bubbleStaff : styles.bubbleTheirs]}>
-              {!mine && <Text style={styles.bubbleLabel}>{senderLabel(m)}</Text>}
+              {!mine && <Text style={styles.bubbleLabel}>{senderLabel(m, t)}</Text>}
               <Text style={[styles.bubbleText, mine && styles.bubbleTextMine]}>{m.body}</Text>
-              <Text style={[styles.bubbleTime, mine && styles.bubbleTextMine]}>{time(m.created_at)}</Text>
+              <Text style={[styles.bubbleTime, mine && styles.bubbleTextMine]}>{time(m.created_at, locale)}</Text>
             </View>
           );
         })}
-        {reported && <Notice text="Thanks. School staff will look at this conversation." />}
+        {reported && <Notice text={t('chat.reportThanks')} />}
       </ScrollView>
       <View style={[styles.composer, { paddingBottom: space.sm + inset }]}>
-        {error && <Notice text={error} tone="error" />}
+        {error && <Notice text={phrase(error)} tone="error" />}
         {panel === 'report' && (
           <View style={styles.group}>
-            <Field label="What went wrong?" value={reason} onChangeText={setReason} multiline maxLength={LIMITS.reason} />
+            <Field label={t('chat.reportWhat')} value={reason} onChangeText={setReason} multiline maxLength={LIMITS.reason} />
             <View style={styles.actions}>
-              <Button label="Send report" kind="danger" grow onPress={() => {
-                const problem = checkText(reason, LIMITS.reason, 'what went wrong');
+              <Button label={t('chat.sendReport')} kind="danger" grow onPress={() => {
+                const problem = checkInput(reason, LIMITS.reason, 'check.reason', t);
                 if (problem) { setError(problem); return; }
                 act(() => reportRequest(id, reason.trim()), () => setReported(true));
               }} />
-              <Button label="Cancel" kind="secondary" onPress={() => setPanel(null)} />
+              <Button label={t('common.cancel')} kind="secondary" onPress={() => setPanel(null)} />
             </View>
           </View>
         )}
         {panel === 'decline' && (
           <View style={styles.group}>
-            <Field label="Reason for staff (optional)" value={reason} onChangeText={setReason} maxLength={LIMITS.reason} />
+            <Field label={t('chat.declineReason')} value={reason} onChangeText={setReason} maxLength={LIMITS.reason} />
             <View style={styles.actions}>
-              <Button label="Decline request" kind="danger" grow onPress={() => act(() => declineRequest(id, reason.trim() || null), onBack)} />
-              <Button label="Cancel" kind="secondary" onPress={() => setPanel(null)} />
+              <Button label={t('chat.declineRequest')} kind="danger" grow onPress={() => act(() => declineRequest(id, reason.trim() || null), onBack)} />
+              <Button label={t('common.cancel')} kind="secondary" onPress={() => setPanel(null)} />
             </View>
           </View>
         )}
         {panel === 'withdraw' && (
           <View style={styles.actions}>
-            <Button label="Withdraw question" kind="danger" grow onPress={() => act(() => withdrawRequest(id))} />
-            <Button label="Keep" kind="secondary" onPress={() => setPanel(null)} />
+            <Button label={t('chat.withdrawQuestion')} kind="danger" grow onPress={() => act(() => withdrawRequest(id))} />
+            <Button label={t('chat.keep')} kind="secondary" onPress={() => setPanel(null)} />
           </View>
         )}
         {writable && !panel && (
           <View style={styles.inputRow}>
-            <TextInput value={draft} onChangeText={setDraft} placeholder="Message" placeholderTextColor={colors.textFaint}
-              style={styles.messageInput} multiline maxLength={LIMITS.message} accessibilityLabel="Message" />
-            <Pressable accessibilityRole="button" accessibilityLabel="Send message" onPress={send} disabled={busy || !draft.trim()}
+            <TextInput value={draft} onChangeText={setDraft} placeholder={t('chat.message')} placeholderTextColor={colors.textFaint}
+              style={styles.messageInput} multiline maxLength={LIMITS.message} accessibilityLabel={t('chat.message')} />
+            <Pressable accessibilityRole="button" accessibilityLabel={t('chat.sendMessage')} onPress={send} disabled={busy || !draft.trim()}
               style={({ pressed }) => [styles.sendButton, (busy || !draft.trim()) && styles.disabled, pressed && styles.pressed]}>
               {busy ? <ActivityIndicator color="#ffffff" /> : <Icon name="send" color="#ffffff" size={20} />}
             </Pressable>
@@ -276,14 +282,14 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
           <View style={styles.actions}>
             {viewer === 'guide' && request.status === 'with_guide' && (
               <>
-                <Button label="Mark done" kind="secondary" onPress={() => act(() => markDone(id, null))} />
-                <Button label="Decline" kind="quiet" onPress={() => setPanel('decline')} />
+                <Button label={t('chat.markDone')} kind="secondary" onPress={() => act(() => markDone(id, null))} />
+                <Button label={t('chat.decline')} kind="quiet" onPress={() => setPanel('decline')} />
               </>
             )}
             {viewer === 'student' && request.status === 'submitted' && (
-              <Button label="Withdraw" kind="secondary" onPress={() => setPanel('withdraw')} />
+              <Button label={t('chat.withdraw')} kind="secondary" onPress={() => setPanel('withdraw')} />
             )}
-            {!reported && request.status !== 'submitted' && <Button label="Report" kind="quiet" icon="flag" onPress={() => setPanel('report')} />}
+            {!reported && request.status !== 'submitted' && <Button label={t('chat.report')} kind="quiet" icon="flag" onPress={() => setPanel('report')} />}
           </View>
         )}
       </View>
@@ -297,14 +303,15 @@ function ChatHome({ me }: { me: Me }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [hint, setHint] = useState(0);
   const active = useContext(ChatActive);
+  const { t, phrase } = useI18n();
   const refresh = useCallback(() => {
     loadSupport().then((d) => {
       setData(d);
       setError(null);
       // A guide who declined no longer sees the request: back to the list.
       setOpenId((id) => (id && d.requests.some((r) => r.id === id) ? id : null));
-    }).catch((e) => setError(errorText(e)));
-  }, []);
+    }).catch((e) => setError(phrase(errorText(e))));
+  }, [phrase]);
   useEffect(() => { if (active) refresh(); }, [active, refresh]);
   useLive(active, (h) => {
     if (h.t === 'request' || h.t === 'resync') refresh();
@@ -314,7 +321,7 @@ function ChatHome({ me }: { me: Me }) {
   if (!data) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Header title="Chat" />
+        <Header title={t('chat.title')} />
         {error ? <Notice text={error} tone="error" /> : <SkeletonCards count={2} />}
       </ScrollView>
     );
@@ -328,13 +335,13 @@ function ChatHome({ me }: { me: Me }) {
   const guide = Boolean(me.guide?.active) || assigned.length > 0;
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Header title="Chat" subtitle={guide ? 'Ask for help, and help students staff assign to you.' : 'Ask for help from school staff and trained student guides.'} />
+      <Header title={t('chat.title')} subtitle={t(guide ? 'chat.subtitleGuide' : 'chat.subtitleStudent')} />
       {error && <Notice text={error} tone="error" />}
       {guide && (
         <>
-          <Text style={styles.section}>Assigned to you</Text>
+          <Text style={styles.section}>{t('chat.assigned')}</Text>
           <Card style={styles.listCard}>
-            {assigned.length === 0 && <Text style={styles.empty}>No requests assigned to you right now. Staff assign them on the website.</Text>}
+            {assigned.length === 0 && <Text style={styles.empty}>{t('chat.assignedEmpty')}</Text>}
             {assigned.map((r) => <RequestRow key={r.id} r={r} viewer="guide" onPress={() => setOpenId(r.id)} />)}
           </Card>
         </>
@@ -342,7 +349,7 @@ function ChatHome({ me }: { me: Me }) {
       <AskForm staffReadsAll={staffReadsAll} onAsked={(r) => { refresh(); setOpenId(r.id); }} />
       {asked.length > 0 && (
         <>
-          <Text style={styles.section}>Your questions</Text>
+          <Text style={styles.section}>{t('chat.yourQuestions')}</Text>
           <Card style={styles.listCard}>
             {asked.map((r) => <RequestRow key={r.id} r={r} viewer="student" onPress={() => setOpenId(r.id)} />)}
           </Card>
@@ -354,19 +361,20 @@ function ChatHome({ me }: { me: Me }) {
 
 function ChatContent() {
   const { configured, loading, me, signOut } = useServerAuth();
+  const { t } = useI18n();
   if (!configured) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Header title="Chat" subtitle="Ask school staff and trained student guides for help." />
+        <Header title={t('chat.title')} subtitle={t('chat.subtitleGuest')} />
         <HowItWorks />
-        <Notice text="Chat isn’t connected yet. It opens once the school finishes setting it up." tone="warn" />
+        <Notice text={t('chat.notConnected')} tone="warn" />
       </ScrollView>
     );
   }
   if (loading) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Header title="Chat" />
+        <Header title={t('chat.title')} />
         <SkeletonCards count={2} />
       </ScrollView>
     );
@@ -374,18 +382,18 @@ function ChatContent() {
   if (!me) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Header title="Chat" subtitle="Ask school staff and trained student guides for help." />
+        <Header title={t('chat.title')} subtitle={t('chat.subtitleGuest')} />
         <HowItWorks />
-        <ServerSignIn intro="Sign in to ask a question. The map, Q&A and Updates work without signing in." />
+        <ServerSignIn intro={t('chat.signInIntro')} />
       </ScrollView>
     );
   }
   if (me.kind === 'staff') {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Header title="Chat" />
-        <Notice text="Staff review and answer requests on the Bell Space staff website, not in the app." />
-        <Button label="Sign out" kind="secondary" onPress={signOut} />
+        <Header title={t('chat.title')} />
+        <Notice text={t('chat.staffNote')} />
+        <Button label={t('common.signOut')} kind="secondary" onPress={signOut} />
       </ScrollView>
     );
   }

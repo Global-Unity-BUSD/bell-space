@@ -4,6 +4,8 @@
 
 * [project.md](project.md): what Bell Space is, the current stage, and the principles.
 * [architecture.md](architecture.md): how the app, server, website and database fit together.
+* [translations.md](translations.md): the app's four languages, what is translated, and the
+  review needed before release.
 
 ## Backend, website and Chat
 

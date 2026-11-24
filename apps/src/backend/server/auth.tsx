@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import type { Me } from '../../../../shared/api';
+import { EN, type Translator } from '../../i18n/core.ts';
 import { SERVER_URL } from '../mode';
 import { call, setSession } from './client';
 import { reconnectLive } from './live';
@@ -79,7 +80,7 @@ export function ServerAuthProvider({ children }: { children: ReactNode }) {
 }
 
 /** "Student", "Student guide", or the staff access list. */
-export function roleLabel(me: Me) {
-  if (me.kind === 'staff') return `Staff${me.permissions.length ? '' : ' (no access yet)'}`;
-  return me.guide?.active ? 'Student guide' : 'Student';
+export function roleLabel(me: Me, t: Translator['t'] = EN.t) {
+  if (me.kind === 'staff') return t(me.permissions.length ? 'role.staff' : 'role.staffNoAccess');
+  return t(me.guide?.active ? 'role.guide' : 'role.student');
 }

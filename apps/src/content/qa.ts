@@ -122,11 +122,15 @@ export const QA_ENTRIES: QaEntry[] = [
 const fold = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[’']/g, '')
   .replace(/[“”"]/g, '');
 
-/** Entries matching every word of the query (question, answer or section), in a section or all. */
-export function searchQa(entries: QaEntry[], query: string, category: QaCategory | null) {
+/**
+ * Entries matching every word of the query (question, answer or section), in a
+ * section or all. `extra` adds more searchable text per entry (its translation).
+ */
+export function searchQa(entries: QaEntry[], query: string, category: QaCategory | null,
+  extra: (e: QaEntry) => string = () => '') {
   // A trailing "s" is dropped so "tickets" also finds "ticket".
   const words = fold(query).split(/\s+/).filter(Boolean).map((w) => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w));
   const label = (c: QaCategory) => QA_CATEGORIES.find((x) => x.id === c)?.label ?? '';
   return entries.filter((e) => (!category || e.category === category)
-    && words.every((w) => fold(`${e.question} ${e.answer} ${label(e.category)}`).includes(w)));
+    && words.every((w) => fold(`${e.question} ${e.answer} ${label(e.category)} ${extra(e)}`).includes(w)));
 }

@@ -1,12 +1,14 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useI18n } from '../i18n';
 import { colors, radius, space, type } from './theme';
 
 // Grey blocks in the shape of cards, shown while a screen's content loads.
 // Static on purpose: an animated shimmer costs frames on budget phones.
 export function SkeletonCards({ count = 3 }: { count?: number }) {
+  const { t } = useI18n();
   return (
-    <View style={styles.cards} accessible accessibilityLabel="Loading" accessibilityRole="progressbar">
+    <View style={styles.cards} accessible accessibilityLabel={t('common.loading')} accessibilityRole="progressbar">
       {Array.from({ length: count }, (_, i) => (
         <View key={i} style={styles.card}>
           <View style={[styles.line, styles.lineWide]} />

@@ -3,6 +3,11 @@
 // control itself is in the server's database (server/migrations).
 import type { RequestMessage, RequestStatus, SupportRequest } from '../../../shared/api';
 
+import { EN, type Translator } from '../i18n/core.ts';
+
+// Each text helper takes the current language's `t` (English by default).
+type T = Translator['t'];
+
 export type Viewer = 'student' | 'guide';
 export type Tone = 'pending' | 'active' | 'closed';
 
@@ -11,9 +16,7 @@ export const STATUS_TONE: Record<RequestStatus, Tone> = {
 };
 
 /** What the student sees as the status (shorter than the staff labels). */
-export const STUDENT_STATUS: Record<RequestStatus, string> = {
-  submitted: 'Staff review', with_guide: 'With a guide', follow_up: 'Staff follow-up', with_staff: 'With staff', resolved: 'Resolved',
-};
+export const studentStatus = (status: RequestStatus, t: T = EN.t) => t(`status.${status}`);
 
 /** Requests I asked, and (guides) requests staff assigned to me. Newest activity first; resolved last. */
 export function splitLists(requests: SupportRequest[], me: string) {
@@ -34,42 +37,41 @@ export function canSend(r: SupportRequest, viewer: Viewer) {
 }
 
 /** Who the conversation is with, for the list and the thread header. */
-export function otherParty(r: SupportRequest, viewer: Viewer) {
+export function otherParty(r: SupportRequest, viewer: Viewer, t: T = EN.t) {
   if (viewer === 'guide') return r.student_name;
-  if (r.status === 'with_staff' || (r.status === 'follow_up' && r.staff_name)) return r.staff_name ?? 'School staff';
-  if (r.guide_name) return `${r.guide_name} (student guide)`;
-  return r.status === 'resolved' ? 'Resolved' : 'Waiting for staff review';
+  if (r.status === 'with_staff' || (r.status === 'follow_up' && r.staff_name)) return r.staff_name ?? t('party.schoolStaff');
+  if (r.guide_name) return t('party.guide', { name: r.guide_name });
+  return t(r.status === 'resolved' ? 'party.resolved' : 'party.waiting');
 }
 
 /** The card at the top of a thread: what is happening and what comes next. */
-export function stateCard(r: SupportRequest, viewer: Viewer, staffReadsAll: boolean) {
-  const watch = staffReadsAll ? 'School support staff can read this conversation.' : 'School staff can read it if it is reported.';
+export function stateCard(r: SupportRequest, viewer: Viewer, staffReadsAll: boolean, t: T = EN.t) {
+  const watch = t(staffReadsAll ? 'state.watchAll' : 'state.watchReported');
   if (viewer === 'guide') {
     if (r.status === 'with_guide') {
-      return { tone: 'active' as const, title: 'Assigned to you by staff',
-        text: `Help ${r.student_name} with this question. Mark it done when they have what they need, or decline it so staff can choose someone else. ${watch}` };
+      return { tone: 'active' as const, title: t('state.guideAssignedTitle'),
+        text: t('state.guideAssignedText', { student: r.student_name, watch }) };
     }
     if (r.status === 'follow_up') {
-      return { tone: 'active' as const, title: 'Marked done', text: `Staff will follow up with ${r.student_name}. You can still reply here.` };
+      return { tone: 'active' as const, title: t('state.guideDoneTitle'), text: t('state.guideDoneText', { student: r.student_name }) };
     }
-    return { tone: 'closed' as const, title: 'Resolved', text: 'This request is closed. No more messages can be sent.' };
+    return { tone: 'closed' as const, title: t('state.resolvedTitle'), text: t('state.guideResolvedText') };
   }
   switch (r.status) {
     case 'submitted':
-      return { tone: 'pending' as const, title: 'Waiting for staff review',
-        text: 'School staff read each request and choose a trained student guide, or help you themselves. You can message here once someone is assigned.' };
+      return { tone: 'pending' as const, title: t('state.submittedTitle'), text: t('state.submittedText') };
     case 'with_guide':
-      return { tone: 'active' as const, title: `Connected with ${r.guide_name ?? 'a student guide'}`,
-        text: `Staff chose ${r.guide_name ?? 'a trained student guide'} to help you. They see your name. ${watch}` };
+      return { tone: 'active' as const, title: t('state.withGuideTitle', { guide: r.guide_name ?? t('state.aGuide') }),
+        text: t('state.withGuideText', { guide: r.guide_name ?? t('state.aTrainedGuide'), watch }) };
     case 'follow_up':
-      return { tone: 'active' as const, title: 'Staff follow-up',
-        text: 'Your guide has finished. A staff member will check in with you here to make sure you have what you need.' };
+      return { tone: 'active' as const, title: t('state.followUpTitle'), text: t('state.followUpText') };
     case 'with_staff':
-      return { tone: 'active' as const, title: `With ${r.staff_name ?? 'school staff'}`,
-        text: 'A staff member is handling this request. No student guide sees it.' };
+      return { tone: 'active' as const, title: t('state.withStaffTitle', { staff: r.staff_name ?? t('state.schoolStaff') }),
+        text: t('state.withStaffText') };
     default:
-      return { tone: 'closed' as const, title: 'Resolved',
-        text: `${r.resolution_note ? `${r.resolution_note} ` : ''}No more messages can be sent. You can ask a new question any time.` };
+      // The resolution note is staff's own words: it stays as written.
+      return { tone: 'closed' as const, title: t('state.resolvedTitle'),
+        text: `${r.resolution_note ? `${r.resolution_note} ` : ''}${t('state.resolvedText')}` };
   }
 }
 
@@ -81,6 +83,14 @@ export function mergeMessages(thread: RequestMessage[], incoming: RequestMessage
 }
 
 /** Label above someone else's message: "Gina · Student guide", "Sofia · Staff". */
-export function senderLabel(m: RequestMessage) {
-  return `${m.sender_name} · ${m.sender_role === 'staff' ? 'Staff' : m.sender_role === 'guide' ? 'Student guide' : 'Student'}`;
+export function senderLabel(m: RequestMessage, t: T = EN.t) {
+  return `${m.sender_name} · ${t(m.sender_role === 'staff' ? 'sender.staff' : m.sender_role === 'guide' ? 'sender.guide' : 'sender.student')}`;
+}
+
+/** null when fine, otherwise a short message for the person typing. */
+export function checkInput(text: string, max: number, empty: 'check.message' | 'check.question' | 'check.reason', t: T = EN.t) {
+  const trimmed = text.trim();
+  if (!trimmed) return t(empty);
+  if (trimmed.length > max) return t('check.tooLong', { max });
+  return null;
 }

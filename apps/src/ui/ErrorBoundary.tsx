@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useI18n } from '../i18n';
 import { Button } from './controls';
 import { colors, space, type } from './theme';
 
@@ -11,14 +12,19 @@ export default class ErrorBoundary extends Component<{ name: string; children: R
   componentDidCatch(error: unknown) { console.error(`${this.props.name} failed`, error); }
   render() {
     if (!this.state.failed) return this.props.children;
-    return (
-      <View style={styles.box}>
-        <Text style={styles.title}>{this.props.name} stopped working</Text>
-        <Text style={styles.text}>The map and other tabs still work.</Text>
-        <Button label="Try again" kind="secondary" onPress={() => this.setState({ failed: false })} />
-      </View>
-    );
+    return <Failed name={this.props.name} onRetry={() => this.setState({ failed: false })} />;
   }
+}
+
+function Failed({ name, onRetry }: { name: string; onRetry: () => void }) {
+  const { t } = useI18n();
+  return (
+    <View style={styles.box}>
+      <Text style={styles.title}>{t('error.title', { name })}</Text>
+      <Text style={styles.text}>{t('error.text')}</Text>
+      <Button label={t('error.retry')} kind="secondary" onPress={onRetry} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

@@ -7,6 +7,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/backend/auth';
 import { BACKEND } from './src/backend/mode';
 import { ServerAuthProvider } from './src/backend/server/auth';
+import { LanguageProvider, useI18n } from './src/i18n';
 import { useLiveTracking } from './src/positioning/useLiveTracking';
 import ChatScreen from './src/screens/ChatScreen';
 import NavigationScreen from './src/screens/NavigationScreen';
@@ -43,6 +44,11 @@ const Accounts = BACKEND === 'server' ? ServerAuthProvider : AuthProvider;
 const Chat = BACKEND === 'server' ? SupportChatScreen : ChatScreen;
 
 export default function App() {
+  return <LanguageProvider><Main /></LanguageProvider>;
+}
+
+function Main() {
+  const { t } = useI18n();
   // No welcome or sign-in screen: the app opens on Navigation.
   // The tab bar's highlight moves at once; the screen switch follows as
   // low-priority work, so the tap gets visible feedback in the next frame.
@@ -79,17 +85,17 @@ export default function App() {
             </View>
             <View style={styles.body}>
               {/* Navigation is mounted from the start so the map is ready; it keeps its position between tabs. */}
-              <TabPanel shown={tab === 'navigation'} title="Navigation">
+              <TabPanel shown={tab === 'navigation'} title={t('tabs.navigation')}>
                 <NavigationScreen review={review} live={liveOn ? live : null} liveTest={liveTest} />
               </TabPanel>
               {/* Chat and Updates pause while hidden and refresh when shown again. */}
-              <TabPanel shown={tab === 'chat'} title="Chat">
-                <ErrorBoundary name="Chat"><Chat active={tab === 'chat'} /></ErrorBoundary>
+              <TabPanel shown={tab === 'chat'} title={t('tabs.chat')}>
+                <ErrorBoundary name={t('tabs.chat')}><Chat active={tab === 'chat'} /></ErrorBoundary>
               </TabPanel>
-              <TabPanel shown={tab === 'updates'} title="Updates">
-                <ErrorBoundary name="Updates"><UpdatesScreen active={tab === 'updates'} /></ErrorBoundary>
+              <TabPanel shown={tab === 'updates'} title={t('tabs.updates')}>
+                <ErrorBoundary name={t('tabs.updates')}><UpdatesScreen active={tab === 'updates'} /></ErrorBoundary>
               </TabPanel>
-              <TabPanel shown={tab === 'qa'} title="Q&A"><QAScreen onOpenTab={openTab} /></TabPanel>
+              <TabPanel shown={tab === 'qa'} title={t('tabs.qa')}><QAScreen onOpenTab={openTab} /></TabPanel>
               {tab === 'settings' && (
                 <SettingsScreen dev={{
                   unlocked: devUnlocked, setUnlocked: setDev,

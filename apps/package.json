@@ -27,7 +27,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "node --test tests/map.test.cjs tests/pilot-app.test.cjs tests/pilot-rules.test.mjs tests/support-app.test.cjs",
+    "test": "node --test tests/map.test.cjs tests/pilot-app.test.cjs tests/pilot-rules.test.mjs tests/support-app.test.cjs tests/i18n.test.cjs",
     "pilot:check-signin": "node tools/pilot/check-signin.mjs",
     "pilot:accounts": "node tools/pilot/setup-accounts.mjs"
   },
