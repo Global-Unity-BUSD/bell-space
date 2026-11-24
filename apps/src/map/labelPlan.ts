@@ -50,11 +50,20 @@ const PADDING = 6;
 const GAP = 3;
 const PRIORITY: Record<LabelKind, number> = { building: 300, area: 150, stair: 120, room: 60, context: 10 };
 
+// Bold Armenian and Cyrillic letters are wider than Latin ones (Armenian measured
+// 0.70 to 0.78 of the font size); a box sized with CHAR would wrap and clip the word.
+const ARMENIAN_CHAR = 0.8;
+const ARMENIAN = /[԰-֏]/;
+const CYRILLIC_CHAR = 0.7;
+const CYRILLIC = /[Ѐ-ӿ]/;
+
 function boxOf(spec: LabelSpec) {
   if (spec.kind === 'stair') return { fontSize: 0, width: STAIR_MARKER, height: STAIR_MARKER };
   const fontSize = LABEL_STYLE[spec.kind].fontSize - (spec.uncertain ? 2 : 0);
   const longest = Math.max(...spec.lines.map((l) => l.length));
-  return { fontSize, width: Math.ceil(longest * fontSize * CHAR) + PADDING, height: Math.ceil(spec.lines.length * fontSize * LINE) };
+  const text = spec.lines.join('');
+  const char = ARMENIAN.test(text) ? ARMENIAN_CHAR : CYRILLIC.test(text) ? CYRILLIC_CHAR : CHAR;
+  return { fontSize, width: Math.ceil(longest * fontSize * char) + PADDING, height: Math.ceil(spec.lines.length * fontSize * LINE) };
 }
 
 /** Screen-space extent along x and y after rotation. */

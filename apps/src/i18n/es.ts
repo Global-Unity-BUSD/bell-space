@@ -61,7 +61,6 @@ export const es: Strings = {
     'updates.title': 'Noticias',
     'updates.subtitle': 'Anuncios y eventos de Burbank High School.',
     'updates.empty': 'Aún no hay noticias. Aquí aparecerán los anuncios y eventos de la escuela.',
-    'updates.tba': 'POR CONF.',
     'updates.dateTba': 'Fecha por confirmar',
     'updates.locationTba': 'Lugar por confirmar',
     'updates.photoFor': 'Foto de {title}',

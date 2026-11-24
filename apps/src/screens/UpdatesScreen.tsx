@@ -40,7 +40,7 @@ function Photo({ source, label, flush }: { source: ImageSourcePropType; label: s
 }
 
 function DateBadge({ iso }: { iso: string | null }) {
-  const { t, locale } = useI18n();
+  const { locale } = useI18n();
   const badge = dateBadge(iso, locale);
   return (
     <View style={styles.badge} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -49,7 +49,7 @@ function DateBadge({ iso }: { iso: string | null }) {
           <Text style={styles.badgeMonth}>{badge.month}</Text>
           <Text style={styles.badgeDay}>{badge.day}</Text>
         </>
-      ) : <Text style={styles.badgeTba} numberOfLines={1} adjustsFontSizeToFit>{t('updates.tba')}</Text>}
+      ) : <Icon name="clock" color={colors.brand} size={22} />}
     </View>
   );
 }
@@ -272,7 +272,6 @@ const styles = StyleSheet.create({
   },
   badgeMonth: { fontSize: 12, fontWeight: '800', letterSpacing: 0.8, color: colors.brand },
   badgeDay: { fontSize: 24, fontWeight: '800', color: colors.text, lineHeight: 28 },
-  badgeTba: { fontSize: 13, fontWeight: '800', letterSpacing: 0.6, color: colors.brand },
   updateTitle: { ...type.title, fontSize: 21, lineHeight: 26, letterSpacing: -0.3 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   meta: { fontSize: 15, color: colors.textMuted },

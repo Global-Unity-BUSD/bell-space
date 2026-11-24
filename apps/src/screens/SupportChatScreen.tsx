@@ -204,7 +204,7 @@ function Thread({ request, me, staffReadsAll, hint, onBack, onChanged }: {
           <Icon name="back" color={colors.brand} size={24} />
         </Pressable>
         <View style={styles.rowText}>
-          <Text style={styles.threadTitle} numberOfLines={1}>{otherParty(request, viewer, t)}</Text>
+          <Text style={styles.threadTitle}>{otherParty(request, viewer, t)}</Text>
           <Text style={styles.rowMeta}>{meta(t, request)}</Text>
         </View>
         <StatusPill label={studentStatus(request.status, t)} tone={STATUS_TONE[request.status]} />

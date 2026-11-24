@@ -101,8 +101,8 @@ function PlaceHeader({ place }: { place: Place }) {
         <Icon name={placeIcon(place)} color={colors.text} size={26} strokeWidth={1.6} />
       </View>
       <View style={styles.cardText}>
-        <Text style={styles.cardTitle} numberOfLines={1}>{name(place.title)}</Text>
-        <Text style={styles.cardSubtitle} numberOfLines={1}>{subtitle(place)}</Text>
+        <Text style={styles.cardTitle}>{name(place.title)}</Text>
+        <Text style={styles.cardSubtitle}>{subtitle(place)}</Text>
       </View>
     </View>
   );
@@ -142,7 +142,7 @@ function PlanCard({ start, destination, trip, onStart, onChangeStart, onCancel }
       <View style={styles.legs}>
         <View style={styles.leg}>
           <View style={[styles.legDot, styles.legStart]} />
-          <Text style={styles.legText} numberOfLines={1}>{word(start.title)}</Text>
+          <Text style={styles.legText}>{word(start.title)}</Text>
           <Pressable accessibilityRole="button" accessibilityLabel={t('nav.changeStart')} onPress={onChangeStart} hitSlop={8}>
             <Text style={styles.link}>{t('nav.change')}</Text>
           </Pressable>
@@ -150,7 +150,7 @@ function PlanCard({ start, destination, trip, onStart, onChangeStart, onCancel }
         <View style={styles.legLine} />
         <View style={styles.leg}>
           <View style={[styles.legDot, styles.legEnd]} />
-          <Text style={styles.legText} numberOfLines={1}>{name(destination.title)}</Text>
+          <Text style={styles.legText}>{name(destination.title)}</Text>
         </View>
       </View>
       {available && trip.reviewOnly && (
@@ -218,8 +218,8 @@ function ResultRow({ place, onPress, routed }: { place: Place; onPress: () => vo
         <Icon name={placeIcon(place)} color={colors.textMuted} size={19} />
       </View>
       <View style={styles.resultText}>
-        <Text style={styles.resultTitle} numberOfLines={1}>{name(place.title)}</Text>
-        <Text style={styles.resultSubtitle} numberOfLines={1}>{subtitle(place)}</Text>
+        <Text style={styles.resultTitle}>{name(place.title)}</Text>
+        <Text style={styles.resultSubtitle}>{subtitle(place)}</Text>
       </View>
       {routed !== undefined && <StatusPill label={t(routed ? 'nav.route' : 'nav.mapOnly')} tone={routed ? 'active' : 'closed'} style={styles.resultPill} />}
     </Pressable>
@@ -488,8 +488,8 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                     <Icon name="locate" color="#ffffff" size={19} />
                   </View>
                   <View style={styles.resultText}>
-                    <Text style={styles.resultTitle} numberOfLines={1}>Use my live location</Text>
-                    <Text style={styles.resultSubtitle} numberOfLines={1}>{liveRadius !== null ? `Accurate to ${metres(liveRadius)}` : ''}</Text>
+                    <Text style={styles.resultTitle}>Use my live location</Text>
+                    <Text style={styles.resultSubtitle}>{liveRadius !== null ? `Accurate to ${metres(liveRadius)}` : ''}</Text>
                   </View>
                 </Pressable>
               ) : (
@@ -497,7 +497,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                   <View style={styles.resultIcon}><Icon name="locate" color={colors.textFaint} size={19} /></View>
                   <View style={styles.resultText}>
                     <Text style={[styles.resultTitle, styles.mutedText]}>Live location not accurate enough</Text>
-                    <Text style={styles.resultSubtitle} numberOfLines={1}>Pick a place below or tap the map instead</Text>
+                    <Text style={styles.resultSubtitle}>Pick a place below or tap the map instead</Text>
                   </View>
                 </View>
               ))}
@@ -508,8 +508,8 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                     <Icon name="navigation" color="#ffffff" size={19} />
                   </View>
                   <View style={styles.resultText}>
-                    <Text style={styles.resultTitle} numberOfLines={1}>{t('nav.tapSpot')}</Text>
-                    <Text style={styles.resultSubtitle} numberOfLines={1}>{t('nav.tapSpotHint')}</Text>
+                    <Text style={styles.resultTitle}>{t('nav.tapSpot')}</Text>
+                    <Text style={styles.resultSubtitle}>{t('nav.tapSpotHint')}</Text>
                   </View>
                 </Pressable>
               )}

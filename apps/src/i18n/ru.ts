@@ -62,7 +62,6 @@ export const ru: Strings = {
     'updates.title': 'Новости',
     'updates.subtitle': 'Объявления и мероприятия Burbank High School.',
     'updates.empty': 'Новостей пока нет. Здесь появятся объявления и мероприятия школы.',
-    'updates.tba': 'УТОЧН.',
     'updates.dateTba': 'Дата будет объявлена',
     'updates.locationTba': 'Место будет объявлено',
     'updates.photoFor': 'Фото: {title}',

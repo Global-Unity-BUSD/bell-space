@@ -64,7 +64,6 @@ const ui = {
   'updates.title': 'Updates',
   'updates.subtitle': 'Announcements and events at Burbank High School.',
   'updates.empty': 'No updates yet. School announcements and events will appear here.',
-  'updates.tba': 'TBA',
   'updates.dateTba': 'Date to be announced',
   'updates.locationTba': 'Location to be announced',
   'updates.photoFor': 'Photo for {title}',

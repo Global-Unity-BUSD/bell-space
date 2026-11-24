@@ -22,17 +22,19 @@ export default function TabBar({ active, onChange }: { active: TabId; onChange: 
       {TABS.map((tab) => {
         const selected = tab.id === active;
         const color = selected ? colors.brand : colors.textMuted;
+        const label = t(tab.label);
         return (
           <Pressable key={tab.id} accessibilityRole="tab" accessibilityState={{ selected }}
             // Switch on finger-down for instant feedback; onPress covers screen
             // readers, which activate without a press-in.
-            accessibilityLabel={t(tab.label)} onPressIn={() => onChange(tab.id)} onPress={() => onChange(tab.id)}
+            accessibilityLabel={label} onPressIn={() => onChange(tab.id)} onPress={() => onChange(tab.id)}
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}>
             <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
               <Icon name={tab.icon} color={color} size={24} strokeWidth={selected ? 2.2 : 1.8} />
             </View>
-            <Text style={[styles.label, { color }, selected && styles.selectedLabel]} numberOfLines={1} adjustsFontSizeToFit
-              minimumFontScale={0.7}>{t(tab.label)}</Text>
+            {/* Long words (Ընտրանքներ) get a smaller size so the whole word always fits the tab. */}
+            <Text style={[styles.label, label.length > 9 && styles.longLabel, { color }, selected && styles.selectedLabel]}
+              numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</Text>
           </Pressable>
         );
       })}
@@ -51,5 +53,6 @@ const styles = StyleSheet.create({
   iconWrap: { width: 56, height: 32, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   iconWrapSelected: { backgroundColor: colors.brandSoft },
   label: { fontSize: 11.5, fontWeight: '500' },
+  longLabel: { fontSize: 10.5 },
   selectedLabel: { fontWeight: '700' },
 });

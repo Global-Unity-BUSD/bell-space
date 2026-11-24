@@ -63,7 +63,6 @@ export const hy: Strings = {
     'updates.title': 'Լուրեր',
     'updates.subtitle': 'Burbank High School-ի հայտարարություններ և միջոցառումներ։',
     'updates.empty': 'Լուրեր դեռ չկան։ Դպրոցի հայտարարություններն ու միջոցառումները կհայտնվեն այստեղ։',
-    'updates.tba': 'ՃՇՏՎ.',
     'updates.dateTba': 'Ամսաթիվը կհայտարարվի',
     'updates.locationTba': 'Վայրը կհայտարարվի',
     'updates.photoFor': 'Լուսանկար՝ {title}',
