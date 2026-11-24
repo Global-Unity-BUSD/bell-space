@@ -1,6 +1,17 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { pgliteDb, type Db } from '../src/db.ts';
 import { migrate } from '../src/migrate.ts';
 import { upsertAccount, type SeedAccount } from '../src/seed.ts';
+
+/** A temporary folder that is deleted when this test file's process exits. */
+export function tempDir(prefix = 'bell-') {
+  const dir = mkdtempSync(join(tmpdir(), prefix));
+  process.once('exit', () => rmSync(dir, { recursive: true, force: true }));
+  return dir;
+}
 
 export type Who = 'sam' | 'riley' | 'gina' | 'omar' | 'uma' | 'sofia' | 'max';
 const KEYS: Who[] = ['sam', 'riley', 'gina', 'omar', 'uma', 'sofia', 'max'];

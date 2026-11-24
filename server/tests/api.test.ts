@@ -1,7 +1,6 @@
 // The HTTP API end to end (Fastify inject, in-memory PGlite): sign-in, the
 // website cookie guard, Updates with photos, the support flow and accounts.
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -9,7 +8,7 @@ import { test } from 'node:test';
 import { buildApp } from '../src/app.ts';
 import { hashPassword } from '../src/auth.ts';
 import { loadConfig } from '../src/config.ts';
-import { testDb, type Who } from './helpers.ts';
+import { tempDir, testDb, type Who } from './helpers.ts';
 
 const PASSWORD = 'test-password-1';
 const EMAIL: Record<Who, string> = {
@@ -20,7 +19,7 @@ const EMAIL: Record<Who, string> = {
 
 async function setup() {
   const t = await testDb(await hashPassword(PASSWORD));
-  const config = { ...loadConfig({}), dataDir: mkdtempSync(join(tmpdir(), 'bell-')), webDir: join(tmpdir(), 'no-web') };
+  const config = { ...loadConfig({}), dataDir: tempDir(), webDir: join(tmpdir(), 'no-web') };
   const app = await buildApp(t.db, config);
   const tokens = {} as Record<Who, string>;
   const signIn = async (who: Who) => {
@@ -230,7 +229,7 @@ test('accounts: managers create, change roles, reset passwords and disable', asy
 
 test('CORS: only listed origins, bearer tokens only (never credentials)', async () => {
   const t = await testDb();
-  const config = { ...loadConfig({ CORS_ORIGINS: 'http://localhost:8081' }), dataDir: mkdtempSync(join(tmpdir(), 'bell-')), webDir: join(tmpdir(), 'no-web') };
+  const config = { ...loadConfig({ CORS_ORIGINS: 'http://localhost:8081' }), dataDir: tempDir(), webDir: join(tmpdir(), 'no-web') };
   const app = await buildApp(t.db, config);
   const pre = await app.inject({ method: 'OPTIONS', url: '/v1/support', headers: { origin: 'http://localhost:8081', 'access-control-request-method': 'GET' } });
   assert.equal(pre.statusCode, 204);
@@ -242,10 +241,10 @@ test('CORS: only listed origins, bearer tokens only (never credentials)', async 
 
 test('website files: a rebuild is served without a restart; a missing file is a 404, not the page', async () => {
   const t = await testDb();
-  const webDir = mkdtempSync(join(tmpdir(), 'bell-web-'));
+  const webDir = tempDir('bell-web-');
   const { mkdirSync, writeFileSync } = await import('node:fs');
   writeFileSync(join(webDir, 'index.html'), '<!doctype html><div id="root"></div>');
-  const app = await buildApp(t.db, { ...loadConfig({}), dataDir: mkdtempSync(join(tmpdir(), 'bell-')), webDir });
+  const app = await buildApp(t.db, { ...loadConfig({}), dataDir: tempDir(), webDir });
   // Built after the server started, with a new hashed name.
   mkdirSync(join(webDir, 'assets'));
   writeFileSync(join(webDir, 'assets', 'index-new.js'), 'console.log(1)');

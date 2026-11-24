@@ -1,6 +1,5 @@
 // Real-time hints over a real WebSocket: who receives which hint.
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -9,7 +8,7 @@ import type { LiveHint } from '../../shared/api.ts';
 import { buildApp } from '../src/app.ts';
 import { hashPassword } from '../src/auth.ts';
 import { loadConfig } from '../src/config.ts';
-import { testDb, type Who } from './helpers.ts';
+import { tempDir, testDb, type Who } from './helpers.ts';
 
 const PASSWORD = 'test-password-1';
 const EMAIL: Partial<Record<Who, string>> = {
@@ -19,7 +18,7 @@ const EMAIL: Partial<Record<Who, string>> = {
 
 test('hints reach only accounts allowed to see the row; Updates hints reach everyone', async (ctx) => {
   const t = await testDb(await hashPassword(PASSWORD));
-  const config = { ...loadConfig({}), dataDir: mkdtempSync(join(tmpdir(), 'bell-')), webDir: join(tmpdir(), 'no-web') };
+  const config = { ...loadConfig({}), dataDir: tempDir(), webDir: join(tmpdir(), 'no-web') };
   const app = await buildApp(t.db, config);
   await app.listen({ host: '127.0.0.1', port: 0 });
   ctx.after(() => app.close());
