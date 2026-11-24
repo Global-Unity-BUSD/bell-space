@@ -15,8 +15,13 @@ async function setup() {
     t.one<Req>(who, 'select * from submit_request($1, null, $2)', [topic, question]);
   const visible = async (who: Who | null, id: string) =>
     (await t.rows(who, 'select id from support_requests where id = $1', [id])).length === 1;
-  const messages = async (who: Who, id: string) =>
-    t.rows<{ body: string; sender_role: string }>(who, 'select body, sender_role from request_messages where request_id = $1 order by id', [id]);
+  // Every check reads the thread both ways: the row rule and thread_messages() must agree.
+  const messages = async (who: Who, id: string) => {
+    const direct = await t.rows<{ body: string; sender_role: string }>(who, 'select body, sender_role from request_messages where request_id = $1 order by id', [id]);
+    const viaFunction = await t.rows<{ body: string; sender_role: string }>(who, 'select body, sender_role from thread_messages($1)', [id]);
+    assert.deepEqual(viaFunction, direct, `${who}: thread_messages() and the row rule disagree`);
+    return direct;
+  };
   const send = (who: Who, id: string, body: string) =>
     t.one<{ sender_role: string }>(who, 'select * from send_message($1, $2)', [id, body]);
   return { ...t, fails, ask, visible, messages, send };
@@ -234,4 +239,17 @@ test('account management: managers only; no self-lockout; disabling ends session
   const audit = await t.rows<{ action: string }>('max', 'select action from audit_log order by id');
   assert.deepEqual(audit.map((a) => a.action),
     ['create_account', 'set_password', 'set_guide_profile', 'set_permissions', 'disable_account']);
+});
+
+test('thread_messages: messages after an id, at most 500, nothing when signed out', async () => {
+  const t = await setup();
+  const r = await t.ask('sam');
+  await t.rows('sofia', 'select * from assign_guide($1, $2)', [r.id, t.ids.gina]);
+  for (const body of ['one', 'two', 'three']) await t.send('gina', r.id, body);
+  const all = await t.rows<{ id: string; body: string }>('sam', 'select id, body from thread_messages($1)', [r.id]);
+  assert.deepEqual(all.map((m) => m.body), ['one', 'two', 'three']);
+  const after = await t.rows<{ body: string }>('sam', 'select body from thread_messages($1, $2)', [r.id, all[0]!.id]);
+  assert.deepEqual(after.map((m) => m.body), ['two', 'three']);
+  assert.equal((await t.rows('sam', 'select * from thread_messages($1, 0, 100000)', [r.id])).length, 3);
+  assert.equal((await t.rows(null, 'select * from thread_messages($1)', [r.id])).length, 0);
 });

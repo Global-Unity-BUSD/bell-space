@@ -68,7 +68,7 @@ export function registerSupport(app: FastifyInstance, db: Db) {
       const [{ readable } = { readable: false }] = await tx.query<{ readable: boolean }>(
         'select can_read_thread($1) as readable', [id]);
       const messages = readable
-        ? await tx.query<RequestMessage>('select * from request_messages where request_id = $1 and id > $2 order by id limit 500', [id, after])
+        ? await tx.query<RequestMessage>('select * from thread_messages($1, $2)', [id, after])
         : [];
       if (!me.permissions.includes('support')) return { request, messages, thread_hidden: !readable };
       if (readable) await tx.query('select record_staff_view($1)', [id]);
