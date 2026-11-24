@@ -81,7 +81,46 @@ export type Update = {
   status: 'draft' | 'published';
   published_at: string | null;
   updated_at: string;
+  /** Versions staff wrote in other languages; any missing part shows the English. */
+  translations: UpdateTranslations;
 };
+
+/** Languages staff can write an update in, besides English (the app's languages). */
+export type UpdateLang = 'es' | 'hy' | 'ru';
+export const UPDATE_LANGUAGES: { id: UpdateLang; name: string; english: string }[] = [
+  { id: 'es', name: 'Español', english: 'Spanish' },
+  { id: 'hy', name: 'Հայերեն', english: 'Armenian' },
+  { id: 'ru', name: 'Русский', english: 'Russian' },
+];
+export type UpdateText = { title?: string; location?: string; body?: string };
+export type UpdateTranslations = Partial<Record<UpdateLang, UpdateText>>;
+
+/** Keep only filled-in parts, trimmed; drop languages with nothing written. */
+export function cleanTranslations(t: UpdateTranslations | null | undefined): UpdateTranslations {
+  const out: UpdateTranslations = {};
+  for (const { id } of UPDATE_LANGUAGES) {
+    const v = t?.[id];
+    if (!v) continue;
+    const kept: UpdateText = {};
+    for (const part of ['title', 'location', 'body'] as const) {
+      const text = v[part]?.trim();
+      if (text) kept[part] = text;
+    }
+    if (Object.keys(kept).length) out[id] = kept;
+  }
+  return out;
+}
+
+/** An update's title, location and text in `lang`, each part falling back to the English. */
+export function updateIn(u: Pick<Update, 'title' | 'location' | 'body' | 'translations'>, lang: string) {
+  const t = (u.translations as Record<string, UpdateText | undefined> | undefined)?.[lang] ?? {};
+  return {
+    title: t.title || u.title,
+    location: t.location || u.location,
+    body: t.body || u.body,
+    translated: Boolean(t.title || t.location || t.body),
+  };
+}
 
 export type AccountRow = {
   id: string;

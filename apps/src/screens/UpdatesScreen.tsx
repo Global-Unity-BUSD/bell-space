@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
-import type { Update as ServerUpdate } from '../../../shared/api';
+import { updateIn, type Update as ServerUpdate } from '../../../shared/api';
 
 import { loadUpdates, removePhoto, saveUpdate, uploadPhoto, watchUpdates, type UpdateFields } from '../backend/api';
 import { useAuth } from '../backend/auth';
@@ -218,7 +218,7 @@ function SupabaseUpdates({ active }: { active: boolean }) {
 
 /** The Bell Space server feed: published updates for everyone. Staff post them on the website. */
 function ServerUpdates({ active }: { active: boolean }) {
-  const { t, phrase } = useI18n();
+  const { t, phrase, lang } = useI18n();
   const [list, setList] = useState<ServerUpdate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(() => {
@@ -241,8 +241,9 @@ function ServerUpdates({ active }: { active: boolean }) {
       {error && <Notice text={phrase(error)} tone="error" />}
       {!list && !error && <SkeletonCards />}
       {list && shown.length === 0 && <Notice text={t('updates.empty')} />}
+      {/* The version staff wrote in the student's language; any blank part shows the English. */}
       {shown.map((u) => (
-        <UpdateCard key={u.id} update={u} editor={false} onEdit={() => {}}
+        <UpdateCard key={u.id} update={{ ...u, ...updateIn(u, lang) }} editor={false} onEdit={() => {}}
           photo={u.photo_url ? { uri: serverUrl(u.photo_url) } : u.sample ? SAMPLE_PHOTOS[u.title] : undefined} />
       ))}
     </ScrollView>

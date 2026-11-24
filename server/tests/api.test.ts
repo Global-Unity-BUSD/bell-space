@@ -123,6 +123,37 @@ test('updates: editors write, everyone reads published, photos follow the update
   assert.equal((await t.call('uma', 'PATCH', `/v1/updates/${id}`, { title: 'gone' })).status, 404);
 });
 
+test('updates in other languages: staff-written, cleaned, checked, and hidden with their draft', async () => {
+  const t = await setup();
+  const created = await t.call('uma', 'POST', '/v1/updates', {
+    title: 'Club fair', location: 'Quad', body: 'Meet every club at lunch.',
+    translations: { es: { title: ' Feria de clubes ', body: 'Conoce todos los clubes en el almuerzo.', location: '' }, hy: { title: '' } },
+  });
+  assert.equal(created.status, 200, JSON.stringify(created.body));
+  // Blank parts and empty languages are dropped; the rest is trimmed.
+  assert.deepEqual(created.body.update.translations, { es: { title: 'Feria de clubes', body: 'Conoce todos los clubes en el almuerzo.' } });
+  const id = created.body.update.id as string;
+  // A draft's translations are as private as the draft.
+  assert.equal((await t.call('sam', 'GET', '/v1/updates')).body.updates.length, 0);
+
+  assert.equal((await t.call('uma', 'PATCH', `/v1/updates/${id}`, {
+    status: 'published', translations: { es: { title: 'Feria de clubes' }, ru: { title: 'Ярмарка клубов', location: 'Quad' } },
+  })).status, 200);
+  const [shown] = (await t.call('sam', 'GET', '/v1/updates')).body.updates;
+  assert.deepEqual(shown.translations, { es: { title: 'Feria de clubes' }, ru: { title: 'Ярмарка клубов', location: 'Quad' } });
+
+  // Only the app's languages and the three parts, within the English limits.
+  for (const translations of [{ fr: { title: 'Salon' } }, { es: { title: 'x', photo: 'y' } }, { es: { title: 'x'.repeat(121) } }, { es: 'x' }]) {
+    assert.equal((await t.call('uma', 'PATCH', `/v1/updates/${id}`, { translations })).status, 400, JSON.stringify(translations));
+  }
+  // The database refuses the same even without the API's checks.
+  await assert.rejects(t.db.owner((tx) => tx.query(`update updates set translations = '{"fr": {"title": "Salon"}}' where id = $1`, [id])),
+    /check constraint/);
+  assert.equal((await t.call('sofia', 'PATCH', `/v1/updates/${id}`, { translations: {} })).status, 403);
+  // Clearing them leaves the English only.
+  assert.deepEqual((await t.call('uma', 'PATCH', `/v1/updates/${id}`, { translations: {} })).body.update.translations, {});
+});
+
 test('support flow over HTTP: submit → assign → chat → decline → reassign → done → follow-up → resolve', async () => {
   const t = await setup();
   const asked = await t.call('sam', 'POST', '/v1/support/requests', { topic: 'navigation', question: 'Where is the library?' });

@@ -25,9 +25,27 @@ Not translated, on purpose:
   Student Area, Lunch Shelter, Book Room…), Bell Space, Burbank High School,
   ASB, Global Unity and people's names. They match the map and the signs at
   school. A test (`apps/tests/i18n.test.cjs`) fails if a translation changes one;
-* Updates posts and chat messages: they stay in the language they were written in;
+* chat messages: they stay in the language they were written in;
+* Updates posts are not translated automatically. Staff can write them in other
+  languages themselves (see below);
 * the hidden developer tools in Settings (live location, positioning readings,
   proposed routes) and the Supabase fallback's editor and sign-in.
+
+## Updates in other languages
+
+Staff write an update in English on the staff website, and can also write it in
+Español, Հայերեն and Русский with the language tabs above the title in the
+editor. Each translated part (title, location, text) is optional: a student
+who chose that language in the app sees the translated parts and the English
+for anything left blank. Date, time and photo are shared by all languages. The
+list of updates shows "Also in …" for the languages an update has.
+
+Nothing is translated by a machine: what students see is what staff wrote.
+Keep names (rooms, places, people) in English, as in the rest of the app.
+
+Stored in `updates.translations` (`server/migrations/003_update_translations.sql`),
+checked by the API (`server/src/routes/updates.ts`) and the database, and shown
+by the app with `updateIn()` in `shared/api.ts`.
 
 ## Files
 

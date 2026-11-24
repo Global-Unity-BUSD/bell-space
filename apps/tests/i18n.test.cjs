@@ -98,3 +98,14 @@ test('reasons, map subtitles and server messages are translated; unknown text st
   assert.equal(english.phrase('Turn left onto the Quad walkway'), 'Turn left onto the Quad walkway');
   assert.equal(english.t('chat.theyAsked', { name: 'Sam' }), 'Sam asked');
 });
+
+test('Updates: the version staff wrote in the student’s language, each blank part in English', () => {
+  const { cleanTranslations, updateIn } = require('../../shared/api.ts');
+  const u = { title: 'Club fair', location: 'Quad', body: 'Meet every club at lunch.',
+    translations: cleanTranslations({ es: { title: ' Feria de clubes ', location: '', body: '' }, ru: { title: '' } }) };
+  assert.deepEqual(u.translations, { es: { title: 'Feria de clubes' } });
+  assert.deepEqual(updateIn(u, 'es'), { title: 'Feria de clubes', location: 'Quad', body: 'Meet every club at lunch.', translated: true });
+  assert.deepEqual(updateIn(u, 'ru'), { title: 'Club fair', location: 'Quad', body: 'Meet every club at lunch.', translated: false });
+  assert.equal(updateIn(u, 'en').title, 'Club fair');
+  assert.equal(updateIn({ ...u, translations: undefined }, 'es').title, 'Club fair');
+});

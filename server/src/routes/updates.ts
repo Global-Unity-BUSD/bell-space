@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import type { FastifyInstance } from 'fastify';
 
-import type { Update } from '../../../shared/api.ts';
+import { cleanTranslations, type Update, type UpdateTranslations } from '../../../shared/api.ts';
 import { needPermission } from '../auth.ts';
 import type { Config } from '../config.ts';
 import type { Db, Tx } from '../db.ts';
@@ -26,7 +26,25 @@ function sniffImage(b: Buffer): keyof typeof MIME | null {
   return null;
 }
 
-const FIELDS = ['title', 'starts_at', 'location', 'body', 'photo_path', 'status'] as const;
+const FIELDS = ['title', 'starts_at', 'location', 'body', 'photo_path', 'status', 'translations'] as const;
+// The same limits as the English parts (and the check in migration 003).
+const PART_LIMIT = { title: 120, location: 120, body: 600 } as const;
+const LANG_CODES = new Set(['es', 'hy', 'ru']);
+
+/** Checked here, not in the schema: the schema would silently drop an unknown language instead of refusing it. */
+function checkTranslations(t: unknown) {
+  const bad = (why: string) => { throw new HttpError(400, `Translations: ${why}`); };
+  if (!t || typeof t !== 'object' || Array.isArray(t)) bad('expected an object by language.');
+  for (const [lang, version] of Object.entries(t as Record<string, unknown>)) {
+    if (!LANG_CODES.has(lang)) bad(`unknown language "${lang}".`);
+    if (!version || typeof version !== 'object' || Array.isArray(version)) bad(`"${lang}" must be an object.`);
+    for (const [part, text] of Object.entries(version as Record<string, unknown>)) {
+      if (!(part in PART_LIMIT)) bad(`unknown part "${part}".`);
+      if (typeof text !== 'string') bad(`"${lang}.${part}" must be text.`);
+      if ((text as string).trim().length > PART_LIMIT[part as keyof typeof PART_LIMIT]) bad(`"${lang}.${part}" is too long.`);
+    }
+  }
+}
 const updateBody = {
   type: 'object', additionalProperties: false,
   properties: {
@@ -36,8 +54,16 @@ const updateBody = {
     body: { type: 'string', maxLength: 600 },
     photo_path: { type: ['string', 'null'], pattern: PHOTO_NAME.source },
     status: { enum: ['draft', 'published'] },
+    translations: { type: 'object' },
   },
 };
+
+/** Column values for an insert or update: translations are cleaned and sent as JSON. */
+const values = (keys: readonly (typeof FIELDS)[number][], body: Record<string, unknown>) => {
+  if ('translations' in body) checkTranslations(body.translations);
+  return keys.map((k) => (k === 'translations' ? JSON.stringify(cleanTranslations(body[k] as UpdateTranslations)) : body[k]));
+};
+const placeholder = (k: string, n: number) => (k === 'translations' ? `$${n}::jsonb` : `$${n}`);
 
 const withUrl = (u: Omit<Update, 'photo_url'>): Update =>
   ({ ...u, photo_url: u.photo_path ? `/v1/updates/photos/${u.photo_path}` : null });
@@ -56,7 +82,7 @@ export function registerUpdates(app: FastifyInstance, db: Db, config: Config) {
   // Published updates for everyone; editors also get drafts.
   app.get('/v1/updates', async (req) => {
     const list = await db.as(req.me?.id ?? null, (tx) => tx.query<Omit<Update, 'photo_url'>>(
-      `select id, title, starts_at, location, body, photo_path, sample, status, published_at, updated_at
+      `select id, title, starts_at, location, body, photo_path, sample, status, published_at, updated_at, translations
        from updates order by status = 'published', published_at desc nulls first, updated_at desc limit 100`));
     return { updates: list.map(withUrl) };
   });
@@ -66,8 +92,8 @@ export function registerUpdates(app: FastifyInstance, db: Db, config: Config) {
     const body = req.body as Record<string, unknown>;
     const keys = FIELDS.filter((k) => k in body);
     const row = await db.as(me.id, async (tx) => (await tx.query<Omit<Update, 'photo_url'>>(
-      `insert into updates (${keys.join(', ')}) values (${keys.map((_, i) => `$${i + 1}`).join(', ')}) returning *`,
-      keys.map((k) => body[k])))[0]!);
+      `insert into updates (${keys.join(', ')}) values (${keys.map((k, i) => placeholder(k, i + 1)).join(', ')}) returning *`,
+      values(keys, body)))[0]!);
     return { update: withUrl(row) };
   });
 
@@ -83,8 +109,8 @@ export function registerUpdates(app: FastifyInstance, db: Db, config: Config) {
       const [old] = await tx.query<{ photo_path: string | null }>('select photo_path from updates where id = $1', [id]);
       if (!old) throw new HttpError(404, 'That update does not exist.');
       const [next] = await tx.query<Omit<Update, 'photo_url'>>(
-        `update updates set ${keys.map((k, i) => `${k} = $${i + 2}`).join(', ')} where id = $1 returning *`,
-        [id, ...keys.map((k) => body[k])]);
+        `update updates set ${keys.map((k, i) => `${k} = ${placeholder(k, i + 2)}`).join(', ')} where id = $1 returning *`,
+        [id, ...values(keys, body)]);
       if (old.photo_path !== next!.photo_path) await dropIfUnused(tx, old.photo_path);
       return next!;
     });
