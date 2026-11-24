@@ -56,13 +56,19 @@ Test accounts (`npm run seed:test` in `server/`, refused in production):
 submitted ──(staff assigns)──→ with_guide ──(guide marks done)──→ follow_up ──→ resolved
     │  ↑                           │
     │  └────(guide declines)───────┘
-    └──(staff keeps it: sensitive)──→ with_staff ──────────────────────→ resolved
+    ├──(staff keeps it: sensitive)──→ with_staff ──────────────────────→ resolved
+    └──(staff messages during review)──→ with_staff (not sensitive) ──(staff assigns)──→ with_guide
 ```
 
 * A student submits a question (topic, optional language). At most 2 open requests.
   A student may withdraw a request while it is still `submitted`.
 * Support staff review it and either assign a guide (no automatic matching) or
   keep it with staff for counseling, safety and private matters.
+* Staff may also message the student while the request is still `submitted`
+  (migration 004): the first staff message moves it to `with_staff`, handled by
+  that staff member, not marked sensitive. Staff can still assign a guide from
+  there; the guide then sees the whole thread. Sensitive requests are never
+  assigned to a guide.
 * A guide sees only requests assigned to them, and may decline (back to
   `submitted`, staff notified). A guide is never assigned their own request.
 * Names are visible on both sides. There is no anonymous mode.

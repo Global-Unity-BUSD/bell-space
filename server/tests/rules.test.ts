@@ -158,13 +158,44 @@ test('guide done → staff follow-up in the same thread → resolved, then close
   await t.ask('sam', 'a'); await t.ask('sam', 'b');
 });
 
+test('staff can message during review: the request moves to With staff (not sensitive), a guide can still be assigned', async () => {
+  const t = await setup();
+  const r = await t.ask('sam', 'Where is my class?');
+  // Only support staff can write before review; students, guides and Updates-only staff cannot.
+  for (const who of ['sam', 'gina', 'uma'] as Who[]) {
+    await t.fails(who, 'select * from send_message($1, $2)', [r.id, 'x'], /only while the request is open|Not your request/);
+  }
+  assert.equal((await t.one<Req>('sofia', 'select * from support_requests where id = $1', [r.id])).status, 'submitted');
+
+  assert.equal((await t.send('sofia', r.id, 'Which room is on your schedule?')).sender_role, 'staff');
+  const taken = await t.one<Req>('sofia', 'select * from support_requests where id = $1', [r.id]);
+  assert.equal(taken.status, 'with_staff');
+  assert.equal(taken.sensitive, false);
+  assert.equal(taken.staff_id, t.ids.sofia);
+  await t.send('sam', r.id, 'Room 1155');
+  await t.fails('sofia', 'select * from keep_with_staff($1)', [r.id], /not waiting for review/);
+
+  // Staff then hand it to a guide, who sees the whole thread.
+  assert.equal((await t.one<Req>('sofia', 'select * from assign_guide($1, $2)', [r.id, t.ids.gina])).status, 'with_guide');
+  assert.deepEqual((await t.messages('gina', r.id)).map((m) => m.body), ['Which room is on your schedule?', 'Room 1155']);
+  assert.equal((await t.send('gina', r.id, '1155 is by the Quad')).sender_role, 'guide');
+  const events = await t.rows<{ kind: string }>('sofia', 'select kind from request_events where request_id = $1 and kind <> $2 order by id', [r.id, 'viewed']);
+  assert.deepEqual(events.map((e) => e.kind), ['submitted', 'taken_by_staff', 'assigned']);
+
+  // Also with supervision set to reported requests only: the staff member who took it can read it.
+  await t.rows('max', `select set_supervision_mode('reported_only')`);
+  const r2 = await t.ask('riley');
+  await t.send('sofia', r2.id, 'Hi Riley, a quick question first');
+  assert.equal((await t.messages('sofia', r2.id)).length, 1);
+});
+
 test('sensitive requests stay with staff: no guide ever sees them', async () => {
   const t = await setup();
   const r = await t.ask('sam', 'Something private');
   const k = await t.one<Req>('sofia', 'select * from keep_with_staff($1)', [r.id]);
   assert.equal(k.status, 'with_staff');
   assert.equal(k.sensitive, true);
-  await t.fails('sofia', 'select * from assign_guide($1, $2)', [r.id, t.ids.gina], /not waiting for review/);
+  await t.fails('sofia', 'select * from assign_guide($1, $2)', [r.id, t.ids.gina], /Sensitive requests stay with staff/);
   await t.send('sofia', r.id, 'I am here to help');
   await t.send('sam', r.id, 'Thanks');
   for (const who of ['gina', 'omar'] as Who[]) assert.equal(await t.visible(who, r.id), false);

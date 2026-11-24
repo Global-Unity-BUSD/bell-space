@@ -27,6 +27,7 @@ const STATUS_TAG: Record<RequestStatus, string> = {
 
 const EVENT_LABEL: Record<string, string> = {
   submitted: 'Submitted', declined: 'Declined', guide_done: 'Marked done', kept_by_staff: 'Kept with staff',
+  taken_by_staff: 'Taken by staff (messaged during review)',
   resolved: 'Resolved', withdrawn: 'Withdrawn', reported: 'Reported', report_resolved: 'Report handled', viewed: 'Viewed',
 };
 
@@ -43,10 +44,12 @@ function Thread({ detail, me, onSent }: { detail: Detail; me: Me; onSent: () => 
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const { request: r, messages } = detail;
-  const open = ['with_guide', 'follow_up', 'with_staff'].includes(r.status);
+  // Staff can also write while a request waits for review: sending takes it (With staff).
+  const reviewing = r.status === 'submitted';
+  const open = reviewing || ['with_guide', 'follow_up', 'with_staff'].includes(r.status);
   useEffect(() => { end.current?.scrollIntoView({ block: 'nearest' }); }, [messages.length]);
 
-  if (detail.thread_hidden) {
+  if (detail.thread_hidden && !reviewing) {
     return (
       <p className="alert warn">
         Messages are hidden because supervision is set to reported requests only. They become visible if the
@@ -69,6 +72,12 @@ function Thread({ detail, me, onSent }: { detail: Detail; me: Me; onSent: () => 
   return (
     <div className="thread">
       {!messages.length && <p className="muted">No messages yet.</p>}
+      {reviewing && (
+        <p className="alert info">
+          You can message the student before choosing a guide. Sending moves this request to With staff, handled by
+          you (not marked sensitive). You can still assign a guide afterwards; the guide then sees the whole conversation.
+        </p>
+      )}
       {messages.map((m) => (
         <div key={m.id} className={`msg ${m.sender_role}`}>
           <div className="msg-meta">
@@ -84,7 +93,8 @@ function Thread({ detail, me, onSent }: { detail: Detail; me: Me; onSent: () => 
         <form className="composer" onSubmit={send}>
           <textarea rows={3} value={text} maxLength={LIMITS.message} onChange={(e) => setText(e.target.value)}
             aria-label="Message"
-            placeholder={r.status === 'with_guide' ? 'Message as staff (the student and the guide see it)' : 'Message the student'}
+            placeholder={r.status === 'with_guide' ? 'Message as staff (the student and the guide see it)'
+              : reviewing ? 'Message the student (moves this request to With staff)' : 'Message the student'}
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(e); }} />
           <div className="actions">
             <button className="btn primary" disabled={busy}>Send message</button>
@@ -115,9 +125,10 @@ function Actions({ detail, guides, onChanged }: { detail: Detail; guides: Guide[
   if (r.status === 'resolved') {
     return r.resolution_note ? <p><span className="muted">Resolution note:</span> {r.resolution_note}</p> : null;
   }
+  const canAssign = r.status === 'submitted' || (r.status === 'with_staff' && !r.sensitive);
   return (
     <div className="fields">
-      {r.status === 'submitted' && (
+      {canAssign && (
         <>
           <label className="field">Assign a trained student guide
             <select value={guide} onChange={(e) => setGuide(e.target.value)}>
@@ -132,9 +143,11 @@ function Actions({ detail, guides, onChanged }: { detail: Detail; guides: Guide[
           </label>
           <div className="actions">
             <button className="btn primary" disabled={busy || !guide} onClick={() => run('assign', { guide_id: guide })}>Assign guide</button>
-            <button className="btn" disabled={busy} onClick={() => {
-              if (confirm('Keep this request with staff? No guide will see it. Use this for counseling, safety and private matters.')) run('keep');
-            }}>Keep with staff (sensitive)</button>
+            {r.status === 'submitted' && (
+              <button className="btn" disabled={busy} onClick={() => {
+                if (confirm('Keep this request with staff? No guide will see it. Use this for counseling, safety and private matters.')) run('keep');
+              }}>Keep with staff (sensitive)</button>
+            )}
           </div>
         </>
       )}
