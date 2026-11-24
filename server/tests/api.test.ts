@@ -154,6 +154,17 @@ test('updates in other languages: staff-written, cleaned, checked, and hidden wi
   assert.deepEqual((await t.call('uma', 'PATCH', `/v1/updates/${id}`, { translations: {} })).body.update.translations, {});
 });
 
+test('unread over HTTP: the staff list says what is new, opening a request clears it', async () => {
+  const t = await setup();
+  const asked = await t.call('sam', 'POST', '/v1/support/requests', { topic: 'navigation', question: 'Where is 1155?' });
+  const id = asked.body.request.id as string;
+  assert.deepEqual((await t.call('sofia', 'GET', '/v1/support')).body.unread, [id]);
+  assert.equal((await t.call('sofia', 'GET', `/v1/support/requests/${id}`)).status, 200);
+  assert.deepEqual((await t.call('sofia', 'GET', '/v1/support')).body.unread, []);
+  // Students never get an unread list.
+  assert.equal((await t.call('sam', 'GET', '/v1/support')).body.unread, undefined);
+});
+
 test('support flow over HTTP: submit → assign → chat → decline → reassign → done → follow-up → resolve', async () => {
   const t = await setup();
   const asked = await t.call('sam', 'POST', '/v1/support/requests', { topic: 'navigation', question: 'Where is the library?' });

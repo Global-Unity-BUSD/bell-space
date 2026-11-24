@@ -90,6 +90,10 @@ export function useLive(onHint: Listener) {
   }, []);
 }
 
+/** Opening a request marks it read; the Chats menu count listens for this to refresh. */
+export const READ_EVENT = 'bell:read';
+export const announceRead = () => window.dispatchEvent(new Event(READ_EVENT));
+
 // ---------------------------------------------------------------- formatting
 
 export function formatDateTime(iso: string | null) {

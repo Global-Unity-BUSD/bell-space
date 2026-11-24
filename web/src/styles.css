@@ -137,7 +137,9 @@ input:disabled, select:disabled { background: var(--panel-alt); color: var(--mut
 .panel-body { padding: 14px; display: grid; gap: 14px; }
 .empty-state { padding: 32px; text-align: center; display: grid; gap: 6px; }
 .stack { display: grid; gap: 16px; align-content: start; }
-.columns { display: grid; grid-template-columns: minmax(320px, 420px) minmax(0, 1fr); gap: 16px; align-items: start; }
+/* The list column fits the six Chats tabs on one line; panels never widen the page. */
+.columns { display: grid; grid-template-columns: minmax(320px, 560px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.columns > * { min-width: 0; }
 
 @media (max-width: 900px) {
   /* Narrow screens: the menu becomes a top bar with a fixed arrangement, the
@@ -177,13 +179,19 @@ input:disabled, select:disabled { background: var(--panel-alt); color: var(--mut
 .table-wrap { overflow-x: auto; }
 
 /* Filter row above a list */
-.filters { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+/* Always one line: tighter spacing, and a sideways scroll on very narrow screens instead of wrapping. */
+.filters { display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; border-bottom: 1px solid var(--border); }
 .filters button {
-  font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px; color: var(--muted); cursor: pointer;
-  margin-bottom: -1px;
+  font: inherit; font-size: 13px; white-space: nowrap; flex: none; background: none; border: 0;
+  border-bottom: 2px solid transparent; padding: 8px 7px; color: var(--muted); cursor: pointer; margin-bottom: -1px;
 }
 .filters button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 .filters .n { margin-left: 4px; color: var(--faint); font-weight: 400; }
+/* Unread indicators: something new from a student or guide since you last opened it. */
+.filters .new-count { margin-left: 4px; display: inline-block; min-width: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 600; line-height: 16px; text-align: center; }
+.unread-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+.table tbody tr.unread strong { font-weight: 700; }
 
 /* Key/value details */
 .details { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin: 0; }

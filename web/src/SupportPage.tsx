@@ -4,9 +4,10 @@ import {
   checkText, languageLabel, LIMITS, STATUS_LABEL, topicLabel,
   type Guide, type Me, type Report, type RequestEvent, type RequestMessage, type RequestStatus, type SupportRequest,
 } from '../../shared/api.ts';
-import { api, errorText, formatDateTime, timeAgo, useLive } from './api.ts';
+import { announceRead, api, errorText, formatDateTime, timeAgo, useLive } from './api.ts';
 
-type Overview = { requests: SupportRequest[]; reports: Report[]; guides: Guide[]; supervision_mode: string };
+// unread: requests with something new from a student or guide since this staff member last opened them.
+type Overview = { requests: SupportRequest[]; reports: Report[]; guides: Guide[]; supervision_mode: string; unread?: string[] };
 type Detail = {
   request: SupportRequest; messages: RequestMessage[]; thread_hidden: boolean;
   events: RequestEvent[]; reports: Report[];
@@ -163,13 +164,18 @@ function Actions({ detail, guides, onChanged }: { detail: Detail; guides: Guide[
   );
 }
 
-function RequestDetail({ id, me, overview, hint, onChanged }: {
-  id: string; me: Me; overview: Overview; hint: number; onChanged: () => void;
+function RequestDetail({ id, me, overview, hint, onChanged, onRead }: {
+  id: string; me: Me; overview: Overview; hint: number; onChanged: () => void; onRead: () => void;
 }) {
   const [detail, setDetail] = useState<Detail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const readRef = useRef(onRead);
+  useEffect(() => { readRef.current = onRead; });
   const load = useCallback(() => {
-    api<Detail>('GET', `/v1/support/requests/${id}`).then((d) => { setDetail(d); setError(null); }, (e) => setError(errorText(e)));
+    api<Detail>('GET', `/v1/support/requests/${id}`).then((d) => {
+      setDetail(d); setError(null);
+      readRef.current();
+    }, (e) => setError(errorText(e)));
   }, [id]);
   useEffect(load, [load, hint]);
 
@@ -241,7 +247,7 @@ export function SupportPage({ me }: { me: Me }) {
   }, []);
   useEffect(load, [load]);
   useLive((h) => {
-    if (h.t === 'request' || h.t === 'resync') load();
+    if (h.t === 'request' || h.t === 'message' || h.t === 'resync') load();
     if ((h.t === 'request' && h.id === selected) || (h.t === 'message' && h.request === selected) || h.t === 'resync') setHint((n) => n + 1);
   });
 
@@ -260,6 +266,8 @@ export function SupportPage({ me }: { me: Me }) {
   if (error && !overview) return <>{head}<p className="alert error">{error}</p></>;
   if (!overview) return <>{head}<p className="muted">Loading…</p></>;
   const reported = new Set(overview.reports.filter((x) => !x.resolved_at).map((x) => x.request_id));
+  // The open request counts as read: it is marked read as soon as it loads.
+  const unread = new Set((overview.unread ?? []).filter((id) => id !== selected));
   const current = FILTERS.find((f) => f.id === filter)!;
   const shown = overview.requests.filter((r) => current.match(r, reported));
   if (current.id === 'review') shown.sort((a, b) => a.created_at.localeCompare(b.created_at));
@@ -271,10 +279,13 @@ export function SupportPage({ me }: { me: Me }) {
         <section className="panel">
           <div className="filters" role="tablist">
             {FILTERS.map((f) => {
-              const n = overview.requests.filter((r) => f.match(r, reported)).length;
+              const inTab = overview.requests.filter((r) => f.match(r, reported));
+              const fresh = inTab.filter((r) => unread.has(r.id)).length;
               return (
-                <button key={f.id} role="tab" aria-selected={f.id === filter} className={f.id === filter ? 'active' : ''} onClick={() => setFilter(f.id)}>
-                  {f.label}{f.id !== 'resolved' && <span className="n">{n}</span>}
+                <button key={f.id} role="tab" aria-selected={f.id === filter} className={f.id === filter ? 'active' : ''} onClick={() => setFilter(f.id)}
+                  aria-label={`${f.label}, ${inTab.length}${fresh ? `, ${fresh} new` : ''}`}>
+                  {f.label}{f.id !== 'resolved' && <span className="n">{inTab.length}</span>}
+                  {fresh > 0 && <span className="new-count" title={`${fresh} with something new`}>{fresh}</span>}
                 </button>
               );
             })}
@@ -285,9 +296,10 @@ export function SupportPage({ me }: { me: Me }) {
                 <thead><tr><th>Student</th><th>Question</th><th>{current.id === 'review' ? 'Waiting' : 'Updated'}</th></tr></thead>
                 <tbody>
                   {shown.map((r) => (
-                    <tr key={r.id} className={`clickable ${r.id === selected ? 'selected' : ''}`} onClick={() => setSelected(r.id)}
+                    <tr key={r.id} className={`clickable ${r.id === selected ? 'selected' : ''} ${unread.has(r.id) ? 'unread' : ''}`} onClick={() => setSelected(r.id)}
                       tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') setSelected(r.id); }}>
                       <td>
+                        {unread.has(r.id) && <span className="unread-dot" title="Something new you haven't opened" aria-label="New" />}
                         <strong>{r.student_name}</strong>
                         <div className="small muted">{topicLabel(r.topic)}{r.guide_name ? ` · ${r.guide_name}` : ''}</div>
                         {(r.sensitive || reported.has(r.id)) && (
@@ -307,7 +319,7 @@ export function SupportPage({ me }: { me: Me }) {
           )}
         </section>
         {selected
-          ? <RequestDetail id={selected} me={me} overview={overview} hint={hint} onChanged={load} />
+          ? <RequestDetail id={selected} me={me} overview={overview} hint={hint} onChanged={load} onRead={() => { load(); announceRead(); }} />
           : <section className="panel empty-state"><p className="muted">Select a request to see its details.</p></section>}
       </div>
     </>

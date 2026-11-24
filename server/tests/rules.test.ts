@@ -189,6 +189,60 @@ test('staff can message during review: the request moves to With staff (not sens
   assert.equal((await t.messages('sofia', r2.id)).length, 1);
 });
 
+test('unread indicators: per staff member, from student and guide activity only, cleared by opening', async () => {
+  const t = await setup();
+  const unread = async (who: Who) => (await t.rows<{ id: string }>(who, 'select unread_requests() as id', [])).map((r) => r.id);
+  const open = (who: Who, id: string) => t.rows(who, 'select mark_request_read($1)', [id]);
+  // A second support staff member (in the fixtures Max manages accounts only).
+  await t.db.owner((tx) => tx.query(`insert into staff_permissions (account_id, permission) values ($1, 'support')`, [t.ids.max]));
+  const r = await t.ask('sam');
+  assert.deepEqual(await unread('sofia'), [r.id], 'a new question is unread');
+  assert.deepEqual(await unread('max'), [r.id]);
+  await open('sofia', r.id);
+  assert.deepEqual(await unread('sofia'), [], 'opening clears it for that staff member');
+  assert.deepEqual(await unread('max'), [r.id], '... and only for them');
+
+  // Staff actions never make it unread.
+  await t.rows('sofia', 'select * from assign_guide($1, $2)', [r.id, t.ids.gina]);
+  await t.send('sofia', r.id, 'Staff here');
+  assert.deepEqual(await unread('sofia'), []);
+  // A student or guide message does.
+  await t.send('gina', r.id, 'Hi Sam');
+  assert.deepEqual(await unread('sofia'), [r.id]);
+  await open('sofia', r.id);
+  await t.send('sam', r.id, 'Thanks');
+  assert.deepEqual(await unread('sofia'), [r.id]);
+  await open('sofia', r.id);
+  // The guide marking it done, and a report.
+  await t.rows('gina', 'select * from mark_guide_done($1, null)', [r.id]);
+  assert.deepEqual(await unread('sofia'), [r.id]);
+  await open('sofia', r.id);
+  await t.rows('sam', 'select * from report_request($1, $2)', [r.id, 'Not helpful']);
+  assert.deepEqual(await unread('sofia'), [r.id]);
+  // Resolved requests are never unread.
+  await t.rows('sofia', 'select * from resolve_request($1, null)', [r.id]);
+  assert.deepEqual(await unread('sofia'), []);
+  assert.deepEqual(await unread('max'), []);
+
+  // Students, guides and Updates-only staff get nothing, and marking read does nothing for them.
+  const r2 = await t.ask('riley');
+  for (const who of ['sam', 'gina', 'uma'] as Who[]) {
+    assert.deepEqual(await unread(who), []);
+    await open(who, r2.id);
+  }
+  // Nobody reads or writes the table directly, staff included.
+  await t.fails('sofia', 'select * from request_reads', [], /permission denied/);
+
+  // Reported-only supervision: guide messages staff cannot read do not count.
+  await t.rows('max', `select set_supervision_mode('reported_only')`);
+  await open('sofia', r2.id);
+  await t.rows('sofia', 'select * from assign_guide($1, $2)', [r2.id, t.ids.omar]);
+  await t.send('omar', r2.id, 'Hi Riley');
+  assert.deepEqual(await unread('sofia'), []);
+  await t.rows('omar', 'select * from mark_guide_done($1, null)', [r2.id]);
+  assert.deepEqual(await unread('sofia'), [r2.id], 'follow-up is staff work, so it shows');
+});
+
 test('sensitive requests stay with staff: no guide ever sees them', async () => {
   const t = await setup();
   const r = await t.ask('sam', 'Something private');

@@ -76,6 +76,7 @@ Environment: `BELL_ENV`, `DATABASE_URL`, `HOST`, `PORT`, `DATA_DIR`, `WEB_DIR`,
 | | |
 | --- | --- |
 | Sign-in | `POST /v1/auth/sign-in` (`client: app` → token; `web` → httpOnly cookie), `POST /v1/auth/sign-out`, `GET /v1/me` |
+| Unread (staff) | `GET /v1/support` includes `unread` (request ids with something new for you); opening `GET /v1/support/requests/:id` marks it read |
 | Updates | `GET /v1/updates` (public), `POST`/`PATCH`/`DELETE /v1/updates[/:id]` (with optional `translations`: `{ es, hy, ru: { title, location, body } }`), `POST /v1/updates/photos`, `GET /v1/updates/photos/:name` |
 | Support | `GET /v1/support`, `POST /v1/support/requests`, `GET /v1/support/requests/:id?after=`, `POST …/:id/messages`, `…/assign`, `…/keep`, `…/decline`, `…/done`, `…/resolve`, `…/withdraw`, `…/report`, `POST /v1/support/reports/:id/resolve` |
 | Accounts | `GET`/`POST /v1/admin/accounts`, `PATCH /v1/admin/accounts/:id`, `GET /v1/admin/audit`, `GET /v1/admin/settings`, `PUT /v1/admin/settings/supervision` |

@@ -32,7 +32,9 @@ export function registerSupport(app: FastifyInstance, db: Db) {
            (select count(*)::int from support_requests r where r.guide_id = a.id and r.status in ('with_guide', 'follow_up')) as open_requests
          from guide_profiles g join accounts a on a.id = g.account_id
          where g.active and not a.disabled order by a.display_name`);
-      return { requests, reports, guides, supervision_mode };
+      // Requests with something new from a student or guide since this staff member last opened them.
+      const unread = (await tx.query<{ id: string }>('select unread_requests() as id')).map((r) => r.id);
+      return { requests, reports, guides, supervision_mode, unread };
     });
   });
 
@@ -72,6 +74,7 @@ export function registerSupport(app: FastifyInstance, db: Db) {
         : [];
       if (!me.permissions.includes('support')) return { request, messages, thread_hidden: !readable };
       if (readable) await tx.query('select record_staff_view($1)', [id]);
+      await tx.query('select mark_request_read($1)', [id]);
       const events = await tx.query<RequestEvent>(
         'select id, kind, actor_name, detail, created_at from request_events where request_id = $1 order by id', [id]);
       const reports = await tx.query<Report>(

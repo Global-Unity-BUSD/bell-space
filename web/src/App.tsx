@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 
-import { staffTypeLabel, type Me, type StaffPermission, type SupportRequest } from '../../shared/api.ts';
+import { staffTypeLabel, type Me, type StaffPermission } from '../../shared/api.ts';
 import { AccountsPage } from './AccountsPage.tsx';
-import { api, errorText, SIGNED_OUT, useLive } from './api.ts';
+import { api, errorText, READ_EVENT, SIGNED_OUT, useLive } from './api.ts';
 import { SupportPage } from './SupportPage.tsx';
 import { UpdatesPage } from './UpdatesPage.tsx';
 
@@ -84,15 +84,19 @@ function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
 // ---------------------------------------------------------------- shell
 
 /** Requests waiting for review, for the count beside "Chats". */
-function useReviewCount(enabled: boolean) {
+/** Requests with something new from a student or guide that this staff member hasn't opened. */
+function useUnreadCount(enabled: boolean) {
   const [count, setCount] = useState(0);
   const load = useCallback(() => {
     if (!enabled) return;
-    api<{ requests: SupportRequest[] }>('GET', '/v1/support')
-      .then((r) => setCount(r.requests.filter((x) => x.status === 'submitted').length), () => {});
+    api<{ unread?: string[] }>('GET', '/v1/support').then((r) => setCount(r.unread?.length ?? 0), () => {});
   }, [enabled]);
   useEffect(load, [load]);
-  useLive((h) => { if (h.t === 'request' || h.t === 'resync') load(); });
+  useEffect(() => {
+    window.addEventListener(READ_EVENT, load);
+    return () => window.removeEventListener(READ_EVENT, load);
+  }, [load]);
+  useLive((h) => { if (h.t === 'request' || h.t === 'message' || h.t === 'resync') load(); });
   return count;
 }
 
@@ -105,7 +109,7 @@ function Shell({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
   }, []);
   const allowed = PAGES.filter((p) => me.permissions.includes(p.permission));
   const current = allowed.find((p) => p.id === page) ?? allowed[0];
-  const reviewCount = useReviewCount(me.permissions.includes('support'));
+  const unreadCount = useUnreadCount(me.permissions.includes('support'));
 
   return (
     <div className="layout">
@@ -118,7 +122,7 @@ function Shell({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
           {allowed.map((p) => (
             <a key={p.id} href={`#${p.id}`} className={p === current ? 'active' : ''} aria-current={p === current ? 'page' : undefined}>
               <span>{p.label}</span>
-              {p.id === 'chats' && reviewCount > 0 && <span className="nav-count" aria-label={`${reviewCount} to review`}>{reviewCount}</span>}
+              {p.id === 'chats' && unreadCount > 0 && <span className="nav-count" title="Requests with something new" aria-label={`${unreadCount} with something new`}>{unreadCount}</span>}
             </a>
           ))}
         </nav>

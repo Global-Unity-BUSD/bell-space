@@ -75,6 +75,11 @@ submitted ──(staff assigns)──→ with_guide ──(guide marks done)─�
 * Messages are allowed only inside an assigned, open request, from the student,
   the assigned guide or support staff. No other messaging exists.
 * Staff follow-up happens in the same thread; staff messages are labeled.
+* Unread indicators on the staff website (migration 005): a request shows a dot,
+  and its tab and the Chats menu show a count, when a student or guide did
+  something new (question, message, decline, done, report) since that staff
+  member last opened it. Saved per account; staff actions never count; resolved
+  requests are never unread. Indicators only, no pop-ups or alerts.
 * Students and guides can report a request at any time.
 * **Supervision setting** (`supervision_mode`, changed by `manage_accounts`, logged):
   * `all_requests` (default, matches the flow): support staff can read every thread.
