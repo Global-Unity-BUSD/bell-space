@@ -86,16 +86,23 @@ function FloorPicker({ floorId, onChange }: { floorId: FloorId; onChange: (id: F
   );
 }
 
+/** The English name (as on the school signs) when the shown name differs, then the building and floor. */
+function useSubtitle() {
+  const { phrase, place: name } = useI18n();
+  return (p: Place) => (name(p.title) !== p.title ? `${p.title} · ${phrase(p.subtitle)}` : phrase(p.subtitle));
+}
+
 function PlaceHeader({ place }: { place: Place }) {
-  const { phrase } = useI18n();
+  const { place: name } = useI18n();
+  const subtitle = useSubtitle();
   return (
     <View style={styles.placeHeader}>
       <View style={styles.cardIcon}>
         <Icon name={placeIcon(place)} color={colors.text} size={26} strokeWidth={1.6} />
       </View>
       <View style={styles.cardText}>
-        <Text style={styles.cardTitle} numberOfLines={1}>{place.title}</Text>
-        <Text style={styles.cardSubtitle} numberOfLines={1}>{phrase(place.subtitle)}</Text>
+        <Text style={styles.cardTitle} numberOfLines={1}>{name(place.title)}</Text>
+        <Text style={styles.cardSubtitle} numberOfLines={1}>{subtitle(place)}</Text>
       </View>
     </View>
   );
@@ -128,7 +135,7 @@ function PlanCard({ start, destination, trip, onStart, onChangeStart, onCancel }
   start: TripStart; destination: Place; trip: Trip;
   onStart: () => void; onChangeStart: () => void; onCancel: () => void;
 }) {
-  const { t, phrase, word } = useI18n();
+  const { t, phrase, word, place: name } = useI18n();
   const available = trip.status === 'available';
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
@@ -143,7 +150,7 @@ function PlanCard({ start, destination, trip, onStart, onChangeStart, onCancel }
         <View style={styles.legLine} />
         <View style={styles.leg}>
           <View style={[styles.legDot, styles.legEnd]} />
-          <Text style={styles.legText} numberOfLines={1}>{destination.title}</Text>
+          <Text style={styles.legText} numberOfLines={1}>{name(destination.title)}</Text>
         </View>
       </View>
       {available && trip.reviewOnly && (
@@ -201,17 +208,18 @@ function GuideCard({ trip, index, onStep, onEnd, liveNote, onSetLocation }: {
 }
 
 function ResultRow({ place, onPress, routed }: { place: Place; onPress: () => void; routed?: boolean }) {
-  const { t, phrase } = useI18n();
+  const { t, place: name } = useI18n();
+  const subtitle = useSubtitle();
   return (
     <Pressable accessibilityRole="button" onPress={onPress}
-      accessibilityLabel={`${place.title}, ${phrase(place.subtitle)}${routed === undefined ? '' : `, ${t(routed ? 'nav.routeAvailable' : 'nav.mapOnly')}`}`}
+      accessibilityLabel={`${name(place.title)}, ${subtitle(place)}${routed === undefined ? '' : `, ${t(routed ? 'nav.routeAvailable' : 'nav.mapOnly')}`}`}
       style={({ pressed }) => [styles.result, pressed && styles.resultPressed]}>
       <View style={styles.resultIcon}>
         <Icon name={placeIcon(place)} color={colors.textMuted} size={19} />
       </View>
       <View style={styles.resultText}>
-        <Text style={styles.resultTitle} numberOfLines={1}>{place.title}</Text>
-        <Text style={styles.resultSubtitle} numberOfLines={1}>{phrase(place.subtitle)}</Text>
+        <Text style={styles.resultTitle} numberOfLines={1}>{name(place.title)}</Text>
+        <Text style={styles.resultSubtitle} numberOfLines={1}>{subtitle(place)}</Text>
       </View>
       {routed !== undefined && <StatusPill label={t(routed ? 'nav.route' : 'nav.mapOnly')} tone={routed ? 'active' : 'closed'} style={styles.resultPill} />}
     </Pressable>
@@ -242,8 +250,15 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
   const [liveTap, setLiveTap] = useState<TapPurpose | null>(null);
   const [seenUpdate, setSeenUpdate] = useState<number | null>(null);
   const keyboardInset = useKeyboardInset(container);
-  const { t, word } = useI18n();
-  const results = useMemo(() => searchPlaces(query), [query]);
+  const { t, word, place: name, mapLines } = useI18n();
+  const results = useMemo(() => searchPlaces(query, 30, (p) => name(p.title)), [query, name]);
+  // The same floor with its labels in the app's language (room numbers and street names unchanged).
+  const shownFloor = useMemo(() => {
+    const floor = FLOORS[floorId];
+    const labels = floor.labels.map((l) => (l.lines.length ? { ...l, lines: mapLines(l.lines) } : l));
+    return labels.every((l, i) => l === floor.labels[i] || l.lines.join() === floor.labels[i]!.lines.join())
+      ? floor : { ...floor, labels };
+  }, [floorId, mapLines]);
   const trip = useMemo(() => (start && destination ? planTrip(start, destination, review, PLACE_NAMES) : null),
     [start, destination, review]);
   const guide = mode === 'guide' && trip?.status === 'available' ? trip : null;
@@ -399,7 +414,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
 
   return (
     <View style={styles.screen} ref={container}>
-      <InteractiveMap floor={FLOORS[floorId]} view={CAMPUS} controlsRef={controls}
+      <InteractiveMap floor={shownFloor} view={CAMPUS} controlsRef={controls}
         loading={loadingFloor ? t('nav.loadingFloor', { floor: word(FLOORS[loadingFloor].label) }) : null}
         selected={pinned?.floorId === floorId ? { ...pinned.anchor, labelHalfHeight: pinned.labelHalfHeight } : null}
         focus={step ? step.at : mode === 'plan' ? routeCentre : null}
@@ -473,8 +488,8 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                     <Icon name="locate" color="#ffffff" size={19} />
                   </View>
                   <View style={styles.resultText}>
-                    <Text style={styles.resultTitle}>Use my live location</Text>
-                    <Text style={styles.resultSubtitle}>{liveRadius !== null ? `Accurate to ${metres(liveRadius)}` : ''}</Text>
+                    <Text style={styles.resultTitle} numberOfLines={1}>Use my live location</Text>
+                    <Text style={styles.resultSubtitle} numberOfLines={1}>{liveRadius !== null ? `Accurate to ${metres(liveRadius)}` : ''}</Text>
                   </View>
                 </Pressable>
               ) : (
@@ -482,7 +497,7 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                   <View style={styles.resultIcon}><Icon name="locate" color={colors.textFaint} size={19} /></View>
                   <View style={styles.resultText}>
                     <Text style={[styles.resultTitle, styles.mutedText]}>Live location not accurate enough</Text>
-                    <Text style={styles.resultSubtitle}>Pick a place below or tap the map instead</Text>
+                    <Text style={styles.resultSubtitle} numberOfLines={1}>Pick a place below or tap the map instead</Text>
                   </View>
                 </View>
               ))}
@@ -493,8 +508,8 @@ function NavigationScreen({ review = false, live = null, liveTest = false }: {
                     <Icon name="navigation" color="#ffffff" size={19} />
                   </View>
                   <View style={styles.resultText}>
-                    <Text style={styles.resultTitle}>{t('nav.tapSpot')}</Text>
-                    <Text style={styles.resultSubtitle}>{t('nav.tapSpotHint')}</Text>
+                    <Text style={styles.resultTitle} numberOfLines={1}>{t('nav.tapSpot')}</Text>
+                    <Text style={styles.resultSubtitle} numberOfLines={1}>{t('nav.tapSpotHint')}</Text>
                   </View>
                 </Pressable>
               )}

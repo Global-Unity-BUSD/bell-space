@@ -92,7 +92,7 @@ function Editor({ update, onDone }: { update: Update | null; onDone: () => void 
         {lang && (
           <p className="alert info">
             Students who chose {lang.name} ({lang.english}) in the app see this version. Leave a box blank to show the English.
-            Keep names such as rooms, places and people in English.
+            Use the place names the app shows in this language (for example Biblioteca for Library); keep people’s names as they are.
           </p>
         )}
         <label className="field">Title{lang && <span className="hint">Optional</span>}

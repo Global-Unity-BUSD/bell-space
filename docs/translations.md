@@ -16,15 +16,20 @@ Translated:
 * the Q&A questions and answers;
 * turn-by-turn directions, the reasons a route is not available, and map
   search subtitles ("Building 1 · Floor 2");
+* **place names**: the labels drawn on the map, and the names in search, the
+  place card, directions and Q&A (Library → Biblioteca, Gymnasium (3-101) →
+  Gimnasio (3-101), Room 1155 → Salón 1155). School signs are in English, so
+  search results and the place card show the English name under the
+  translated one, and search finds a place by either name;
 * messages from the server shown to students ("That email or password is not
   right.", "You already have two open requests…").
 
 Not translated, on purpose:
 
-* **names**: room and place names (Library, Cafeteria, Quad, Career Center,
-  Student Area, Lunch Shelter, Book Room…), Bell Space, Burbank High School,
-  ASB, Global Unity and people's names. They match the map and the signs at
-  school. A test (`apps/tests/i18n.test.cjs`) fails if a translation changes one;
+* street names (Harvard Road, Third Street), room numbers, and short codes on
+  the map (T, WR, OFF, ELEC, Comp, ELEV. M.);
+* Bell Space, Burbank High School, ASB, Global Unity and people's names. A test
+  (`apps/tests/i18n.test.cjs`) fails if a translation changes one;
 * chat messages: they stay in the language they were written in;
 * Updates posts are not translated automatically. Staff can write them in other
   languages themselves (see below);
@@ -41,7 +46,8 @@ for anything left blank. Date, time and photo are shared by all languages. The
 list of updates shows "Also in …" for the languages an update has.
 
 Nothing is translated by a machine: what students see is what staff wrote.
-Keep names (rooms, places, people) in English, as in the rest of the app.
+Use the same place names as the app shows in that language (Biblioteca,
+Gimnasio…); keep people's names, ASB and street names as they are.
 
 Stored in `updates.translations` (`server/migrations/003_update_translations.sql`),
 checked by the API (`server/src/routes/updates.ts`) and the database, and shown
@@ -51,7 +57,8 @@ by the app with `updateIn()` in `shared/api.ts`.
 
 | File | Holds |
 | --- | --- |
-| `apps/src/i18n/en.ts` | English source text: screen text (`ui`), sentences built by other code (`phrases`), and words placed in them (`words`) |
+| `apps/src/i18n/en.ts` | English source text: screen text (`ui`), sentences built by other code (`phrases`), words placed in them (`words`), and place names (`places`; `
+` sets the line break on the map) |
 | `apps/src/i18n/es.ts`, `hy.ts`, `ru.ts` | The translations, with the same keys |
 | `apps/src/i18n/core.ts` | The language list and the translator (no React) |
 | `apps/src/i18n/index.tsx` | `LanguageProvider` and `useI18n()` for screens |
@@ -72,6 +79,12 @@ student) should read each language file and correct it. Points to check:
 
 * **Tone**: Spanish uses informal *tú*; Russian and Armenian use the polite
   plural (*вы*, *դուք*). Change this if the school prefers otherwise.
+* **Place names on the map**: a label appears once it fits inside its room, so a
+  longer word shows one zoom step later than the English. Library (Biblioteca,
+  Библиотека, Գրադարան) does; Spanish uses Zona de alumnos and Dirección so
+  that Student Area and Admin Offices show at the first zoom, like the English.
+  Check that the names (especially Quad, Senior Hill, Lunch Shelter and Career
+  Center, which are school names more than descriptions) are what students say.
 * **Short tab names**: the tab bar has about 75 px per tab. The Armenian
   Settings tab uses Ընտրանքներ (shorter than the screen title Կարգավորումներ),
   and phones shrink a label slightly if it is still too long.

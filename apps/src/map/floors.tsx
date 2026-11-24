@@ -129,15 +129,24 @@ for (const place of ALL_PLACES) PLACE_NAMES[place.id] = place.title;
 
 const normalize = (s: string) => s.toLowerCase().replace(/[·()]/g, ' ').replace(/\s+/g, ' ').trim();
 
-export function searchPlaces(query: string, limit = 30): Place[] {
+/**
+ * Places matching the query, best first. `translated` gives a place's name in
+ * the app's language: either name finds it (school signs are in English).
+ */
+export function searchPlaces(query: string, limit = 30, translated?: (place: Place) => string): Place[] {
   const q = normalize(query).replace(/^room\s*/, '');
   if (!q) return [];
-  const scored = ALL_PLACES.map((place) => {
-    const title = normalize(place.title);
+  const scoreOf = (name: string) => {
+    const title = normalize(name);
     const bare = title.replace(/^room /, '');
     const words = title.split(' ');
-    const score = bare === q ? 0 : bare.startsWith(q) ? 1 : words.some((w) => w.startsWith(q)) ? 2
+    return bare === q ? 0 : bare.startsWith(q) ? 1 : words.some((w) => w.startsWith(q)) ? 2
       : title.includes(q) ? 3 : -1;
+  };
+  const scored = ALL_PLACES.map((place) => {
+    const english = scoreOf(place.title);
+    const other = translated ? scoreOf(translated(place)) : -1;
+    const score = english < 0 ? other : other < 0 ? english : Math.min(english, other);
     return { place, score };
   }).filter(({ score }) => score >= 0);
   scored.sort((a, b) => a.score - b.score

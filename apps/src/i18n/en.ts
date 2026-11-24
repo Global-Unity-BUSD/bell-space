@@ -201,6 +201,7 @@ const ui = {
   'nav.searchStartA11y': 'Search for a starting point',
   'nav.search': 'Search rooms and places',
   'nav.closeSearch': 'Close search',
+  'map.room': 'Room {n}',
 };
 
 // Sentences built in English by other code, exactly as that code writes them.
@@ -286,10 +287,63 @@ const words = {
   'Floor 3': 'Floor 3',
 };
 
+// Place names on the map and in search, directions and cards. Street names,
+// room numbers and short codes (Comp, ELEV. M.) are not listed and stay as they are.
+const places = {
+  "Lunch Shelter": "Lunch Shelter",
+  "Student Area": "Student Area",
+  "Senior Hill": "Senior Hill",
+  "Wellness Center": "Wellness Center",
+  "Kitchen": "Kitchen",
+  "Cafeteria": "Cafeteria",
+  "Quad": "Quad",
+  "Career Center": "Career Center",
+  "Admin Offices": "Admin Offices",
+  "Book Room": "Book Room",
+  "BookRm": "BookRm",
+  "Library": "Library",
+  "Stage": "Stage",
+  "Auditorium": "Auditorium",
+  "Auditorium (upper level)": "Auditorium (upper level)",
+  "Dance": "Dance",
+  "Band": "Band",
+  "Choir": "Choir",
+  "Drama": "Drama",
+  "Entrance from Quad": "Entrance from Quad",
+  "Ramp": "Ramp",
+  "Boys Locker": "Boys Locker",
+  "Boys Locker Room": "Boys Locker Room",
+  "Girls Locker": "Girls Locker",
+  "Girls Locker Room": "Girls Locker Room",
+  "Serv. Car Garage": "Serv. Car Garage",
+  "Building 1": "Building 1",
+  "Building 2": "Building 2",
+  "Building 3": "Building 3",
+  "Gymnasium": "Gymnasium",
+  "Lobby": "Lobby",
+  "Building 3 Lobby": "Building 3 Lobby",
+  "Outdoor Swimming Pool": "Outdoor Swimming Pool",
+  "Basement Area": "Basement Area",
+  "Tennis Courts": "Tennis Courts",
+  "Parking Garage Below": "Parking Garage Below",
+  "Parking garage (below the tennis courts)": "Parking garage (below the tennis courts)",
+  "STEAM Lab": "STEAM Lab",
+  "STEAM Lab (upper level)": "STEAM Lab (upper level)",
+  "Small Quad": "Small Quad",
+  "Teacher Workroom": "Teacher Workroom",
+  "Wt. Room": "Wt. Room",
+  "Wt. Room (west)": "Wt. Room (west)",
+  "Wt. Room (east)": "Wt. Room (east)",
+  "Boys Team Room": "Boys Team Room",
+  "Girls Team Room": "Girls Team Room",
+};
+
 export type Strings = {
   ui: Record<keyof typeof ui, string>;
   phrases: Record<keyof typeof phrases, string>;
   words: Record<keyof typeof words, string>;
+  /** Place names; "\n" sets the line break on the map. */
+  places: Record<keyof typeof places, string>;
   /** Q&A by entry id (src/content/qa.ts); every entry must be present. */
   qa: Record<string, { q: string; a: string }>;
   qaCategories: Record<QaCategory, string>;
@@ -300,6 +354,7 @@ export const en: Strings = {
   // English keeps the original sentence.
   phrases: Object.fromEntries(Object.keys(phrases).map((p) => [p, p])) as Strings['phrases'],
   words,
+  places,
   qa: {},
   qaCategories: {} as Strings['qaCategories'],
 };

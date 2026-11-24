@@ -64,20 +64,62 @@ export type Translator = {
   t: (key: Key, params?: Params) => string;
   /** A sentence built in English elsewhere, translated when its wording is known. */
   phrase: (text: string) => string;
-  /** A single word or name, translated when known. */
+  /** A single word or name, translated when known (place names included). */
   word: (text: string) => string;
+  /** A place's title as search, cards and directions show it ("Library" → "Biblioteca"). */
+  place: (title: string) => string;
+  /** A map label's lines; room numbers and codes are kept, street names stay as they are. */
+  mapLines: (lines: string[]) => string[];
   /** Q&A question and answer by entry id, or undefined to keep the English. */
   qa: (id: string) => { q: string; a: string } | undefined;
   qaCategory: (id: string) => string | undefined;
 };
 
+// A room number or code on the map: 1155, 3-110A, 2-110.
+const CODE = /^\d[\dA-Z]*(-[\dA-Z]+)?$/;
+
 export function translator(lang: Lang): Translator {
   const d = DICTIONARIES[lang];
-  const word = (text: string) => (d.words as Record<string, string>)[text] ?? text;
+  const t = (key: Key, params?: Params) => fill(d.ui[key] ?? en.ui[key], params);
+  const names = d.places as Record<string, string>;
+  const name = (text: string) => names[text]?.replace(/\n/g, ' ');
+  const place = (title: string): string => {
+    if (lang === 'en') return title;
+    const direct = name(title);
+    if (direct) return direct;
+    let m = /^Room (\S+) · (.+)$/.exec(title);
+    if (m) return `${t('map.room', { n: m[1] })} · ${place(m[2])}`;
+    m = /^Room (\S+)$/.exec(title);
+    if (m) return t('map.room', { n: m[1] });
+    // "Gymnasium (3-101)": the name translated, the code kept.
+    m = /^(.+) \(([^)]+)\)$/.exec(title);
+    if (m && name(m[1]) && CODE.test(m[2])) return `${name(m[1])} (${m[2]})`;
+    return title;
+  };
+  const word = (text: string) => (d.words as Record<string, string>)[text] ?? place(text);
+  const lines = (text: string) => names[text]?.split('\n');
+  const mapLines = (label: string[]) => {
+    if (lang === 'en' || !label.length) return label;
+    const whole = lines(label.join(' '));
+    if (whole) return whole;
+    // "2134 / Dance", "3-110A / Boys Locker": keep the number, translate the rest.
+    if (label.length > 1 && CODE.test(label[0]!)) {
+      const rest = lines(label.slice(1).join(' '));
+      if (rest) return [label[0]!, ...rest];
+    }
+    // "Gymnasium / 3-101", "Stage / 2-110".
+    if (label.length > 1 && CODE.test(label.at(-1)!)) {
+      const rest = lines(label.slice(0, -1).join(' '));
+      if (rest) return [...rest, label.at(-1)!];
+    }
+    return label;
+  };
   return {
     lang,
     locale: LANGS.find((l) => l.id === lang)!.locale,
-    t: (key, params) => fill(d.ui[key] ?? en.ui[key], params),
+    t,
+    place,
+    mapLines,
     phrase: (text) => {
       if (lang === 'en') return text;
       const direct = (d.words as Record<string, string>)[text];
